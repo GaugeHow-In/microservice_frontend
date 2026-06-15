@@ -1,0 +1,118 @@
+name: Preview Deploy
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: preview-deploy-${{ github.event.workflow_run.pull_requests[0].number || github.event.workflow_run.head_branch }}
+  cancel-in-progress: true
+
+jobs:
+  deploy-preview:
+    name: Deploy Preview to Vercel
+    if: >-
+      github.event.workflow_run.conclusion == 'success' &&
+      github.event.workflow_run.event == 'pull_request' &&
+      github.event.workflow_run.head_repository.full_name == github.repository
+    runs-on: ubuntu-latest
+    environment:
+      name: preview/pr-${{ github.event.workflow_run.pull_requests[0].number }}
+      url: ${{ steps.deploy.outputs.preview_url }}
+    env:
+      NODE_VERSION: "20"
+      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          working-directory: .
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-preview-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.[jt]s', 'src/**/*.[jt]sx', 'next.config.ts', 'tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-preview-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-preview-${{ env.NODE_VERSION }}-
+
+      - name: Pull Vercel preview environment
+        run: npx vercel pull --yes --environment=preview --token="$VERCEL_TOKEN"
+
+      - name: Build Vercel preview artifacts
+        run: npx vercel build --token="$VERCEL_TOKEN"
+
+      - name: Deploy preview
+        id: deploy
+        shell: bash
+        run: |
+          preview_url="$(npx vercel deploy --prebuilt --yes --token="$VERCEL_TOKEN" | tail -n 1)"
+          echo "preview_url=${preview_url}" >> "$GITHUB_OUTPUT"
+          {
+            echo "### Preview deployment"
+            echo
+            echo "- PR: #${{ github.event.workflow_run.pull_requests[0].number }}"
+            echo "- Preview URL: ${preview_url}"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Comment preview URL on PR
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          script: |
+            const prNumber = context.payload.workflow_run.pull_requests[0]?.number;
+            const previewUrl = `${{ steps.deploy.outputs.preview_url }}`;
+            if (!prNumber || !previewUrl) {
+              core.info('No PR number or preview URL available.');
+              return;
+            }
+            const body = [
+              '### Preview deployment',
+              '',
+              `- URL: ${previewUrl}`,
+              `- Commit: \`${context.payload.workflow_run.head_sha.slice(0, 7)}\``,
+            ].join('\n');
+
+            const { data: comments } = await github.rest.issues.listComments({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: prNumber,
+              per_page: 100,
+            });
+
+            const marker = '### Preview deployment';
+            const existing = comments.find((comment) => comment.user.type === 'Bot' && comment.body.includes(marker));
+
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body,
+              });
+            }

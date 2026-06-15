@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "next.config.ts"
+      - "eslint.config.mjs"
+      - ".lighthouserc.json"
+      - ".github/actions/setup-frontend/**"
+      - ".github/workflows/**"
+      - "docs/devops/**"
+  push:
+    branches:
+      - main
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "next.config.ts"
+      - "eslint.config.mjs"
+      - ".lighthouserc.json"
+      - ".github/actions/setup-frontend/**"
+      - ".github/workflows/**"
+      - "docs/devops/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    name: Validate Frontend
+    runs-on: ubuntu-latest
+    env:
+      NODE_VERSION: "20"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          working-directory: .
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.[jt]s', 'src/**/*.[jt]sx', 'next.config.ts', 'tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-${{ env.NODE_VERSION }}-
+
+      - name: Detect test framework
+        id: detect-tests
+        shell: bash
+        run: |
+          TEST_COMMAND="$(node - <<'NODE'
+          const fs = require('fs');
+          const pkg = require('./package.json');
+
+          if (pkg.scripts && pkg.scripts.test) {
+            process.stdout.write('npm test');
+            process.exit(0);
+          }
+
+          const configs = [
+            { files: ['vitest.config.ts', 'vitest.config.js'], command: 'npx vitest run' },
+            { files: ['jest.config.ts', 'jest.config.js'], command: 'npx jest --ci' },
+            { files: ['playwright.config.ts', 'playwright.config.js'], command: 'npx playwright test' },
+          ];
+
+          for (const config of configs) {
+            if (config.files.some((file) => fs.existsSync(file))) {
+              process.stdout.write(config.command);
+              process.exit(0);
+            }
+          }
+
+          process.exit(1);
+          NODE
+          )"
+
+          if [ -n "$TEST_COMMAND" ]; then
+            echo "has_tests=true" >> "$GITHUB_OUTPUT"
+            echo "test_command=$TEST_COMMAND" >> "$GITHUB_OUTPUT"
+          else
+            echo "has_tests=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
+
+      - name: Run tests
+        if: steps.detect-tests.outputs.has_tests == 'true'
+        run: ${{ steps.detect-tests.outputs.test_command }}
+
+      - name: Report skipped tests
+        if: steps.detect-tests.outputs.has_tests != 'true'
+        shell: bash
+        run: |
+          {
+            echo "### Test execution"
+            echo
+            echo "No test framework or \`test\` script is configured in \`package.json\`, so automated tests were skipped."
+          } >> "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,73 @@
+name: Lighthouse
+
+on:
+  pull_request:
+    paths:
+      - "src/**"
+      - "public/**"
+      - "package.json"
+      - "package-lock.json"
+      - "tsconfig.json"
+      - "next.config.ts"
+      - "eslint.config.mjs"
+      - ".lighthouserc.json"
+      - ".github/actions/setup-frontend/**"
+      - ".github/workflows/lighthouse.yml"
+      - "docs/devops/**"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lighthouse-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  lighthouse:
+    name: Lighthouse CI
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    env:
+      NODE_VERSION: "20"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup frontend
+        uses: ./.github/actions/setup-frontend
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          working-directory: .
+
+      - name: Restore Next.js build cache
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: ${{ runner.os }}-nextjs-lighthouse-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-${{ hashFiles('src/**/*.[jt]s', 'src/**/*.[jt]sx', 'next.config.ts', 'tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-lighthouse-${{ env.NODE_VERSION }}-${{ hashFiles('package-lock.json') }}-
+            ${{ runner.os }}-nextjs-lighthouse-${{ env.NODE_VERSION }}-
+
+      - name: Build application
+        run: npm run build
+
+      - name: Run Lighthouse CI
+        id: lighthouse
+        continue-on-error: true
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: "./.lighthouserc.json"
+          uploadArtifacts: true
+          temporaryPublicStorage: true
+
+      - name: Add Lighthouse summary
+        if: always()
+        shell: bash
+        run: |
+          {
+            echo "### Lighthouse CI"
+            echo
+            echo "Lighthouse reports were generated for PR validation."
+            echo "This workflow is non-blocking today and stores its HTML/JSON output as GitHub Action artifacts."
+          } >> "$GITHUB_STEP_SUMMARY"
