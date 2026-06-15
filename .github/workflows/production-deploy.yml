@@ -37,6 +37,22 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
 
+      - name: Validate Vercel secrets
+        shell: bash
+        run: |
+          missing=0
+          for secret_name in VERCEL_TOKEN VERCEL_ORG_ID VERCEL_PROJECT_ID; do
+            if [ -z "${!secret_name}" ]; then
+              echo "::error title=Missing secret::${secret_name} is not configured for this workflow."
+              missing=1
+            fi
+          done
+
+          if [ "$missing" -ne 0 ]; then
+            echo "Configure the missing Vercel repository or environment secrets before retrying."
+            exit 1
+          fi
+
       - name: Setup frontend
         uses: ./.github/actions/setup-frontend
         with:
