@@ -11,6 +11,14 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { courses } from "@/lib/mock-data";
 
+const courseTabPredicates = {
+  all: () => true,
+  placement: (category: string) => category.includes("placement"),
+  gate: (category: string) => category.includes("competitive exam") || category.includes("gate"),
+  "ai/ml": (category: string) => category.includes("ai/ml"),
+  web: (category: string) => category.includes("web"),
+};
+
 export default function CoursesPage() {
   return (
     <AppShell>
@@ -40,7 +48,7 @@ export default function CoursesPage() {
         </div>
         <Tabs defaultValue="all">
           <TabsList className="w-full overflow-x-auto sm:w-auto">
-            {["all", "placement", "gate", "ai/ml", "web"].map((tab) => (
+            {Object.keys(courseTabPredicates).map((tab) => (
               <TabsTrigger key={tab} value={tab} className="capitalize">
                 {tab}
               </TabsTrigger>
@@ -53,13 +61,13 @@ export default function CoursesPage() {
               ))}
             </div>
           </TabsContent>
-          {["placement", "gate", "ai/ml", "web"].map((tab) => (
+          {Object.entries(courseTabPredicates)
+            .filter(([tab]) => tab !== "all")
+            .map(([tab, predicate]) => (
             <TabsContent key={tab} value={tab}>
               <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
                 {courses
-                  .filter((course) =>
-                    course.category.toLowerCase().includes(tab === "web" ? "web" : tab),
-                  )
+                  .filter((course) => predicate(course.category.toLowerCase()))
                   .map((course) => (
                     <CourseCard key={course.slug} course={course} />
                   ))}
@@ -89,4 +97,3 @@ export default function CoursesPage() {
     </AppShell>
   );
 }
-
