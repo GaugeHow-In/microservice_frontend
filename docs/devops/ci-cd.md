@@ -152,7 +152,6 @@ No additional GitHub secret is required for PR comments because the built-in `GI
 ## Environment Variable Audit
 
 As of the current repository state, the frontend does not reference any runtime application environment variables.
-Done
 
 Audit result:
 
