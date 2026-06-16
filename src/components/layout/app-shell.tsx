@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { Bell, Menu, Search, Sparkles, X } from "lucide-react";
-import { useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { Bell, LogOut, Menu, Search, Sparkles, X } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { bottomNav, platformNav, student } from "@/lib/mock-data";
+import { bottomNav, platformNav } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -48,9 +49,36 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
+  const router = useRouter();
+  const { user, isLoading, logout } = useAuth();
   const activeLabel =
     platformNav.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
       ?.label ?? "Dashboard";
+  const initials = useMemo(() => {
+    const displayName = user?.display_name ?? "GaugeHow User";
+    return displayName
+      .split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  }, [user?.display_name]);
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [isLoading, router, user]);
+
+  if (isLoading || !user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-slate-50">
+        <div className="rounded-lg border border-slate-200 bg-white px-6 py-4 text-sm font-semibold text-slate-600">
+          Restoring your session...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -62,18 +90,25 @@ export function AppShell({ children }: AppShellProps) {
         <div className="absolute bottom-5 left-4 right-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarFallback>{student.avatar}</AvatarFallback>
+              <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-semibold text-slate-950">{student.name}</p>
-              <p className="text-xs text-slate-500">Level {student.level}</p>
+              <p className="text-sm font-semibold text-slate-950">{user.display_name}</p>
+              <p className="text-xs text-slate-500">{user.email}</p>
             </div>
           </div>
-          <div className="mt-4 h-2 rounded-full bg-slate-200">
-            <div
-              className="h-full rounded-full bg-orange-500"
-              style={{ width: `${(student.xp / student.nextLevelXp) * 100}%` }}
-            />
+          <div className="mt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
+            <span>{user.roles.join(", ")}</span>
+            <button
+              type="button"
+              className="font-semibold text-orange-600 hover:text-orange-700"
+              onClick={async () => {
+                await logout();
+                router.replace("/login");
+              }}
+            >
+              Logout
+            </button>
           </div>
         </div>
       </aside>
@@ -115,8 +150,19 @@ export function AppShell({ children }: AppShellProps) {
                 <Bell />
               </Button>
               <Avatar className="hidden sm:flex">
-                <AvatarFallback>{student.avatar}</AvatarFallback>
+                <AvatarFallback>{initials}</AvatarFallback>
               </Avatar>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Logout"
+                onClick={async () => {
+                  await logout();
+                  router.replace("/login");
+                }}
+              >
+                <LogOut />
+              </Button>
             </div>
           </div>
         </header>
@@ -179,4 +225,3 @@ export function AppShell({ children }: AppShellProps) {
     </div>
   );
 }
-

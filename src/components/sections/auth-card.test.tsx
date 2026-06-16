@@ -1,7 +1,19 @@
 import { createElement } from "react";
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { AuthCard } from "@/components/sections/auth-card";
+
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({
+    beginOAuth: vi.fn(),
+    forgotPassword: vi.fn(),
+    login: vi.fn(),
+    register: vi.fn(),
+    resendVerification: vi.fn(),
+    resetPassword: vi.fn(),
+    verifyEmail: vi.fn(),
+  }),
+}));
 
 describe("AuthCard", () => {
   it("renders the login flow fields and links", () => {
@@ -11,7 +23,7 @@ describe("AuthCard", () => {
     expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Forgot password?" })).toHaveAttribute("href", "/forgot-password");
-    expect(screen.getByRole("link", { name: "Login" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("button", { name: "Login" })).toBeInTheDocument();
   });
 
   it("renders the signup flow with the full name field", () => {
@@ -20,7 +32,7 @@ describe("AuthCard", () => {
     expect(screen.getByPlaceholderText("Full name")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Password")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Create account" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("button", { name: "Create account" })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Login" })).toHaveAttribute("href", "/login");
   });
 
@@ -30,15 +42,15 @@ describe("AuthCard", () => {
     expect(screen.getByRole("heading", { name: "Reset password" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
     expect(screen.queryByPlaceholderText("Password")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Send OTP" })).toHaveAttribute("href", "/otp");
+    expect(screen.getByRole("button", { name: "Send code" })).toBeInTheDocument();
   });
 
-  it("renders the OTP flow with six code inputs", () => {
-    render(createElement(AuthCard, { mode: "otp" }));
+  it("renders the verify flow with code and email inputs", () => {
+    render(createElement(AuthCard, { mode: "verify" }));
 
-    expect(screen.getByRole("heading", { name: "Verify OTP" })).toBeInTheDocument();
-    expect(screen.getAllByRole("textbox")).toHaveLength(6);
-    expect(screen.queryByPlaceholderText("Email address")).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Verify code" })).toHaveAttribute("href", "/dashboard");
+    expect(screen.getByRole("heading", { name: "Verify email" })).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Email address")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("6-digit code")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Verify email" })).toBeInTheDocument();
   });
 });

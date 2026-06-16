@@ -3,6 +3,30 @@ import { cleanup } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import "./mocks/next";
 
+vi.mock("@/components/providers/auth-provider", () => ({
+  AuthProvider: ({ children }: { children: React.ReactNode }) => children,
+  useAuth: () => ({
+    accessToken: "test-token",
+    user: {
+      display_name: "Aarav Mehta",
+      email: "aarav@example.com",
+      roles: ["student"],
+      permissions: ["course.read"],
+    },
+    isLoading: false,
+    login: vi.fn(),
+    register: vi.fn(),
+    verifyEmail: vi.fn(),
+    resendVerification: vi.fn(),
+    forgotPassword: vi.fn(),
+    resetPassword: vi.fn(),
+    logout: vi.fn(),
+    logoutAll: vi.fn(),
+    beginOAuth: vi.fn(),
+    refreshSession: vi.fn(),
+  }),
+}));
+
 afterEach(() => {
   cleanup();
 });

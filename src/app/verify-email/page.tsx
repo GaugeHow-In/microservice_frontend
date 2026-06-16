@@ -1,6 +1,6 @@
 import { AuthCard } from "@/components/sections/auth-card";
 
-export default async function OtpPage({
+export default async function VerifyEmailPage({
   searchParams,
 }: {
   searchParams: Promise<{ email?: string }>;

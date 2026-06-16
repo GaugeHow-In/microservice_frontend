@@ -1,9 +1,21 @@
 import { createElement } from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { AppShell } from "@/components/layout/app-shell";
 import { mockUsePathname } from "@/test/mocks/next";
+
+vi.mock("@/components/providers/auth-provider", () => ({
+  useAuth: () => ({
+    user: {
+      display_name: "Aarav Mehta",
+      email: "aarav@example.com",
+      roles: ["student"],
+    },
+    isLoading: false,
+    logout: vi.fn(),
+  }),
+}));
 
 describe("AppShell", () => {
   beforeEach(() => {

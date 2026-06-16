@@ -1,4 +1,7 @@
+"use client";
+
 import { BookOpen, Flame, GraduationCap, Settings, Target, Trophy } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { ProgressRing } from "@/components/shared/progress-ring";
@@ -10,6 +13,17 @@ import { Progress } from "@/components/ui/progress";
 import { achievements, courses, goals, student } from "@/lib/mock-data";
 
 export default function ProfilePage() {
+  const { user } = useAuth();
+  const displayName = user?.display_name ?? student.name;
+  const subtitle = user?.email ?? student.role;
+  const initials =
+    user?.display_name
+      ?.split(" ")
+      .map((part) => part[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase() ?? student.avatar;
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -27,11 +41,11 @@ export default function ProfilePage() {
         <Card>
           <CardContent className="grid gap-6 p-6 md:grid-cols-[auto_1fr_auto] md:items-center">
             <Avatar className="size-20">
-              <AvatarFallback className="text-xl">{student.avatar}</AvatarFallback>
+              <AvatarFallback className="text-xl">{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold text-slate-950">{student.name}</h1>
-              <p className="mt-1 text-slate-500">{student.role}</p>
+              <h1 className="text-2xl font-bold text-slate-950">{displayName}</h1>
+              <p className="mt-1 text-slate-500">{subtitle}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 <Badge variant="orange">Level {student.level}</Badge>
                 <Badge variant="green">{student.streak}-day streak</Badge>

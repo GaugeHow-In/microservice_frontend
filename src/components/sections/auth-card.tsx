@@ -1,12 +1,18 @@
+"use client";
+
 import Link from "next/link";
-import { ArrowLeft, Mail, ShieldCheck } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ArrowLeft, LoaderCircle, Mail, ShieldCheck } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 
 type AuthCardProps = {
-  mode: "login" | "signup" | "forgot" | "otp";
+  mode: "login" | "signup" | "forgot" | "verify" | "reset";
+  initialEmail?: string;
 };
 
 const copy = {
@@ -29,23 +35,81 @@ const copy = {
   forgot: {
     title: "Reset password",
     subtitle: "Enter your email and we will send a verification code.",
-    primary: "Send OTP",
+    primary: "Send code",
     footer: "Remembered it?",
     link: "Back to login",
     href: "/login",
   },
-  otp: {
-    title: "Verify OTP",
-    subtitle: "Enter the 6-digit code sent to your email to continue.",
-    primary: "Verify code",
-    footer: "Wrong email?",
-    link: "Edit email",
-    href: "/forgot-password",
+  verify: {
+    title: "Verify email",
+    subtitle: "Enter the 6-digit code sent to your email to activate your account.",
+    primary: "Verify email",
+    footer: "Need another code?",
+    link: "Resend verification",
+    href: "#",
+  },
+  reset: {
+    title: "Create a new password",
+    subtitle: "Enter the verification code and choose a new password.",
+    primary: "Reset password",
+    footer: "Remembered it?",
+    link: "Back to login",
+    href: "/login",
   },
 };
 
-export function AuthCard({ mode }: AuthCardProps) {
+export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const data = copy[mode];
+  const router = useRouter();
+  const { beginOAuth, forgotPassword, login, register, resendVerification, resetPassword, verifyEmail } =
+    useAuth();
+  const [displayName, setDisplayName] = useState("");
+  const [email, setEmail] = useState(initialEmail);
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [code, setCode] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async () => {
+    setIsSubmitting(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      if (mode === "login") {
+        await login({ email, password });
+        router.push("/dashboard");
+      }
+
+      if (mode === "signup") {
+        await register({ displayName, email, password });
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+      }
+
+      if (mode === "forgot") {
+        await forgotPassword(email);
+        router.push(`/reset-password?email=${encodeURIComponent(email)}`);
+      }
+
+      if (mode === "verify") {
+        await verifyEmail({ email, code });
+        setMessage("Email verified. You can log in now.");
+        router.push("/login");
+      }
+
+      if (mode === "reset") {
+        await resetPassword({ email, code, newPassword });
+        setMessage("Password reset successful.");
+        router.push("/login");
+      }
+    } catch (submissionError) {
+      setError(submissionError instanceof Error ? submissionError.message : "Something went wrong");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   return (
     <main className="min-h-screen bg-slate-50">
@@ -93,23 +157,53 @@ export function AuthCard({ mode }: AuthCardProps) {
                   <p className="mt-2 text-sm leading-6 text-slate-600">{data.subtitle}</p>
                 </div>
                 <div className="space-y-4">
-                  {mode === "signup" && <Input placeholder="Full name" />}
-                  {mode !== "otp" ? (
-                    <Input type="email" placeholder="Email address" />
-                  ) : (
-                    <div className="grid grid-cols-6 gap-2">
-                      {Array.from({ length: 6 }).map((_, index) => (
-                        <Input
-                          key={index}
-                          maxLength={1}
-                          className="px-0 text-center text-lg font-bold"
-                          defaultValue={index < 2 ? String(index + 2) : ""}
-                        />
-                      ))}
-                    </div>
+                  {mode !== "verify" && (
+                    <Input
+                      type="email"
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(event) => setEmail(event.target.value)}
+                    />
+                  )}
+                  {mode === "signup" && (
+                    <Input
+                      placeholder="Full name"
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                    />
                   )}
                   {(mode === "login" || mode === "signup") && (
-                    <Input type="password" placeholder="Password" />
+                    <Input
+                      type="password"
+                      placeholder="Password"
+                      value={password}
+                      onChange={(event) => setPassword(event.target.value)}
+                    />
+                  )}
+                  {(mode === "verify" || mode === "reset") && (
+                    <>
+                      <Input
+                        type="email"
+                        placeholder="Email address"
+                        value={email}
+                        onChange={(event) => setEmail(event.target.value)}
+                      />
+                      <Input
+                        placeholder="6-digit code"
+                        inputMode="numeric"
+                        maxLength={6}
+                        value={code}
+                        onChange={(event) => setCode(event.target.value)}
+                      />
+                    </>
+                  )}
+                  {mode === "reset" && (
+                    <Input
+                      type="password"
+                      placeholder="New password"
+                      value={newPassword}
+                      onChange={(event) => setNewPassword(event.target.value)}
+                    />
                   )}
                   {mode === "login" && (
                     <div className="flex justify-end">
@@ -121,18 +215,57 @@ export function AuthCard({ mode }: AuthCardProps) {
                       </Link>
                     </div>
                   )}
+                  {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
+                  {message ? <p className="text-sm font-medium text-emerald-600">{message}</p> : null}
                 </div>
-                <Button asChild className="w-full">
-                  <Link href={mode === "otp" ? "/dashboard" : mode === "forgot" ? "/otp" : "/dashboard"}>
-                    {mode === "forgot" && <Mail />}
-                    {data.primary}
-                  </Link>
+                <Button className="w-full" onClick={submit} disabled={isSubmitting}>
+                  {isSubmitting ? <LoaderCircle className="animate-spin" /> : null}
+                  {mode === "forgot" && !isSubmitting ? <Mail /> : null}
+                  {data.primary}
                 </Button>
+                {(mode === "login" || mode === "signup") && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <Button
+                      variant="secondary"
+                      onClick={() => beginOAuth("google")}
+                      disabled={isSubmitting}
+                    >
+                      Google
+                    </Button>
+                    <Button
+                      variant="secondary"
+                      onClick={() => beginOAuth("github")}
+                      disabled={isSubmitting}
+                    >
+                      GitHub
+                    </Button>
+                  </div>
+                )}
+                {mode === "verify" && (
+                  <button
+                    type="button"
+                    className="text-sm font-semibold text-orange-600 hover:text-orange-700"
+                    onClick={async () => {
+                      try {
+                        await resendVerification(email);
+                        setMessage("Verification code sent.");
+                      } catch (resendError) {
+                        setError(resendError instanceof Error ? resendError.message : "Unable to resend code");
+                      }
+                    }}
+                  >
+                    Resend verification code
+                  </button>
+                )}
                 <p className="text-center text-sm text-slate-500">
                   {data.footer}{" "}
-                  <Link href={data.href} className="font-semibold text-orange-600">
-                    {data.link}
-                  </Link>
+                  {mode === "verify" ? (
+                    <span className="font-semibold text-orange-600">{data.link}</span>
+                  ) : (
+                    <Link href={data.href} className="font-semibold text-orange-600">
+                      {data.link}
+                    </Link>
+                  )}
                 </p>
               </CardContent>
             </Card>
@@ -142,4 +275,3 @@ export function AuthCard({ mode }: AuthCardProps) {
     </main>
   );
 }
-

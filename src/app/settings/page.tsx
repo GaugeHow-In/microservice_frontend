@@ -1,4 +1,8 @@
+"use client";
+
 import { Bell, Eye, Palette, Shield, Sparkles, User } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
@@ -6,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function SettingsPage() {
+  const router = useRouter();
+  const { logoutAll, user } = useAuth();
   const sections = [
     { icon: User, title: "Account", text: "Name, email, profile, and connected learning identity." },
     { icon: Bell, title: "Notifications", text: "Study reminders, goal alerts, streak nudges, and community replies." },
@@ -21,7 +27,18 @@ export default function SettingsPage() {
         <PageHeader
           eyebrow="Settings"
           title="Control the learning environment."
-          description="Account, notifications, appearance, privacy, AI preferences, and gamification settings for the prototype."
+          description={`Signed in as ${user?.email ?? "your account"}. Account, notifications, appearance, privacy, AI preferences, and gamification settings.`}
+          action={
+            <Button
+              variant="secondary"
+              onClick={async () => {
+                await logoutAll();
+                router.replace("/login");
+              }}
+            >
+              Sign out everywhere
+            </Button>
+          }
         />
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sections.map(({ icon: Icon, title, text }) => (

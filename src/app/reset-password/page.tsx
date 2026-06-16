@@ -1,10 +1,10 @@
 import { AuthCard } from "@/components/sections/auth-card";
 
-export default async function OtpPage({
+export default async function ResetPasswordPage({
   searchParams,
 }: {
   searchParams: Promise<{ email?: string }>;
 }) {
   const params = await searchParams;
-  return <AuthCard mode="verify" initialEmail={params.email ?? ""} />;
+  return <AuthCard mode="reset" initialEmail={params.email ?? ""} />;
 }
