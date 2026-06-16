@@ -98,7 +98,7 @@ export function AppShell({ children }: AppShellProps) {
             </div>
           </div>
           <div className="mt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
-            <span>{user.roles.join(", ")}</span>
+            <span>{user.roles.length ? user.roles.join(", ") : "member"}</span>
             <button
               type="button"
               className="font-semibold text-orange-600 hover:text-orange-700"

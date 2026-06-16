@@ -1,5 +1,24 @@
 "use client";
 
+type FieldErrors = Partial<Record<"displayName" | "email" | "password" | "code" | "newPassword", string>>;
+
+type ApiValidationIssue = {
+  loc?: Array<string | number>;
+  msg?: string;
+};
+
+export class AuthApiError extends Error {
+  fieldErrors: FieldErrors;
+  status: number;
+
+  constructor(message: string, options: { fieldErrors?: FieldErrors; status: number }) {
+    super(message);
+    this.name = "AuthApiError";
+    this.fieldErrors = options.fieldErrors ?? {};
+    this.status = options.status;
+  }
+}
+
 export type AuthUser = {
   id: string;
   display_name: string;
@@ -45,6 +64,23 @@ type RequestOptions = {
   csrfToken?: string | null;
 };
 
+function mapValidationField(field: string): keyof FieldErrors | null {
+  switch (field) {
+    case "display_name":
+      return "displayName";
+    case "email":
+      return "email";
+    case "password":
+      return "password";
+    case "code":
+      return "code";
+    case "new_password":
+      return "newPassword";
+    default:
+      return null;
+  }
+}
+
 async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
     method: options.method ?? "GET",
@@ -59,13 +95,27 @@ async function apiRequest<T>(path: string, options: RequestOptions = {}): Promis
 
   if (!response.ok) {
     let detail = "Request failed";
+    const fieldErrors: FieldErrors = {};
     try {
-      const payload = (await response.json()) as { detail?: string };
-      detail = payload.detail ?? detail;
+      const payload = (await response.json()) as { detail?: string | ApiValidationIssue[] };
+      if (Array.isArray(payload.detail)) {
+        for (const issue of payload.detail) {
+          const field = issue.loc?.[issue.loc.length - 1];
+          if (typeof field === "string") {
+            const mappedField = mapValidationField(field);
+            if (mappedField && issue.msg) {
+              fieldErrors[mappedField] = issue.msg;
+            }
+          }
+        }
+        detail = Object.values(fieldErrors)[0] ?? "Please review the highlighted fields.";
+      } else {
+        detail = payload.detail ?? detail;
+      }
     } catch {
       detail = response.statusText || detail;
     }
-    throw new Error(detail);
+    throw new AuthApiError(detail, { fieldErrors, status: response.status });
   }
 
   if (response.status === 204) {
@@ -157,7 +207,7 @@ export const authClient = {
   getMe(token: string) {
     return apiRequest<AuthUser>("/auth/me", { token });
   },
-  getOAuthUrl(provider: "google" | "github", redirectTo = "/dashboard") {
+  getOAuthUrl(provider: "google", redirectTo = "/dashboard") {
     return apiRequest<{ authorization_url: string }>(
       `/auth/oauth/${provider}?redirect_to=${encodeURIComponent(redirectTo)}`,
     );

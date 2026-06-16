@@ -23,7 +23,7 @@ type AuthContextValue = {
   resetPassword: (input: { email: string; code: string; newPassword: string }) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
-  beginOAuth: (provider: "google" | "github") => Promise<void>;
+  beginOAuth: (provider: "google") => Promise<void>;
   refreshSession: () => Promise<void>;
 };
 
