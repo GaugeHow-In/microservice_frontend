@@ -1,5 +1,7 @@
 "use client";
 
+import { API_BASE_URL } from "@/lib/api-base";
+
 type FieldErrors = Partial<Record<"displayName" | "email" | "password" | "code" | "newPassword", string>>;
 
 type ApiValidationIssue = {
@@ -53,9 +55,6 @@ export type AuthPayload = {
   token_type: "bearer";
   user: AuthUser;
 };
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/+$/, "") ?? "http://localhost:8000/api/v1";
 
 type RequestOptions = {
   method?: string;

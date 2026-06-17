@@ -20,9 +20,18 @@ import { ProgressRing } from "@/components/shared/progress-ring";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { courses, dashboardStats, mentorPrompts, sampleJourney } from "@/lib/mock-data";
+import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
+import { dashboardStats, mentorPrompts, sampleJourney } from "@/lib/mock-data";
 
-export default function Home() {
+export default async function Home() {
+  let courses: CourseCatalogItem[] = [];
+  try {
+    const catalog = await learningClient.listCourses({ countryCode: "IN", pageSize: 3 });
+    courses = catalog.items;
+  } catch {
+    courses = [];
+  }
+
   return (
     <main className="min-h-screen bg-white text-slate-950">
       <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/90 backdrop-blur">
@@ -59,7 +68,7 @@ export default function Home() {
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Button asChild size="lg">
                 <Link href="/dashboard">
-                  View prototype
+                  Open dashboard
                   <ArrowRight />
                 </Link>
               </Button>
@@ -99,23 +108,32 @@ export default function Home() {
                     <Play className="size-4 text-orange-500" />
                   </div>
                   <div className="mt-4 space-y-3">
-                    {courses.slice(0, 3).map((course) => (
-                      <div key={course.slug} className="flex items-center gap-3">
-                        <div className="size-2 rounded-full bg-orange-500" />
-                        <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-semibold">{course.title}</p>
-                          <div className="mt-1 h-1.5 rounded-full bg-slate-100">
-                            <div
-                              className="h-full rounded-full bg-orange-500"
-                              style={{ width: `${course.progress}%` }}
-                            />
+                    {courses.length > 0 ? (
+                      courses.slice(0, 3).map((course) => {
+                        const progress = course.access?.progress_percent ?? 0;
+                        return (
+                          <div key={course.slug} className="flex items-center gap-3">
+                            <div className="size-2 rounded-full bg-orange-500" />
+                            <div className="min-w-0 flex-1">
+                              <p className="truncate text-sm font-semibold">{course.title}</p>
+                              <div className="mt-1 h-1.5 rounded-full bg-slate-100">
+                                <div
+                                  className="h-full rounded-full bg-orange-500"
+                                  style={{ width: `${progress}%` }}
+                                />
+                              </div>
+                            </div>
+                            <span className="text-xs font-bold text-slate-500">
+                              {progress}%
+                            </span>
                           </div>
-                        </div>
-                        <span className="text-xs font-bold text-slate-500">
-                          {course.progress}%
-                        </span>
-                      </div>
-                    ))}
+                        );
+                      })
+                    ) : (
+                      <p className="text-sm text-slate-500">
+                        Courses will appear here once the backend catalog is reachable.
+                      </p>
+                    )}
                   </div>
                 </div>
                 <div className="rounded-lg border border-orange-200 bg-orange-50 p-4">
@@ -261,7 +279,7 @@ export default function Home() {
         <div className="mx-auto flex max-w-7xl flex-col gap-4 px-4 py-8 sm:px-6 md:flex-row md:items-center md:justify-between lg:px-8">
           <BrandLogo />
           <p className="text-sm text-slate-500">
-            Frontend-only prototype with mock data for student review.
+            GaugeHow learning workspace with backend-powered course delivery.
           </p>
         </div>
       </footer>

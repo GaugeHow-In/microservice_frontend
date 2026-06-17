@@ -1,27 +1,91 @@
+"use client";
+
 import Link from "next/link";
-import { Award, CheckCircle2, Clock, FileText } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Award, CheckCircle2, Clock, Ticket } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { courses } from "@/lib/mock-data";
+import {
+  formatMinutes,
+  learningClient,
+  type CourseCatalogItem,
+} from "@/lib/learning-client";
 
 export default function CourseProgressPage() {
+  const { accessToken } = useAuth();
+  const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCourses() {
+      setLoading(true);
+      try {
+        const response = await learningClient.listCourses({
+          countryCode: "IN",
+          token: accessToken,
+        });
+        if (!cancelled) {
+          setCourses(response.items.filter((item) => item.access?.has_access));
+          setError(null);
+        }
+      } catch (cause) {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : "Unable to load progress.");
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    void loadCourses();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
+
+  const stats = useMemo(() => {
+    const enrolled = courses.length;
+    const averageProgress = enrolled
+      ? Math.round(
+          courses.reduce((total, course) => total + (course.access?.progress_percent ?? 0), 0) /
+            enrolled,
+        )
+      : 0;
+    const activeAccess = courses.filter((item) => item.access?.has_access).length;
+    const totalMinutes = Math.round(
+      courses.reduce((sum, course) => {
+        const progressFraction = (course.access?.progress_percent ?? 0) / 100;
+        return sum + (course.duration_minutes ?? 0) * progressFraction;
+      }, 0),
+    );
+    return { enrolled, averageProgress, activeAccess, totalMinutes };
+  }, [courses]);
+
   return (
     <AppShell>
       <div className="space-y-6">
         <PageHeader
           eyebrow="Course progress"
-          title="Progress, certificates, and learning history."
-          description="Track completion by course, chapter, lesson, notes, attachments, discussions, and certificate readiness."
+          title="Progress, access, and course completion."
+          description="This report only reflects implemented backend tracking: enrollments, access state, and course-level completion percent."
         />
-        <section className="grid gap-4 md:grid-cols-3">
+
+        <section className="grid gap-4 md:grid-cols-4">
           {[
-            { label: "Lessons completed", value: "147", icon: CheckCircle2 },
-            { label: "Hours learned", value: "82h", icon: Clock },
-            { label: "Certificates ready", value: "3", icon: Award },
+            { label: "Enrolled courses", value: String(stats.enrolled), icon: Ticket },
+            { label: "Average progress", value: `${stats.averageProgress}%`, icon: CheckCircle2 },
+            { label: "Active access", value: String(stats.activeAccess), icon: Award },
+            { label: "Approx. time learned", value: formatMinutes(stats.totalMinutes), icon: Clock },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label}>
               <CardContent className="flex items-center justify-between p-5">
@@ -34,33 +98,52 @@ export default function CourseProgressPage() {
             </Card>
           ))}
         </section>
+
         <Card>
           <CardHeader>
             <CardTitle>Course completion</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {courses.map((course) => (
-              <div key={course.slug} className="rounded-lg border border-slate-200 p-4">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <h2 className="font-bold text-slate-950">{course.title}</h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {course.lessons} lessons · {course.duration} · {course.level}
-                    </p>
-                  </div>
-                  <Badge variant={course.certificate ? "green" : "default"}>
-                    <FileText className="size-3" />
-                    Certificate
-                  </Badge>
-                </div>
-                <Progress value={course.progress} className="mt-4" />
-                <div className="mt-4 flex justify-end">
-                  <Button asChild variant="secondary" size="sm">
-                    <Link href={`/courses/${course.slug}`}>Review</Link>
-                  </Button>
-                </div>
+            {error ? (
+              <p className="text-sm text-rose-600">{error}</p>
+            ) : loading ? (
+              <div className="grid gap-3">
+                {Array.from({ length: 2 }).map((_, index) => (
+                  <div key={index} className="h-24 animate-pulse rounded-lg border border-slate-200 bg-slate-50" />
+                ))}
               </div>
-            ))}
+            ) : courses.length ? (
+              courses.map((course) => (
+                <div key={course.slug} className="rounded-lg border border-slate-200 p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h2 className="font-bold text-slate-950">{course.title}</h2>
+                      <p className="mt-1 text-sm text-slate-500">
+                        {course.lesson_count} lessons · {formatMinutes(course.duration_minutes)} ·{" "}
+                        {course.level.replaceAll("_", " ")}
+                      </p>
+                    </div>
+                    <Badge variant={course.access?.is_lifetime_access ? "green" : "blue"}>
+                      {course.access?.is_lifetime_access
+                        ? "Lifetime"
+                        : course.access?.days_left
+                          ? `${course.access.days_left} days left`
+                          : "Active"}
+                    </Badge>
+                  </div>
+                  <Progress value={course.access?.progress_percent ?? 0} className="mt-4" />
+                  <div className="mt-4 flex justify-end">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link href={`/courses/${course.slug}`}>Review</Link>
+                    </Button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="text-sm text-slate-500">
+                You do not have any active course enrollments yet.
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>

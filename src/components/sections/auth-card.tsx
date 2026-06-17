@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Check, LoaderCircle, Mail, ShieldCheck, X } from "lucide-react";
+import {
+  ArrowLeft,
+  Check,
+  Eye,
+  EyeOff,
+  LoaderCircle,
+  Mail,
+  ShieldCheck,
+  X,
+} from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -18,7 +27,14 @@ type AuthCardProps = {
   initialEmail?: string;
 };
 
-type FormField = "displayName" | "email" | "password" | "code" | "newPassword";
+type FormField =
+  | "displayName"
+  | "email"
+  | "password"
+  | "confirmPassword"
+  | "code"
+  | "newPassword"
+  | "confirmNewPassword";
 type FieldErrors = Partial<Record<FormField, string>>;
 
 const PASSWORD_REQUIREMENTS = [
@@ -118,12 +134,18 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const [displayName, setDisplayName] = useState("");
   const [email, setEmail] = useState(initialEmail);
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
+  const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
 
   const activePassword = mode === "reset" ? newPassword : password;
   const passwordChecks = getPasswordChecks(activePassword);
@@ -139,8 +161,10 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
     if (field === "displayName") setDisplayName(value);
     if (field === "email") setEmail(value);
     if (field === "password") setPassword(value);
+    if (field === "confirmPassword") setConfirmPassword(value);
     if (field === "code") setCode(value);
     if (field === "newPassword") setNewPassword(value);
+    if (field === "confirmNewPassword") setConfirmNewPassword(value);
   };
 
   const validateForm = () => {
@@ -156,6 +180,11 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
       const passwordError = validatePasswordField(password);
       if (passwordError) {
         nextErrors.password = passwordError;
+      }
+      if (!confirmPassword) {
+        nextErrors.confirmPassword = "Confirm your password.";
+      } else if (confirmPassword !== password) {
+        nextErrors.confirmPassword = "Passwords do not match.";
       }
     }
 
@@ -184,7 +213,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
     }
 
     if (mode === "reset") {
-      if (!isValidEmail(email.trim())) {
+      if (!initialEmail && !isValidEmail(email.trim())) {
         nextErrors.email = "Enter a valid email address.";
       }
       if (!/^\d{6}$/.test(code.trim())) {
@@ -193,6 +222,11 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
       const passwordError = validatePasswordField(newPassword);
       if (passwordError) {
         nextErrors.newPassword = passwordError;
+      }
+      if (!confirmNewPassword) {
+        nextErrors.confirmNewPassword = "Confirm your new password.";
+      } else if (confirmNewPassword !== newPassword) {
+        nextErrors.confirmNewPassword = "Passwords do not match.";
       }
     }
 
@@ -297,7 +331,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                   <p className="mt-2 text-sm leading-6 text-slate-600">{data.subtitle}</p>
                 </div>
                 <div className="space-y-4">
-                  {mode !== "verify" && (
+                  {mode !== "verify" && mode !== "reset" && (
                     <div className="space-y-2">
                       <Input
                         type="email"
@@ -324,14 +358,24 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                   )}
                   {(mode === "login" || mode === "signup") && (
                     <div className="space-y-3">
-                      <Input
-                        type="password"
-                        placeholder="Password"
-                        value={password}
-                        onChange={(event) => setFieldValue("password", event.target.value)}
-                        aria-invalid={Boolean(fieldErrors.password)}
-                        className={fieldErrors.password ? "border-rose-300 focus:border-rose-300 focus:ring-rose-100" : undefined}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showPassword ? "text" : "password"}
+                          placeholder="Password"
+                          value={password}
+                          onChange={(event) => setFieldValue("password", event.target.value)}
+                          aria-invalid={Boolean(fieldErrors.password)}
+                          className={fieldErrors.password ? "border-rose-300 pr-12 focus:border-rose-300 focus:ring-rose-100" : "pr-12"}
+                        />
+                        <button
+                          type="button"
+                          aria-label={showPassword ? "Hide password" : "Show password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                          onClick={() => setShowPassword((value) => !value)}
+                        >
+                          {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
                       {mode === "signup" ? (
                         <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
                           <div className="flex items-center justify-between text-sm">
@@ -354,21 +398,52 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                         </div>
                       ) : null}
                       {fieldErrors.password ? <p className="text-sm text-rose-600">{fieldErrors.password}</p> : null}
+                      {mode === "signup" ? (
+                        <>
+                          <div className="relative">
+                            <Input
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="Confirm password"
+                              value={confirmPassword}
+                              onChange={(event) => setFieldValue("confirmPassword", event.target.value)}
+                              aria-invalid={Boolean(fieldErrors.confirmPassword)}
+                              className={fieldErrors.confirmPassword ? "border-rose-300 pr-12 focus:border-rose-300 focus:ring-rose-100" : "pr-12"}
+                            />
+                            <button
+                              type="button"
+                              aria-label={showConfirmPassword ? "Hide confirm password" : "Show confirm password"}
+                              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                              onClick={() => setShowConfirmPassword((value) => !value)}
+                            >
+                              {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                            </button>
+                          </div>
+                          {fieldErrors.confirmPassword ? (
+                            <p className="text-sm text-rose-600">{fieldErrors.confirmPassword}</p>
+                          ) : null}
+                        </>
+                      ) : null}
                     </div>
                   )}
                   {(mode === "verify" || mode === "reset") && (
                     <>
-                      <div className="space-y-2">
-                        <Input
-                          type="email"
-                          placeholder="Email address"
-                          value={email}
-                          onChange={(event) => setFieldValue("email", event.target.value)}
-                          aria-invalid={Boolean(fieldErrors.email)}
-                          className={fieldErrors.email ? "border-rose-300 focus:border-rose-300 focus:ring-rose-100" : undefined}
-                        />
-                        {fieldErrors.email ? <p className="text-sm text-rose-600">{fieldErrors.email}</p> : null}
-                      </div>
+                      {mode === "verify" || !initialEmail ? (
+                        <div className="space-y-2">
+                          <Input
+                            type="email"
+                            placeholder="Email address"
+                            value={email}
+                            onChange={(event) => setFieldValue("email", event.target.value)}
+                            aria-invalid={Boolean(fieldErrors.email)}
+                            className={fieldErrors.email ? "border-rose-300 focus:border-rose-300 focus:ring-rose-100" : undefined}
+                          />
+                          {fieldErrors.email ? <p className="text-sm text-rose-600">{fieldErrors.email}</p> : null}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                          Resetting password for <span className="font-semibold text-slate-950">{email}</span>
+                        </div>
+                      )}
                       <div className="space-y-2">
                         <Input
                           placeholder="6-digit code"
@@ -385,14 +460,24 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                   )}
                   {mode === "reset" && (
                     <div className="space-y-3">
-                      <Input
-                        type="password"
-                        placeholder="New password"
-                        value={newPassword}
-                        onChange={(event) => setFieldValue("newPassword", event.target.value)}
-                        aria-invalid={Boolean(fieldErrors.newPassword)}
-                        className={fieldErrors.newPassword ? "border-rose-300 focus:border-rose-300 focus:ring-rose-100" : undefined}
-                      />
+                      <div className="relative">
+                        <Input
+                          type={showNewPassword ? "text" : "password"}
+                          placeholder="New password"
+                          value={newPassword}
+                          onChange={(event) => setFieldValue("newPassword", event.target.value)}
+                          aria-invalid={Boolean(fieldErrors.newPassword)}
+                          className={fieldErrors.newPassword ? "border-rose-300 pr-12 focus:border-rose-300 focus:ring-rose-100" : "pr-12"}
+                        />
+                        <button
+                          type="button"
+                          aria-label={showNewPassword ? "Hide new password" : "Show new password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                          onClick={() => setShowNewPassword((value) => !value)}
+                        >
+                          {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
                       <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium text-slate-700">Password strength</span>
@@ -413,6 +498,27 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                         </div>
                       </div>
                       {fieldErrors.newPassword ? <p className="text-sm text-rose-600">{fieldErrors.newPassword}</p> : null}
+                      <div className="relative">
+                        <Input
+                          type={showConfirmNewPassword ? "text" : "password"}
+                          placeholder="Confirm new password"
+                          value={confirmNewPassword}
+                          onChange={(event) => setFieldValue("confirmNewPassword", event.target.value)}
+                          aria-invalid={Boolean(fieldErrors.confirmNewPassword)}
+                          className={fieldErrors.confirmNewPassword ? "border-rose-300 pr-12 focus:border-rose-300 focus:ring-rose-100" : "pr-12"}
+                        />
+                        <button
+                          type="button"
+                          aria-label={showConfirmNewPassword ? "Hide confirm new password" : "Show confirm new password"}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
+                          onClick={() => setShowConfirmNewPassword((value) => !value)}
+                        >
+                          {showConfirmNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                        </button>
+                      </div>
+                      {fieldErrors.confirmNewPassword ? (
+                        <p className="text-sm text-rose-600">{fieldErrors.confirmNewPassword}</p>
+                      ) : null}
                     </div>
                   )}
                   {mode === "login" && (

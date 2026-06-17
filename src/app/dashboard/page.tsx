@@ -1,5 +1,9 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Bot, CalendarDays, CheckCircle2, Clock, Play, Plus, Sparkles } from "lucide-react";
+import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { AiStrip } from "@/components/shared/ai-strip";
 import { CourseCard } from "@/components/shared/course-card";
@@ -9,9 +13,38 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { courses, dashboardStats, goals, student, tasks } from "@/lib/mock-data";
+import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
+import { dashboardStats, goals, student, tasks } from "@/lib/mock-data";
 
 export default function DashboardPage() {
+  const { accessToken, user } = useAuth();
+  const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCourses() {
+      try {
+        const response = await learningClient.listCourses({
+          countryCode: "IN",
+          token: accessToken,
+        });
+        if (!cancelled) {
+          setCourses(response.items.slice(0, 2));
+        }
+      } catch {
+        if (!cancelled) {
+          setCourses([]);
+        }
+      }
+    }
+
+    void loadCourses();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
+
   return (
     <AppShell>
       <div className="space-y-6">
@@ -21,7 +54,7 @@ export default function DashboardPage() {
               <div>
                 <Badge variant="orange">Today&apos;s focus</Badge>
                 <h1 className="mt-4 text-3xl font-bold tracking-normal text-slate-950">
-                  Welcome back, {student.name.split(" ")[0]}
+                  Welcome back, {(user?.display_name ?? student.name).split(" ")[0]}
                 </h1>
                 <p className="mt-2 max-w-2xl leading-7 text-slate-600">
                   Your AI plan prioritizes graph traversal practice, DBMS revision,
@@ -29,9 +62,9 @@ export default function DashboardPage() {
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <Button asChild>
-                    <Link href="/courses/dsa-interview-sprint/learn">
+                    <Link href="/courses">
                       <Play />
-                      Continue lesson
+                      Browse courses
                     </Link>
                   </Button>
                   <Button asChild variant="secondary">
@@ -83,16 +116,22 @@ export default function DashboardPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h2 className="text-xl font-bold tracking-normal text-slate-950">
-                Recent courses
+                Current courses
               </h2>
               <Button asChild variant="ghost" size="sm">
                 <Link href="/courses">View all</Link>
               </Button>
             </div>
             <div className="grid gap-4 md:grid-cols-2">
-              {courses.slice(0, 2).map((course) => (
-                <CourseCard key={course.slug} course={course} />
-              ))}
+              {courses.length ? (
+                courses.map((course) => <CourseCard key={course.slug} course={course} />)
+              ) : (
+                <Card className="md:col-span-2">
+                  <CardContent className="p-5 text-sm text-slate-600">
+                    No live courses are available yet.
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </div>
 

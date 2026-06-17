@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { BookOpen, Flame, GraduationCap, Settings, Target, Trophy } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -10,10 +11,12 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { achievements, courses, goals, student } from "@/lib/mock-data";
+import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
+import { achievements, goals, student } from "@/lib/mock-data";
 
 export default function ProfilePage() {
-  const { user } = useAuth();
+  const { user, accessToken } = useAuth();
+  const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
   const displayName = user?.display_name ?? student.name;
   const subtitle = user?.email ?? student.role;
   const initials =
@@ -23,6 +26,31 @@ export default function ProfilePage() {
       .join("")
       .slice(0, 2)
       .toUpperCase() ?? student.avatar;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadCourses() {
+      try {
+        const response = await learningClient.listCourses({
+          countryCode: "IN",
+          token: accessToken,
+        });
+        if (!cancelled) {
+          setCourses(response.items.filter((item) => item.access?.has_access));
+        }
+      } catch {
+        if (!cancelled) {
+          setCourses([]);
+        }
+      }
+    }
+
+    void loadCourses();
+    return () => {
+      cancelled = true;
+    };
+  }, [accessToken]);
 
   return (
     <AppShell>
@@ -60,7 +88,7 @@ export default function ProfilePage() {
             { icon: Flame, label: "Streak", value: `${student.streak} days` },
             { icon: Target, label: "Goals", value: `${goals.length} active` },
             { icon: GraduationCap, label: "Courses", value: `${courses.length} enrolled` },
-            { icon: Trophy, label: "Certificates", value: "3 ready" },
+            { icon: Trophy, label: "Certificates", value: "Backend-ready" },
           ].map(({ icon: Icon, label, value }) => (
             <Card key={label}>
               <CardContent className="p-5">
@@ -77,17 +105,21 @@ export default function ProfilePage() {
               <CardTitle>Learning history</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {courses.map((course) => (
-                <div key={course.slug} className="rounded-lg border border-slate-200 p-4">
-                  <div className="flex items-center gap-3">
-                    <BookOpen className="size-5 text-orange-500" />
-                    <div className="flex-1">
-                      <p className="font-semibold text-slate-950">{course.title}</p>
-                      <Progress value={course.progress} className="mt-2" />
+              {courses.length ? (
+                courses.map((course) => (
+                  <div key={course.slug} className="rounded-lg border border-slate-200 p-4">
+                    <div className="flex items-center gap-3">
+                      <BookOpen className="size-5 text-orange-500" />
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-950">{course.title}</p>
+                        <Progress value={course.access?.progress_percent ?? 0} className="mt-2" />
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">No enrolled courses yet.</p>
+              )}
             </CardContent>
           </Card>
           <Card>
