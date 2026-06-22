@@ -2,18 +2,27 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, LogOut, Menu, Search, Sparkles, X } from "lucide-react";
+import { Award, Bell, GraduationCap, Home, LogOut, Menu, Search, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
-import { bottomNav, platformNav } from "@/lib/mock-data";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
   children: React.ReactNode;
 };
+
+const platformNav = [
+  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Courses", href: "/courses", icon: GraduationCap },
+  { label: "Profile", href: "/profile", icon: Award },
+  { label: "Settings", href: "/settings", icon: Settings },
+];
+
+const bottomNav = platformNav;
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -31,10 +40,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold transition",
+              "flex items-center gap-3 rounded-lg px-3 py-2.5 type-small font-semibold transition",
               active
-                ? "bg-orange-50 text-orange-700"
-                : "text-slate-600 hover:bg-slate-100 hover:text-slate-950",
+                ? "bg-orange-50 text-orange-700 shadow-[var(--shadow-sm)]"
+                : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
             )}
           >
             <Icon className="size-4" />
@@ -72,8 +81,8 @@ export function AppShell({ children }: AppShellProps) {
 
   if (isLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-slate-50">
-        <div className="rounded-lg border border-slate-200 bg-white px-6 py-4 text-sm font-semibold text-slate-600">
+      <div className="flex min-h-screen items-center justify-center bg-transparent">
+        <div className="chrome-surface rounded-xl px-6 py-4 type-small font-semibold text-slate-600">
           Restoring your session...
         </div>
       </div>
@@ -81,23 +90,23 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-72 border-r border-slate-200 bg-white px-4 py-5 lg:block">
+    <div className="premium-bg min-h-screen bg-transparent">
+      <aside className="chrome-surface fixed inset-y-0 left-0 z-30 hidden w-72 rounded-r-xl px-4 py-5 lg:block">
         <BrandLogo />
         <div className="mt-8">
           <NavLinks />
         </div>
-        <div className="absolute bottom-5 left-4 right-4 rounded-lg border border-slate-200 bg-slate-50 p-4">
+        <div className="surface-secondary absolute bottom-5 left-4 right-4 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <Avatar>
               <AvatarFallback>{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <p className="text-sm font-semibold text-slate-950">{user.display_name}</p>
-              <p className="text-xs text-slate-500">{user.email}</p>
+              <p className="type-small font-semibold text-slate-950">{user.display_name}</p>
+              <p className="type-caption text-slate-500">{user.email}</p>
             </div>
           </div>
-          <div className="mt-4 flex items-center justify-between gap-2 text-xs text-slate-500">
+          <div className="mt-4 flex items-center justify-between gap-2 type-caption text-slate-500">
             <span>{user.roles.length ? user.roles.join(", ") : "member"}</span>
             <button
               type="button"
@@ -114,7 +123,7 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="lg:pl-72">
-        <header className="sticky top-0 z-20 border-b border-slate-200 bg-white/90 backdrop-blur">
+        <header className="chrome-surface sticky top-0 z-20 rounded-b-xl border-b border-white/40">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Button
@@ -127,23 +136,22 @@ export function AppShell({ children }: AppShellProps) {
                 <Menu />
               </Button>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">
                   GaugeHow
                 </p>
-                <p className="font-semibold text-slate-950">{activeLabel}</p>
+                <p className="type-small font-semibold text-slate-950">{activeLabel}</p>
               </div>
             </div>
-            <div className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 md:flex">
+            <div className="surface-secondary hidden w-full max-w-md items-center gap-2 rounded-xl px-3 py-2 md:flex">
               <Search className="size-4 text-slate-400" />
-              <span className="text-sm text-slate-500">
-                Search courses, notes, books, tests
-              </span>
+              <span className="type-small text-slate-500">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
+              <ThemeToggle />
               <Button asChild variant="soft" size="sm">
-                <Link href="/mentor">
-                  <Sparkles />
-                  AI
+                <Link href="/courses">
+                  <GraduationCap />
+                  Courses
                 </Link>
               </Button>
               <Button variant="ghost" size="icon" aria-label="Notifications">
@@ -172,8 +180,8 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      <nav className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white px-2 py-2 lg:hidden">
-        <div className="grid grid-cols-5 gap-1">
+      <nav className="chrome-surface fixed inset-x-0 bottom-0 z-30 rounded-t-xl border-t border-white/50 px-2 py-2 lg:hidden">
+        <div className="grid grid-cols-4 gap-1">
           {bottomNav.map((item) => {
             const Icon = item.icon;
             const active =
@@ -186,7 +194,9 @@ export function AppShell({ children }: AppShellProps) {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[11px] font-semibold",
-                  active ? "bg-orange-50 text-orange-700" : "text-slate-500",
+                  active
+                    ? "bg-orange-50 text-orange-700 shadow-[var(--shadow-sm)]"
+                    : "text-slate-500",
                 )}
               >
                 <Icon className="size-4" />
@@ -200,11 +210,11 @@ export function AppShell({ children }: AppShellProps) {
       {drawerOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <button
-            className="absolute inset-0 bg-slate-950/30"
+            className="absolute inset-0 bg-slate-950/20 backdrop-blur-[2px]"
             aria-label="Close navigation"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="relative h-full w-80 max-w-[86vw] border-r border-slate-200 bg-white p-5 shadow-xl">
+          <aside className="chrome-surface relative h-full w-80 max-w-[86vw] rounded-r-xl p-5 shadow-[var(--shadow-lg)]">
             <div className="flex items-center justify-between">
               <BrandLogo />
               <Button

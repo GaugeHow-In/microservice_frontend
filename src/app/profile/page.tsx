@@ -1,48 +1,48 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { BookOpen, Flame, GraduationCap, Settings, Target, Trophy } from "lucide-react";
-import { useAuth } from "@/components/providers/auth-provider";
+import { BookOpen, GraduationCap, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
-import { ProgressRing } from "@/components/shared/progress-ring";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useAuth } from "@/components/providers/auth-provider";
 import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
-import { achievements, goals, student } from "@/lib/mock-data";
 
 export default function ProfilePage() {
-  const { user, accessToken } = useAuth();
+  const { user, accessToken, isLoading: isAuthLoading } = useAuth();
   const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
-  const displayName = user?.display_name ?? student.name;
-  const subtitle = user?.email ?? student.role;
-  const initials =
-    user?.display_name
-      ?.split(" ")
-      .map((part) => part[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase() ?? student.avatar;
+  const [isCoursesLoading, setIsCoursesLoading] = useState(true);
+  const displayName = user?.display_name ?? "GaugeHow learner";
+  const subtitle = user?.email ?? "Authenticated profile";
+  const initials = displayName
+    .split(" ")
+    .map((part) => part[0])
+    .join("")
+    .slice(0, 2)
+    .toUpperCase();
 
   useEffect(() => {
+    if (isAuthLoading) return;
     let cancelled = false;
 
     async function loadCourses() {
+      setIsCoursesLoading(true);
       try {
         const response = await learningClient.listCourses({
-          countryCode: "IN",
           token: accessToken,
         });
         if (!cancelled) {
           setCourses(response.items.filter((item) => item.access?.has_access));
         }
       } catch {
-        if (!cancelled) {
-          setCourses([]);
-        }
+        if (!cancelled) setCourses([]);
+      } finally {
+        if (!cancelled) setIsCoursesLoading(false);
       }
     }
 
@@ -50,93 +50,81 @@ export default function ProfilePage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken]);
+  }, [accessToken, isAuthLoading]);
 
   return (
     <AppShell>
       <div className="space-y-6">
         <PageHeader
           eyebrow="Profile"
-          title="Learning identity, history, and achievements."
-          description="Stats, learning history, certificates, goals, achievements, and preferences for the student profile."
+          title="Your learning profile."
+          description="This profile now renders authenticated identity and live course enrollment data only. Mock achievements, streaks, XP, and goals have been removed."
           action={
             <Button variant="secondary">
               <Settings />
-              Edit preferences
+              Preferences
             </Button>
           }
         />
-        <Card>
+        <Card className="panel-depth reveal-delay-1 reveal-up overflow-hidden">
           <CardContent className="grid gap-6 p-6 md:grid-cols-[auto_1fr_auto] md:items-center">
             <Avatar className="size-20">
               <AvatarFallback className="text-xl">{initials}</AvatarFallback>
             </Avatar>
             <div>
-              <h1 className="text-2xl font-bold text-slate-950">{displayName}</h1>
+              <h1 className="type-h2 text-slate-950">{displayName}</h1>
               <p className="mt-1 text-slate-500">{subtitle}</p>
               <div className="mt-3 flex flex-wrap gap-2">
-                <Badge variant="orange">Level {student.level}</Badge>
-                <Badge variant="green">{student.streak}-day streak</Badge>
-                <Badge>{student.xp.toLocaleString()} XP</Badge>
+                {(user?.roles.length ? user.roles : ["member"]).map((role) => (
+                  <Badge key={role} variant="orange">{role}</Badge>
+                ))}
               </div>
             </div>
-            <ProgressRing value={student.goalCompletion} label="Goals" />
+            <div className="signal-line rounded-2xl border border-slate-200 bg-slate-50 p-4 text-center shadow-[var(--shadow-sm)]">
+              <p className="type-h2 text-slate-950">{courses.length}</p>
+              <p className="type-caption text-slate-500">enrolled courses</p>
+            </div>
           </CardContent>
         </Card>
-        <section className="grid gap-4 md:grid-cols-4">
-          {[
-            { icon: Flame, label: "Streak", value: `${student.streak} days` },
-            { icon: Target, label: "Goals", value: `${goals.length} active` },
-            { icon: GraduationCap, label: "Courses", value: `${courses.length} enrolled` },
-            { icon: Trophy, label: "Certificates", value: "Backend-ready" },
-          ].map(({ icon: Icon, label, value }) => (
-            <Card key={label}>
-              <CardContent className="p-5">
-                <Icon className="size-5 text-orange-500" />
-                <p className="mt-4 text-2xl font-bold text-slate-950">{value}</p>
-                <p className="text-sm text-slate-500">{label}</p>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-        <section className="grid gap-6 lg:grid-cols-2">
-          <Card>
-            <CardHeader>
-              <CardTitle>Learning history</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {courses.length ? (
-                courses.map((course) => (
-                  <div key={course.slug} className="rounded-lg border border-slate-200 p-4">
-                    <div className="flex items-center gap-3">
-                      <BookOpen className="size-5 text-orange-500" />
-                      <div className="flex-1">
-                        <p className="font-semibold text-slate-950">{course.title}</p>
-                        <Progress value={course.access?.progress_percent ?? 0} className="mt-2" />
-                      </div>
+
+        <Card className="panel-depth reveal-delay-2 reveal-up">
+          <CardHeader>
+            <CardTitle>Learning history</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {isCoursesLoading ? (
+              Array.from({ length: 3 }).map((_, index) => (
+                <div key={index} className="rounded-xl border border-slate-200 p-4">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="size-5 rounded-md" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-5 w-3/4 rounded-md" />
+                      <Skeleton className="h-2.5 w-full rounded-full" />
                     </div>
                   </div>
-                ))
-              ) : (
-                <p className="text-sm text-slate-500">No enrolled courses yet.</p>
-              )}
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader>
-              <CardTitle>Achievements</CardTitle>
-            </CardHeader>
-            <CardContent className="grid gap-3 sm:grid-cols-2">
-              {achievements.map((achievement) => (
-                <div key={achievement.title} className="rounded-lg border border-slate-200 p-4">
-                  <achievement.icon className="size-6 text-orange-500" />
-                  <p className="mt-3 font-bold text-slate-950">{achievement.title}</p>
-                  <p className="mt-1 text-sm text-slate-500">{achievement.detail}</p>
                 </div>
-              ))}
-            </CardContent>
-          </Card>
-        </section>
+              ))
+            ) : courses.length ? (
+              courses.map((course) => (
+                <div key={course.slug} className="panel-depth rounded-lg border border-slate-200 bg-white/55 p-4">
+                  <div className="flex items-center gap-3">
+                    <BookOpen className="size-5 text-orange-500" />
+                    <div className="flex-1">
+                      <p className="font-semibold text-slate-950">{course.title}</p>
+                      <Progress value={course.access?.progress_percent ?? 0} className="mt-2" />
+                    </div>
+                    <Badge variant="green">
+                      <GraduationCap className="size-3" />
+                      Active
+                    </Badge>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <p className="type-small text-slate-500">No enrolled courses yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AppShell>
   );

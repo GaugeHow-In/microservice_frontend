@@ -19,20 +19,98 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   formatMinutes,
   formatPrice,
+  learningCache,
   learningClient,
   type CourseDetail,
 } from "@/lib/learning-client";
+import { paymentClient, type PaymentCheckout } from "@/lib/payment-client";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }> | { slug: string };
 };
 
+type RazorpayResponse = {
+  razorpay_order_id: string;
+  razorpay_payment_id: string;
+  razorpay_signature: string;
+};
+
+type RazorpayOptions = {
+  key: string;
+  amount: number;
+  currency: string;
+  name: string;
+  description: string;
+  order_id: string;
+  handler: (response: RazorpayResponse) => void;
+  prefill?: {
+    name?: string;
+    email?: string;
+  };
+  theme?: {
+    color?: string;
+  };
+};
+
+declare global {
+  interface Window {
+    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
+  }
+}
+
+let razorpayScriptPromise: Promise<void> | null = null;
+
+function findLessonSlugById(course: CourseDetail, lessonId: string | null | undefined): string | null {
+  if (!lessonId) return null;
+  return course.modules
+    .flatMap((module) => module.lessons)
+    .find((item) => item.id === lessonId)?.slug ?? null;
+}
+
+function ensureRazorpayScript(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+  if (window.Razorpay) {
+    return Promise.resolve();
+  }
+  if (razorpayScriptPromise) {
+    return razorpayScriptPromise;
+  }
+
+  razorpayScriptPromise = new Promise((resolve, reject) => {
+    const existing = document.querySelector(
+      'script[data-razorpay-checkout="true"]',
+    ) as HTMLScriptElement | null;
+    if (existing) {
+      existing.addEventListener("load", () => resolve(), { once: true });
+      existing.addEventListener("error", () => reject(new Error("Unable to load Razorpay.")), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.async = true;
+    script.dataset.razorpayCheckout = "true";
+    script.addEventListener("load", () => resolve(), { once: true });
+    script.addEventListener("error", () => reject(new Error("Unable to load Razorpay.")), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  });
+
+  return razorpayScriptPromise;
+}
+
 export default function CourseDetailPage({ params }: Props) {
-  const { accessToken } = useAuth();
+  const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const [slug, setSlug] = useState<string | null>(null);
   const [course, setCourse] = useState<CourseDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,10 +119,11 @@ export default function CourseDetailPage({ params }: Props) {
   const [reviewText, setReviewText] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
+  const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    void params.then((value) => {
+    void Promise.resolve(params).then((value) => {
       if (!cancelled) setSlug(value.slug);
     });
     return () => {
@@ -53,19 +132,30 @@ export default function CourseDetailPage({ params }: Props) {
   }, [params]);
 
   useEffect(() => {
-    if (!slug) return;
+    if (!slug || isAuthLoading) return;
     const courseSlug = slug;
     let cancelled = false;
+    const cacheOptions = { viewerKey: user?.id ?? null };
+    const cached = learningCache.getCourseDetail(courseSlug, cacheOptions);
+
+    if (cached) {
+      setCourse(cached);
+      setError(null);
+      setLoading(false);
+      return () => {
+        cancelled = true;
+      };
+    }
 
     async function loadCourse() {
       setLoading(true);
       setError(null);
       try {
         const payload = await learningClient.getCourseDetail(courseSlug, {
-          countryCode: "IN",
           token: accessToken,
         });
         if (!cancelled) {
+          learningCache.setCourseDetail(payload, cacheOptions);
           setCourse(payload);
         }
       } catch (cause) {
@@ -84,7 +174,12 @@ export default function CourseDetailPage({ params }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, slug]);
+  }, [accessToken, isAuthLoading, slug, user?.id]);
+
+  useEffect(() => {
+    if (!course) return;
+    learningCache.setCourseDetail(course, { viewerKey: user?.id ?? null });
+  }, [course, user?.id]);
 
   const firstAccessibleLesson = useMemo(() => {
     return (
@@ -93,23 +188,107 @@ export default function CourseDetailPage({ params }: Props) {
         .find((lesson) => lesson.accessible)?.slug ?? null
     );
   }, [course]);
+  const continueLessonSlug = useMemo(() => {
+    if (!course) return null;
+    return findLessonSlugById(course, course.access?.current_lesson_id) ?? firstAccessibleLesson;
+  }, [course, firstAccessibleLesson]);
 
   async function handleEnroll() {
     if (!accessToken || !slug) return;
     setEnrolling(true);
     setError(null);
     try {
-      await learningClient.enrollFree(slug, accessToken, "IN");
+      await learningClient.enrollFree(slug, accessToken);
+      learningCache.invalidateCourseDetail(slug, { viewerKey: user?.id ?? null });
       const refreshed = await learningClient.getCourseDetail(slug, {
-        countryCode: "IN",
         token: accessToken,
       });
+      learningCache.setCourseDetail(refreshed, { viewerKey: user?.id ?? null });
       setCourse(refreshed);
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Enrollment failed.");
     } finally {
       setEnrolling(false);
     }
+  }
+
+  async function refreshCourseAfterPayment() {
+    if (!slug) return;
+    learningCache.invalidateCourseDetail(slug, { viewerKey: user?.id ?? null });
+    const refreshed = await learningClient.getCourseDetail(slug, {
+      token: accessToken,
+    });
+    learningCache.setCourseDetail(refreshed, { viewerKey: user?.id ?? null });
+    setCourse(refreshed);
+  }
+
+  async function handlePurchase() {
+    if (!accessToken || !slug || !course) return;
+    setPurchasing(true);
+    setError(null);
+    try {
+      const checkout = await paymentClient.createCourseCheckout(accessToken, {
+        courseSlug: slug,
+        successUrl: `${window.location.origin}/courses/${slug}?payment=success`,
+        cancelUrl: `${window.location.origin}/courses/${slug}?payment=cancelled`,
+      });
+      await launchCheckout(checkout);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to start payment.");
+    } finally {
+      setPurchasing(false);
+    }
+  }
+
+  async function launchCheckout(checkout: PaymentCheckout) {
+    if (!accessToken) return;
+    if (checkout.gateway === "stripe") {
+      if (!checkout.gateway_checkout_url) throw new Error("Stripe checkout URL is missing.");
+      window.location.href = checkout.gateway_checkout_url;
+      return;
+    }
+
+    if (checkout.gateway === "mock") {
+      await paymentClient.completeMock(accessToken, checkout.id);
+      await refreshCourseAfterPayment();
+      return;
+    }
+
+    if (!checkout.razorpay_key_id || !checkout.gateway_order_id) {
+      throw new Error("Razorpay checkout is not configured.");
+    }
+    await ensureRazorpayScript();
+    if (!window.Razorpay) {
+      throw new Error("Razorpay checkout is unavailable.");
+    }
+    const razorpay = new window.Razorpay({
+      key: checkout.razorpay_key_id,
+      amount: checkout.amount_minor,
+      currency: checkout.currency_code,
+      name: "GaugeHow",
+      description: checkout.course_title,
+      order_id: checkout.gateway_order_id,
+      prefill: {
+        name: user?.display_name ?? undefined,
+      },
+      theme: {
+        color: "#f97316",
+      },
+      handler: (response) => {
+        void paymentClient
+          .verifyRazorpay(accessToken, {
+            paymentOrderId: checkout.id,
+            razorpayOrderId: response.razorpay_order_id,
+            razorpayPaymentId: response.razorpay_payment_id,
+            razorpaySignature: response.razorpay_signature,
+          })
+          .then(() => refreshCourseAfterPayment())
+          .catch((cause) => {
+            setError(cause instanceof Error ? cause.message : "Payment verification failed.");
+          });
+      },
+    });
+    razorpay.open();
   }
 
   async function handleReviewSubmit() {
@@ -121,10 +300,11 @@ export default function CourseDetailPage({ params }: Props) {
         rating: reviewRating,
         reviewText,
       });
+      learningCache.invalidateCourseDetail(slug, { viewerKey: user?.id ?? null });
       const refreshed = await learningClient.getCourseDetail(slug, {
-        countryCode: "IN",
         token: accessToken,
       });
+      learningCache.setCourseDetail(refreshed, { viewerKey: user?.id ?? null });
       setCourse(refreshed);
       setReviewText("");
     } catch (cause) {
@@ -137,7 +317,37 @@ export default function CourseDetailPage({ params }: Props) {
   if (!slug || loading) {
     return (
       <AppShell>
-        <Card className="h-72 animate-pulse border-slate-200 bg-white" />
+        <div className="grid gap-6">
+          <Card>
+            <CardContent className="space-y-5 p-5">
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-28 rounded-full" />
+                <Skeleton className="h-12 w-3/4 rounded-lg" />
+                <Skeleton className="h-5 w-full rounded-md" />
+                <Skeleton className="h-5 w-2/3 rounded-md" />
+              </div>
+            </CardContent>
+          </Card>
+          <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
+            <Card>
+              <CardContent className="space-y-5 p-5">
+                <Skeleton className="aspect-video rounded-xl" />
+                <div className="grid gap-3 sm:grid-cols-4">
+                  {Array.from({ length: 4 }).map((_, index) => (
+                    <Skeleton key={index} className="h-20 rounded-xl" />
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="space-y-3 p-5">
+                {Array.from({ length: 4 }).map((_, index) => (
+                  <Skeleton key={index} className="h-20 rounded-xl" />
+                ))}
+              </CardContent>
+            </Card>
+          </div>
+        </div>
       </AppShell>
     );
   }
@@ -168,9 +378,9 @@ export default function CourseDetailPage({ params }: Props) {
           title={course.title}
           description={course.long_description ?? course.short_description ?? "Course details"}
           action={
-            access?.has_access && firstAccessibleLesson ? (
+            access?.has_access && continueLessonSlug ? (
               <Button asChild>
-                <Link href={`/courses/${course.slug}/learn?lesson=${firstAccessibleLesson}`}>
+                <Link href={`/courses/${course.slug}/learn?lesson=${continueLessonSlug}`}>
                   <Play />
                   {access.progress_percent ? "Continue learning" : "Start learning"}
                 </Link>
@@ -181,9 +391,9 @@ export default function CourseDetailPage({ params }: Props) {
                 {enrolling ? "Enrolling..." : "Enroll for free"}
               </Button>
             ) : (
-              <Button disabled>
+              <Button onClick={handlePurchase} disabled={purchasing || !accessToken}>
                 <Ticket />
-                Purchase flow pending
+                {purchasing ? "Starting checkout..." : "Buy course"}
               </Button>
             )
           }
@@ -359,9 +569,17 @@ export default function CourseDetailPage({ params }: Props) {
                         <p className="font-semibold capitalize text-slate-950">
                           {option.purchase_type.replace("_", " ")}
                         </p>
-                        <p className="mt-1 text-sm text-slate-500">{option.region.name}</p>
+                        <p className="mt-1 text-sm text-slate-500">
+                          {option.region.name}
+                          {option.pricing_tier ? ` · ${option.pricing_tier.replace("_", " ")}` : ""}
+                        </p>
                       </div>
-                      <p className="font-bold text-slate-950">{formatPrice(option)}</p>
+                      <div className="text-right">
+                        <p className="font-bold text-slate-950">{formatPrice(option)}</p>
+                        {option.is_display_price_estimated ? (
+                          <p className="mt-1 text-xs text-slate-500">Estimated local price</p>
+                        ) : null}
+                      </div>
                     </div>
                   </div>
                 ))}

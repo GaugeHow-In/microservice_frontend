@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   type AccessSummary,
@@ -21,11 +22,12 @@ import {
   type LessonDetail,
   type LessonProgress,
   formatSeconds,
+  learningCache,
   learningClient,
 } from "@/lib/learning-client";
 
 type Props = {
-  params: Promise<{ slug: string }>;
+  params: Promise<{ slug: string }> | { slug: string };
 };
 
 type PlayerJsEventData = {
@@ -51,9 +53,24 @@ type PlayerJsPlayer = {
   off?: (event: string, callback?: (data?: PlayerJsEventData) => void) => void;
   pause: () => void;
   play: () => void;
+  destroy?: () => void;
   getCurrentTime?: (callback: (value: number) => void) => void;
   getDuration?: (callback: (value: number) => void) => void;
   setCurrentTime?: (value: number) => void;
+};
+
+type YouTubePlayerEvent = {
+  data: number;
+  target: YouTubePlayer;
+};
+
+type YouTubePlayer = {
+  playVideo: () => void;
+  pauseVideo: () => void;
+  seekTo: (seconds: number, allowSeekAhead: boolean) => void;
+  getCurrentTime: () => number;
+  getDuration: () => number;
+  destroy: () => void;
 };
 
 declare global {
@@ -61,10 +78,28 @@ declare global {
     playerjs?: {
       Player: new (element: string | HTMLIFrameElement) => PlayerJsPlayer;
     };
+    YT?: {
+      Player: new (
+        element: string | HTMLIFrameElement,
+        options: {
+          events: {
+            onReady?: (event: { target: YouTubePlayer }) => void;
+            onStateChange?: (event: YouTubePlayerEvent) => void;
+          };
+        },
+      ) => YouTubePlayer;
+      PlayerState: {
+        PLAYING: number;
+        PAUSED: number;
+        ENDED: number;
+      };
+    };
+    onYouTubeIframeAPIReady?: () => void;
   }
 }
 
 let bunnyPlayerScriptPromise: Promise<void> | null = null;
+let youtubeIframeApiPromise: Promise<void> | null = null;
 
 function useStableEvent<TArgs extends unknown[], TResult>(
   handler: (...args: TArgs) => TResult,
@@ -113,6 +148,48 @@ function ensureBunnyPlayerScript(): Promise<void> {
   return bunnyPlayerScriptPromise;
 }
 
+function ensureYouTubeIframeApi(): Promise<void> {
+  if (typeof window === "undefined") {
+    return Promise.resolve();
+  }
+  if (window.YT?.Player) {
+    return Promise.resolve();
+  }
+  if (youtubeIframeApiPromise) {
+    return youtubeIframeApiPromise;
+  }
+
+  youtubeIframeApiPromise = new Promise((resolve, reject) => {
+    const previousReadyHandler = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = () => {
+      previousReadyHandler?.();
+      resolve();
+    };
+
+    const existing = document.querySelector(
+      'script[data-youtube-iframe-api="true"]',
+    ) as HTMLScriptElement | null;
+
+    if (existing) {
+      existing.addEventListener("error", () => reject(new Error("Unable to load YouTube player.")), {
+        once: true,
+      });
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://www.youtube.com/iframe_api";
+    script.async = true;
+    script.dataset.youtubeIframeApi = "true";
+    script.addEventListener("error", () => reject(new Error("Unable to load YouTube player.")), {
+      once: true,
+    });
+    document.head.appendChild(script);
+  });
+
+  return youtubeIframeApiPromise;
+}
+
 function buildAccessLabel(access: AccessSummary | null): string {
   if (!access) return "Access pending";
   if (access.is_lifetime_access) return "Lifetime access";
@@ -129,6 +206,13 @@ function computeCourseCompletion(modules: CourseDetail["modules"]): number {
   return Number(((completed / lessons.length) * 100).toFixed(2));
 }
 
+function findLessonSlugById(course: CourseDetail, lessonId: string | null | undefined): string | null {
+  if (!lessonId) return null;
+  return course.modules
+    .flatMap((module) => module.lessons)
+    .find((item) => item.id === lessonId)?.slug ?? null;
+}
+
 function completionWindowSeconds(durationSeconds: number): number {
   return Math.min(10, Math.max(1, Math.ceil(durationSeconds * 0.1)));
 }
@@ -143,6 +227,37 @@ function buildBunnyEmbedUrl(videoUrl: string, lessonId: string): string {
   params.set("responsive", "true");
   params.set("gh", lessonId);
   return `${embedBase}?${params.toString()}`;
+}
+
+function resolveYouTubeVideoId(assetIdOrUrl: string): string {
+  try {
+    const parsed = new URL(assetIdOrUrl);
+    const host = parsed.hostname.replace(/^www\./, "");
+    if (host === "youtu.be") {
+      return parsed.pathname.replace("/", "");
+    }
+    if (parsed.pathname.startsWith("/embed/")) {
+      return parsed.pathname.replace("/embed/", "").split("/")[0] ?? assetIdOrUrl;
+    }
+    return parsed.searchParams.get("v") ?? assetIdOrUrl;
+  } catch {
+    return assetIdOrUrl;
+  }
+}
+
+function buildYouTubeEmbedUrl(assetIdOrUrl: string, lessonId: string): string {
+  const videoId = resolveYouTubeVideoId(assetIdOrUrl);
+  const params = new URLSearchParams({
+    enablejsapi: "1",
+    modestbranding: "1",
+    playsinline: "1",
+    rel: "0",
+    gh: lessonId,
+  });
+  if (typeof window !== "undefined") {
+    params.set("origin", window.location.origin);
+  }
+  return `https://www.youtube-nocookie.com/embed/${videoId}?${params.toString()}`;
 }
 
 function getQuestionOptionClass(
@@ -167,12 +282,34 @@ function getQuestionOptionClass(
   return `${baseClassName} !bg-rose-50 !text-rose-700 !ring-rose-200`;
 }
 
+function isStalePlayerPostMessageError(reason: unknown): boolean {
+  const message =
+    reason instanceof Error
+      ? reason.message
+      : typeof reason === "string"
+        ? reason
+        : "";
+
+  return message.includes("Cannot read properties of null") && message.includes("postMessage");
+}
+
+function runPlayerCommand(command: () => void): void {
+  try {
+    command();
+  } catch (cause) {
+    if (!isStalePlayerPostMessageError(cause)) {
+      console.error(cause);
+    }
+  }
+}
+
 export default function VideoLearningPage({ params }: Props) {
-  const { accessToken } = useAuth();
+  const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  const bunnyPlayerRef = useRef<PlayerJsPlayer | null>(null);
+  const bunnyPlayerRef = useRef<{ player: PlayerJsPlayer; iframe: HTMLIFrameElement } | null>(null);
+  const youtubePlayerRef = useRef<{ player: YouTubePlayer; iframe: HTMLIFrameElement } | null>(null);
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const questionLockRef = useRef<Record<string, boolean>>({});
   const syncInFlightRef = useRef(false);
@@ -198,15 +335,17 @@ export default function VideoLearningPage({ params }: Props) {
   const [artifacts, setArtifacts] = useState<
     Partial<Record<"lesson_notes" | "flashcards", LessonAIArtifact>>
   >({});
-  const [discussionTitle, setDiscussionTitle] = useState("");
   const [discussionBody, setDiscussionBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
+  const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
+  const [isDiscussionLoading, setIsDiscussionLoading] = useState(false);
+  const [hasRequestedTranscript, setHasRequestedTranscript] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    void params.then((value) => {
+    void Promise.resolve(params).then((value) => {
       if (!cancelled) setCourseSlug(value.slug);
     });
     return () => {
@@ -222,6 +361,19 @@ export default function VideoLearningPage({ params }: Props) {
     }
     return buildBunnyEmbedUrl(lesson.video_url, lesson.id);
   }, [lesson?.id, lesson?.video_provider, lesson?.video_url]);
+
+  const youtubeEmbedUrl = useMemo(() => {
+    if (lesson?.video_provider !== "youtube") {
+      return null;
+    }
+    const assetIdOrUrl = lesson.video_url ?? lesson.video_provider_asset_id;
+    if (!assetIdOrUrl) {
+      return null;
+    }
+    return buildYouTubeEmbedUrl(assetIdOrUrl, lesson.id);
+  }, [lesson?.id, lesson?.video_provider, lesson?.video_provider_asset_id, lesson?.video_url]);
+
+  const iframeEmbedUrl = bunnyEmbedUrl ?? youtubeEmbedUrl;
 
   const allLessons = useMemo(() => course?.modules.flatMap((module) => module.lessons) ?? [], [course]);
   const currentLessonIndex = useMemo(
@@ -246,9 +398,15 @@ export default function VideoLearningPage({ params }: Props) {
       const modules = current.modules.map((module) => ({
         ...module,
         lessons: module.lessons.map((item) =>
-          item.id === lesson.id ? { ...item, progress_percent: progress.progress_percent } : item,
+          item.id === lesson.id
+            ? {
+                ...item,
+                progress_percent: Math.max(item.progress_percent ?? 0, progress.progress_percent),
+              }
+            : item,
         ),
       }));
+      const computedCourseProgress = computeCourseCompletion(modules);
       return {
         ...current,
         modules,
@@ -256,7 +414,10 @@ export default function VideoLearningPage({ params }: Props) {
           ? {
               ...current.access,
               current_lesson_id: lesson.id,
-              progress_percent: computeCourseCompletion(modules),
+              progress_percent: Math.max(
+                current.access.progress_percent ?? 0,
+                computedCourseProgress,
+              ),
             }
           : current.access,
       };
@@ -273,12 +434,22 @@ export default function VideoLearningPage({ params }: Props) {
   });
 
   const pausePlayback = useStableEvent(() => {
-    bunnyPlayerRef.current?.pause();
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => bunnyPlayerRef.current?.player.pause());
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => youtubePlayerRef.current?.player.pauseVideo());
+    }
     videoRef.current?.pause();
   });
 
   const resumePlayback = useStableEvent(() => {
-    bunnyPlayerRef.current?.play();
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => bunnyPlayerRef.current?.player.play());
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => youtubePlayerRef.current?.player.playVideo());
+    }
     void videoRef.current?.play().catch(() => undefined);
   });
 
@@ -387,7 +558,7 @@ export default function VideoLearningPage({ params }: Props) {
   });
 
   useEffect(() => {
-    if (!courseSlug) return;
+    if (!courseSlug || isAuthLoading) return;
     const activeCourseSlug = courseSlug;
     let cancelled = false;
 
@@ -396,12 +567,20 @@ export default function VideoLearningPage({ params }: Props) {
       setLoading(true);
       setError(null);
       try {
-        const coursePayload = await learningClient.getCourseDetail(activeCourseSlug, {
-          countryCode: "IN",
-          token: accessToken,
-        });
+        const cacheOptions = { viewerKey: user?.id ?? null };
+        const cachedCourse = learningCache.getCourseDetail(activeCourseSlug, cacheOptions);
+        const coursePayload =
+          cachedCourse ??
+          (await learningClient.getCourseDetail(activeCourseSlug, {
+            token: accessToken,
+          }));
+
+        if (!cachedCourse) {
+          learningCache.setCourseDetail(coursePayload, cacheOptions);
+        }
         const defaultLessonSlug =
           lessonSlugFromQuery ??
+          findLessonSlugById(coursePayload, coursePayload.access?.current_lesson_id) ??
           coursePayload.modules.flatMap((module) => module.lessons).find((item) => item.accessible)?.slug ??
           coursePayload.modules[0]?.lessons[0]?.slug;
 
@@ -413,22 +592,41 @@ export default function VideoLearningPage({ params }: Props) {
           await flushProgress();
         }
 
-        const lessonPayload = await learningClient.getLessonDetail(
-          activeCourseSlug,
-          defaultLessonSlug,
-          accessToken,
-        );
+        const lessonPayload = await learningClient.getLessonDetail(activeCourseSlug, defaultLessonSlug, {
+          token: accessToken,
+          includeTranscript: false,
+        });
         if (!cancelled) {
           setCourse(coursePayload);
           setLesson(lessonPayload);
+          setIsDiscussionLoading(true);
           setQuestionStates({});
           questionLockRef.current = {};
           setArtifacts({});
           setReplyDrafts({});
-          setDiscussionTitle("");
           setDiscussionBody("");
           setActiveCheckpointId(null);
         }
+        void learningClient
+          .listLessonDiscussions(activeCourseSlug, defaultLessonSlug, accessToken)
+          .then((payload) => {
+            if (cancelled) return;
+            setLesson((current) =>
+              current && current.slug === defaultLessonSlug
+                ? { ...current, discussions: payload.items }
+                : current,
+            );
+          })
+          .catch((cause) => {
+            if (!cancelled) {
+              setError(cause instanceof Error ? cause.message : "Unable to load discussions.");
+            }
+          })
+          .finally(() => {
+            if (!cancelled) {
+              setIsDiscussionLoading(false);
+            }
+          });
       } catch (cause) {
         if (!cancelled) {
           setError(cause instanceof Error ? cause.message : "Unable to load lesson.");
@@ -444,11 +642,18 @@ export default function VideoLearningPage({ params }: Props) {
     return () => {
       cancelled = true;
     };
-  }, [accessToken, courseSlug, flushProgress, lessonSlugFromQuery]);
+  }, [accessToken, courseSlug, flushProgress, isAuthLoading, lessonSlugFromQuery, user?.id]);
+
+  useEffect(() => {
+    if (!course) return;
+    learningCache.setCourseDetail(course, { viewerKey: user?.id ?? null });
+  }, [course, user?.id]);
 
   useEffect(() => {
     if (!lesson) return;
     activeLessonSlugRef.current = lesson.slug;
+    setHasRequestedTranscript(Boolean(lesson.transcript));
+    setIsTranscriptLoading(false);
     const watchedSeconds = lesson.progress?.watched_seconds ?? 0;
     const lastPositionSeconds = lesson.progress?.last_position_seconds ?? watchedSeconds;
     progressDraftRef.current = {
@@ -510,21 +715,26 @@ export default function VideoLearningPage({ params }: Props) {
     const iframeElement = iframeRef.current;
 
     const onReady = () => {
+      if (cancelled || !iframeElement.isConnected) return;
       const startAt = lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? 0;
       if (startAt > 0) {
-        player?.setCurrentTime?.(startAt);
+        runPlayerCommand(() => player?.setCurrentTime?.(startAt));
       }
     };
     const onTimeUpdate = (data?: PlayerJsEventData) => {
+      if (cancelled || !iframeElement.isConnected) return;
       handlePlaybackSample(data?.seconds ?? 0, data?.duration ?? lesson.duration_seconds ?? 0);
     };
     const onPause = () => {
+      if (cancelled || !iframeElement.isConnected) return;
       scheduleIdleSync();
     };
     const onPlay = () => {
+      if (cancelled || !iframeElement.isConnected) return;
       scheduleIdleSync();
     };
     const onEnded = () => {
+      if (cancelled || !iframeElement.isConnected) return;
       void flushProgress({ forceComplete: true });
     };
 
@@ -532,7 +742,7 @@ export default function VideoLearningPage({ params }: Props) {
       .then(() => {
         if (cancelled || !window.playerjs?.Player) return;
         player = new window.playerjs.Player(iframeElement);
-        bunnyPlayerRef.current = player;
+        bunnyPlayerRef.current = { player, iframe: iframeElement };
         player.on("ready", onReady);
         player.on("timeupdate", onTimeUpdate);
         player.on("pause", onPause);
@@ -547,16 +757,91 @@ export default function VideoLearningPage({ params }: Props) {
 
     return () => {
       cancelled = true;
-      player?.off?.("ready", onReady);
-      player?.off?.("timeupdate", onTimeUpdate);
-      player?.off?.("pause", onPause);
-      player?.off?.("play", onPlay);
-      player?.off?.("ended", onEnded);
-      if (bunnyPlayerRef.current === player) {
+      if (bunnyPlayerRef.current?.player === player) {
         bunnyPlayerRef.current = null;
       }
+      runPlayerCommand(() => player?.off?.("ready", onReady));
+      runPlayerCommand(() => player?.off?.("timeupdate", onTimeUpdate));
+      runPlayerCommand(() => player?.off?.("pause", onPause));
+      runPlayerCommand(() => player?.off?.("play", onPlay));
+      runPlayerCommand(() => player?.off?.("ended", onEnded));
+      runPlayerCommand(() => player?.destroy?.());
     };
   }, [bunnyEmbedUrl, flushProgress, handlePlaybackSample, lesson, scheduleIdleSync]);
+
+  useEffect(() => {
+    if (!youtubeEmbedUrl || !iframeRef.current || !lesson) return;
+    let cancelled = false;
+    let player: YouTubePlayer | null = null;
+    let progressTimer: ReturnType<typeof setInterval> | null = null;
+    const iframeElement = iframeRef.current;
+
+    const clearProgressTimer = () => {
+      if (progressTimer) {
+        clearInterval(progressTimer);
+        progressTimer = null;
+      }
+    };
+    const sampleProgress = () => {
+      if (!player || cancelled || !iframeElement.isConnected) return;
+      handlePlaybackSample(
+        player.getCurrentTime(),
+        player.getDuration() || lesson.duration_seconds || 0,
+      );
+    };
+    const startProgressTimer = () => {
+      clearProgressTimer();
+      progressTimer = setInterval(sampleProgress, 1000);
+    };
+
+    void ensureYouTubeIframeApi()
+      .then(() => {
+        if (cancelled || !window.YT?.Player) return;
+        player = new window.YT.Player(iframeElement, {
+          events: {
+            onReady: (event) => {
+              const startAt =
+                lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? 0;
+              if (startAt > 0) {
+                event.target.seekTo(startAt, true);
+              }
+            },
+            onStateChange: (event) => {
+              if (cancelled || !iframeElement.isConnected) return;
+              if (event.data === window.YT?.PlayerState.PLAYING) {
+                scheduleIdleSync();
+                startProgressTimer();
+              }
+              if (event.data === window.YT?.PlayerState.PAUSED) {
+                sampleProgress();
+                clearProgressTimer();
+                scheduleIdleSync();
+              }
+              if (event.data === window.YT?.PlayerState.ENDED) {
+                sampleProgress();
+                clearProgressTimer();
+                void flushProgress({ forceComplete: true });
+              }
+            },
+          },
+        });
+        youtubePlayerRef.current = { player, iframe: iframeElement };
+      })
+      .catch((cause) => {
+        if (!cancelled) {
+          setError(cause instanceof Error ? cause.message : "Unable to initialize YouTube player.");
+        }
+      });
+
+    return () => {
+      cancelled = true;
+      clearProgressTimer();
+      if (youtubePlayerRef.current?.player === player) {
+        youtubePlayerRef.current = null;
+      }
+      runPlayerCommand(() => player?.destroy());
+    };
+  }, [flushProgress, handlePlaybackSample, lesson, scheduleIdleSync, youtubeEmbedUrl]);
 
   async function handleQuestionAttempt(questionId: string, optionId?: string) {
     if (!courseSlug || !lesson || !accessToken) return;
@@ -624,12 +909,35 @@ export default function VideoLearningPage({ params }: Props) {
     }
   }
 
+  async function handleLoadTranscript() {
+    if (!courseSlug || !lesson || isTranscriptLoading) return;
+    setIsTranscriptLoading(true);
+    setHasRequestedTranscript(true);
+    try {
+      const payload = await learningClient.getLessonDetail(courseSlug, lesson.slug, {
+        token: accessToken,
+        includeTranscript: true,
+      });
+      setLesson((current) =>
+        current && current.id === payload.id
+          ? {
+              ...current,
+              transcript: payload.transcript,
+            }
+          : current,
+      );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to load transcript.");
+    } finally {
+      setIsTranscriptLoading(false);
+    }
+  }
+
   async function handleCreateDiscussion() {
     if (!courseSlug || !lesson || !accessToken) return;
     setSubmitting("discussion");
     try {
       const thread = await learningClient.createDiscussion(courseSlug, lesson.slug, accessToken, {
-        title: discussionTitle,
         body: discussionBody,
       });
       setLesson((current) =>
@@ -637,7 +945,6 @@ export default function VideoLearningPage({ params }: Props) {
           ? { ...current, discussions: [thread, ...current.discussions] }
           : current,
       );
-      setDiscussionTitle("");
       setDiscussionBody("");
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Unable to create discussion.");
@@ -676,7 +983,53 @@ export default function VideoLearningPage({ params }: Props) {
   if (loading || !course || !lesson) {
     return (
       <AppShell>
-        <Card className="h-96 animate-pulse border-slate-200 bg-white" />
+        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+          <section className="space-y-5">
+            <Card>
+              <CardContent className="space-y-5 p-6">
+                <div className="flex gap-2">
+                  <Skeleton className="h-6 w-28 rounded-full" />
+                  <Skeleton className="h-6 w-24 rounded-full" />
+                </div>
+                <div className="space-y-3">
+                  <Skeleton className="h-5 w-2/5 rounded-md" />
+                  <Skeleton className="h-10 w-3/4 rounded-lg" />
+                  <Skeleton className="h-4 w-full rounded-md" />
+                  <Skeleton className="h-4 w-2/3 rounded-md" />
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="p-4">
+                <Skeleton className="aspect-video rounded-xl" />
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="grid gap-3 p-5 sm:grid-cols-3">
+                <Skeleton className="h-11 rounded-lg" />
+                <Skeleton className="h-11 rounded-lg" />
+                <Skeleton className="h-11 rounded-lg" />
+              </CardContent>
+            </Card>
+          </section>
+          <aside className="space-y-5">
+            <Card>
+              <CardContent className="space-y-3 p-5">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <Skeleton key={index} className="h-20 rounded-xl" />
+                ))}
+              </CardContent>
+            </Card>
+            <Card>
+              <CardContent className="space-y-4 p-5">
+                <Skeleton className="h-24 rounded-xl" />
+                <Skeleton className="h-2.5 rounded-full" />
+                <Skeleton className="h-16 rounded-xl" />
+                <Skeleton className="h-11 rounded-lg" />
+              </CardContent>
+            </Card>
+          </aside>
+        </div>
       </AppShell>
     );
   }
@@ -722,16 +1075,17 @@ export default function VideoLearningPage({ params }: Props) {
 
           <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-sm shadow-slate-950/10">
             <div className="aspect-video p-4 text-white sm:p-5">
-              {bunnyEmbedUrl ? (
+              {iframeEmbedUrl ? (
                 <iframe
+                  key={iframeEmbedUrl}
                   ref={iframeRef}
-                  src={bunnyEmbedUrl}
+                  src={iframeEmbedUrl}
                   title={lesson.title}
-                  className="h-full w-full rounded-lg border-0"
-                  allow="accelerometer; gyroscope; autoplay; encrypted-media;"
+                  className="h-full w-full rounded-lg border-0 bg-black"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
-              ) : lesson.video_url ? (
+              ) : lesson.video_url && lesson.video_provider !== "youtube" ? (
                 <video
                   ref={videoRef}
                   className="h-full w-full rounded-lg object-cover"
@@ -1007,6 +1361,20 @@ export default function VideoLearningPage({ params }: Props) {
                     </div>
                   ) : null}
                 </div>
+              ) : !hasRequestedTranscript ? (
+                <div className="flex flex-col items-start gap-3">
+                  <p className="text-sm text-slate-500">
+                    Transcript is loaded on demand to keep lesson startup fast.
+                  </p>
+                  <Button
+                    variant="secondary"
+                    onClick={() => void handleLoadTranscript()}
+                    disabled={isTranscriptLoading}
+                  >
+                    <FileText className="size-4" />
+                    {isTranscriptLoading ? "Loading transcript..." : "Load transcript"}
+                  </Button>
+                </div>
               ) : (
                 <p className="text-sm text-slate-500">Transcript is not available yet.</p>
               )}
@@ -1018,45 +1386,40 @@ export default function VideoLearningPage({ params }: Props) {
               <CardTitle>Lesson discussion</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="space-y-3 rounded-lg border border-slate-200 p-4">
-                <Input
-                  placeholder="Discussion title"
-                  value={discussionTitle}
-                  onChange={(event) => setDiscussionTitle(event.target.value)}
-                />
+              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
                 <Textarea
-                  placeholder="Ask a lesson-specific question"
+                  placeholder="Add a comment"
                   value={discussionBody}
                   onChange={(event) => setDiscussionBody(event.target.value)}
+                  className="min-h-24 border-0 bg-white"
                 />
-                <Button
-                  variant="secondary"
-                  onClick={() => void handleCreateDiscussion()}
-                  disabled={
-                    submitting === "discussion" ||
-                    !discussionTitle.trim() ||
-                    !discussionBody.trim()
-                  }
-                >
-                  <MessageCircle className="size-4" />
-                  {submitting === "discussion" ? "Posting..." : "Add discussion"}
-                </Button>
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    onClick={() => void handleCreateDiscussion()}
+                    disabled={submitting === "discussion" || !discussionBody.trim()}
+                  >
+                    <MessageCircle className="size-4" />
+                    {submitting === "discussion" ? "Posting..." : "Comment"}
+                  </Button>
+                </div>
               </div>
 
-              {lesson.discussions.length ? (
+              {isDiscussionLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-24 rounded-2xl" />
+                  <Skeleton className="h-20 rounded-2xl" />
+                </div>
+              ) : lesson.discussions.length ? (
                 lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-lg border border-slate-200 p-4">
-                    <div className="flex items-start justify-between gap-3">
-                      <div>
-                        <p className="font-semibold text-slate-950">{thread.title}</p>
-                        <p className="mt-1 text-sm text-slate-600">{thread.body}</p>
-                        <p className="mt-2 text-xs text-slate-500">{thread.user_display_name}</p>
-                      </div>
-                      <Badge variant="blue">{thread.status}</Badge>
+                  <div key={thread.id} className="rounded-2xl border border-slate-200 p-4">
+                    <div>
+                      <p className="text-sm font-semibold text-slate-950">{thread.user_display_name}</p>
+                      <p className="mt-1 text-sm leading-6 text-slate-700">{thread.body}</p>
                     </div>
                     <div className="mt-4 space-y-2">
                       {thread.comments.map((comment) => (
-                        <div key={comment.id} className="rounded-lg bg-slate-50 px-3 py-2">
+                        <div key={comment.id} className="rounded-xl bg-slate-50 px-3 py-2">
                           <p className="text-sm font-medium text-slate-950">
                             {comment.user_display_name}
                             {comment.is_instructor_response ? " · Instructor" : ""}
@@ -1067,7 +1430,7 @@ export default function VideoLearningPage({ params }: Props) {
                     </div>
                     <div className="mt-4 flex gap-2">
                       <Input
-                        placeholder="Write a reply"
+                        placeholder="Reply..."
                         value={replyDrafts[thread.id] ?? ""}
                         onChange={(event) =>
                           setReplyDrafts((current) => ({
@@ -1087,7 +1450,7 @@ export default function VideoLearningPage({ params }: Props) {
                   </div>
                 ))
               ) : (
-                <p className="text-sm text-slate-500">No discussion threads yet.</p>
+                <p className="text-sm text-slate-500">No comments yet.</p>
               )}
             </CardContent>
           </Card>

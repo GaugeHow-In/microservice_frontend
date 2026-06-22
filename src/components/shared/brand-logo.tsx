@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Gauge } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
 type BrandLogoProps = {
@@ -11,15 +11,22 @@ export function BrandLogo({ className, compact = false }: BrandLogoProps) {
   return (
     <Link
       href="/"
-      className={cn("flex items-center gap-3 font-semibold text-slate-950", className)}
+      className={cn("flex items-center gap-3 text-slate-950", className)}
     >
-      <span className="flex size-10 items-center justify-center rounded-lg bg-orange-500 text-white shadow-sm shadow-orange-500/25">
-        <Gauge className="size-5" />
+      <span className="flex size-10 items-center justify-center overflow-hidden rounded-lg border border-orange-200 bg-white shadow-[var(--shadow-sm)]">
+        <Image
+          src="/64 logo.png"
+          alt=""
+          width={28}
+          height={28}
+          className="size-7 object-contain"
+          aria-hidden="true"
+        />
       </span>
       {!compact && (
         <span className="leading-tight">
-          <span className="block text-lg tracking-normal">GaugeHow</span>
-          <span className="block text-xs font-medium text-slate-500">
+          <span className="type-h4 block">GaugeHow</span>
+          <span className="type-caption block font-medium text-slate-500">
             Learning OS
           </span>
         </span>
@@ -27,4 +34,3 @@ export function BrandLogo({ className, compact = false }: BrandLogoProps) {
     </Link>
   );
 }
-

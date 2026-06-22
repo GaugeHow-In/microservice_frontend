@@ -12,7 +12,7 @@ describe("ProgressRing", () => {
     expect(ring).toHaveTextContent("Goal");
     expect(ring).toHaveClass("size-32");
     expect(ring).toHaveStyle({
-      background: "conic-gradient(#f97316 259.2deg, #e2e8f0 0deg)",
+      background: "conic-gradient(var(--color-orange-400) 259.2deg, var(--color-slate-200) 0deg)",
     });
   });
 

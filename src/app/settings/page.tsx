@@ -41,11 +41,14 @@ export default function SettingsPage() {
           }
         />
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-          {sections.map(({ icon: Icon, title, text }) => (
-            <Card key={title}>
+          {sections.map(({ icon: Icon, title, text }, index) => (
+            <Card
+              key={title}
+              className={`panel-depth reveal-up h-full ${index % 3 === 1 ? "reveal-delay-1" : ""} ${index % 3 === 2 ? "reveal-delay-2" : ""}`}
+            >
               <CardHeader>
                 <div className="flex items-center justify-between">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-orange-50 text-orange-600">
+                  <div className="signal-line flex size-10 items-center justify-center rounded-lg bg-orange-50 text-orange-600 shadow-[var(--shadow-sm)]">
                     <Icon className="size-5" />
                   </div>
                   <Badge>Mock</Badge>

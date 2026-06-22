@@ -19,7 +19,7 @@ export function ProgressRing({
   size = "md",
   className,
 }: ProgressRingProps) {
-  const background = `conic-gradient(#f97316 ${value * 3.6}deg, #e2e8f0 0deg)`;
+  const background = `conic-gradient(var(--color-orange-400) ${value * 3.6}deg, var(--color-slate-200) 0deg)`;
 
   return (
     <div
@@ -31,11 +31,11 @@ export function ProgressRing({
       style={{ background }}
       aria-label={`${label ?? "Progress"} ${value}%`}
     >
-      <div className="absolute inset-2 rounded-full bg-white" />
+      <div className="absolute inset-2 rounded-full bg-[color:var(--surface-primary)] backdrop-blur-sm" />
       <div className="relative text-center font-bold text-slate-950">
         {value}%
         {label && (
-          <span className="block text-[10px] font-semibold uppercase tracking-wider text-slate-500">
+          <span className="block text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-500">
             {label}
           </span>
         )}
@@ -43,4 +43,3 @@ export function ProgressRing({
     </div>
   );
 }
-

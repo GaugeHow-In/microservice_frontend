@@ -10,10 +10,7 @@ export function Avatar({
 }: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root>) {
   return (
     <AvatarPrimitive.Root
-      className={cn(
-        "relative flex size-10 shrink-0 overflow-hidden rounded-full bg-slate-100",
-        className,
-      )}
+      className={cn("ui-avatar relative flex size-10 shrink-0 overflow-hidden rounded-full", className)}
       {...props}
     />
   );
@@ -25,12 +22,8 @@ export function AvatarFallback({
 }: React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Fallback>) {
   return (
     <AvatarPrimitive.Fallback
-      className={cn(
-        "flex size-full items-center justify-center bg-slate-950 text-sm font-bold text-white",
-        className,
-      )}
+      className={cn("ui-avatar-fallback flex size-full items-center justify-center text-sm font-bold", className)}
       {...props}
     />
   );
 }
-

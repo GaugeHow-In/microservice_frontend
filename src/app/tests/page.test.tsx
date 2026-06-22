@@ -2,23 +2,13 @@ import { createElement } from "react";
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import TestsPage from "@/app/tests/page";
-import { performanceTrend, tests } from "@/lib/mock-data";
 
 describe("TestsPage", () => {
-  it("renders test summaries, performance trend points, and quick links", () => {
+  it("renders the backend-pending state instead of mock tests", () => {
     render(createElement(TestsPage));
 
-    expect(screen.getByRole("heading", { name: /practice, analyze, and improve with measurable feedback/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /analytics/i })[0]).toHaveAttribute("href", "/tests/analytics");
-
-    for (const test of tests) {
-      expect(screen.getByText(test.title)).toBeInTheDocument();
-    }
-
-    for (const day of performanceTrend) {
-      expect(screen.getByText(day.label)).toBeInTheDocument();
-    }
-
-    expect(screen.getAllByRole("link", { name: /active tests|previous tests|results|analytics/i })).toHaveLength(5);
+    expect(screen.getByRole("heading", { name: /practice tests are not connected yet/i })).toBeInTheDocument();
+    expect(screen.getByText(/static test cards and fake performance trends have been removed/i)).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: /analytics/i })).not.toBeInTheDocument();
   });
 });

@@ -15,13 +15,13 @@ export function Progress({
   return (
     <ProgressPrimitive.Root
       className={cn(
-        "relative h-2.5 w-full overflow-hidden rounded-full bg-slate-100",
+        "ui-progress h-2.5 w-full",
         className,
       )}
       {...props}
     >
       <ProgressPrimitive.Indicator
-        className={cn("h-full rounded-full bg-orange-500 transition-transform", indicatorClassName)}
+        className={cn("ui-progress-indicator h-full rounded-full transition-transform", indicatorClassName)}
         style={{ transform: `translateX(-${100 - Number(value)}%)` }}
       />
     </ProgressPrimitive.Root>

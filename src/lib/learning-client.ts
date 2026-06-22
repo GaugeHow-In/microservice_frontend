@@ -44,6 +44,11 @@ export type PricingOption = {
   purchase_type: AccessType;
   base_price_minor: number;
   currency_code: string;
+  display_price_minor?: number | null;
+  display_currency_code?: string | null;
+  buyer_country_code?: string | null;
+  pricing_tier?: string | null;
+  is_display_price_estimated?: boolean;
   subscription_days: number | null;
   is_active: boolean;
   region: PricingRegion;
@@ -201,6 +206,10 @@ export type DiscussionThread = {
   comments: DiscussionComment[];
 };
 
+export type LessonDiscussionListResponse = {
+  items: DiscussionThread[];
+};
+
 export type LessonProgress = {
   status: LearningProgressStatus;
   progress_percent: number;
@@ -249,35 +258,169 @@ type RequestOptions = {
   token?: string | null;
 };
 
-async function learningRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? "GET",
-    keepalive: options.keepalive ?? false,
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-    },
-    credentials: "include",
-    cache: "no-store",
-    body: options.body ? JSON.stringify(options.body) : undefined,
+type CacheEntry<T> = {
+  value: T;
+  expiresAt: number;
+};
+
+const memoryCache = new Map<string, CacheEntry<unknown>>();
+const inflightRequests = new Map<string, Promise<unknown>>();
+const COURSE_LIST_TTL_MS = 60_000;
+const COURSE_DETAIL_TTL_MS = 180_000;
+
+function buildViewerScope(viewerKey?: string | null): string {
+  return viewerKey ?? "anon";
+}
+
+function readCache<T>(key: string): T | null {
+  const entry = memoryCache.get(key) as CacheEntry<T> | undefined;
+  if (!entry) {
+    return null;
+  }
+  if (entry.expiresAt <= Date.now()) {
+    memoryCache.delete(key);
+    return null;
+  }
+  return entry.value;
+}
+
+function writeCache<T>(key: string, value: T, ttlMs: number): void {
+  memoryCache.set(key, {
+    value,
+    expiresAt: Date.now() + ttlMs,
   });
+}
 
-  if (!response.ok) {
-    let message = "Request failed";
-    try {
-      const payload = (await response.json()) as { detail?: string };
-      message = payload.detail ?? message;
-    } catch {
-      message = response.statusText || message;
+function buildCourseListCacheKey(params?: {
+  query?: string;
+  categories?: string[];
+  level?: CourseLevel;
+  page?: number;
+  pageSize?: number;
+  viewerKey?: string | null;
+}): string {
+  const normalizedCategories = [...(params?.categories ?? [])].sort();
+  return JSON.stringify({
+    type: "course-list",
+    viewer: buildViewerScope(params?.viewerKey),
+    query: params?.query?.trim().toLowerCase() || "",
+    categories: normalizedCategories,
+    level: params?.level ?? null,
+    page: params?.page ?? 1,
+    pageSize: params?.pageSize ?? 12,
+  });
+}
+
+function buildCourseDetailCacheKey(
+  slug: string,
+  options?: { viewerKey?: string | null },
+): string {
+  return JSON.stringify({
+    type: "course-detail",
+    viewer: buildViewerScope(options?.viewerKey),
+    slug,
+  });
+}
+
+export const learningCache = {
+  getCourseList(params?: {
+    query?: string;
+    categories?: string[];
+    level?: CourseLevel;
+    page?: number;
+    pageSize?: number;
+    viewerKey?: string | null;
+  }): CourseListResponse | null {
+    return readCache<CourseListResponse>(buildCourseListCacheKey(params));
+  },
+  setCourseList(
+    response: CourseListResponse,
+    params?: {
+      query?: string;
+      categories?: string[];
+      level?: CourseLevel;
+      page?: number;
+      pageSize?: number;
+      viewerKey?: string | null;
+    },
+  ): void {
+    writeCache(buildCourseListCacheKey(params), response, COURSE_LIST_TTL_MS);
+  },
+  getCourseDetail(
+    slug: string,
+    options?: { viewerKey?: string | null },
+  ): CourseDetail | null {
+    return readCache<CourseDetail>(buildCourseDetailCacheKey(slug, options));
+  },
+  setCourseDetail(
+    course: CourseDetail,
+    options?: { viewerKey?: string | null },
+  ): void {
+    writeCache(buildCourseDetailCacheKey(course.slug, options), course, COURSE_DETAIL_TTL_MS);
+  },
+  invalidateCourseDetail(
+    slug: string,
+    options?: { viewerKey?: string | null },
+  ): void {
+    memoryCache.delete(buildCourseDetailCacheKey(slug, options));
+  },
+};
+
+async function learningRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
+  const method = options.method ?? "GET";
+  const requestKey =
+    method === "GET" && !options.body
+      ? `${method}:${path}:${options.token ?? "anon"}`
+      : null;
+
+  if (requestKey) {
+    const existing = inflightRequests.get(requestKey) as Promise<T> | undefined;
+    if (existing) {
+      return existing;
     }
-    throw new LearningApiError(message, response.status);
   }
 
-  if (response.status === 204) {
-    return undefined as T;
+  const request = (async () => {
+    const response = await fetch(`${API_BASE_URL}${path}`, {
+      method,
+      keepalive: options.keepalive ?? false,
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+      },
+      credentials: "include",
+      cache: options.token || method !== "GET" ? "no-store" : "default",
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+
+    if (!response.ok) {
+      let message = "Request failed";
+      try {
+        const payload = (await response.json()) as { detail?: string };
+        message = payload.detail ?? message;
+      } catch {
+        message = response.statusText || message;
+      }
+      throw new LearningApiError(message, response.status);
+    }
+
+    if (response.status === 204) {
+      return undefined as T;
+    }
+
+    return (await response.json()) as T;
+  })();
+
+  if (!requestKey) {
+    return request;
   }
 
-  return (await response.json()) as T;
+  inflightRequests.set(requestKey, request);
+  try {
+    return await request;
+  } finally {
+    inflightRequests.delete(requestKey);
+  }
 }
 
 export const learningClient = {
@@ -287,7 +430,6 @@ export const learningClient = {
     level?: CourseLevel;
     page?: number;
     pageSize?: number;
-    countryCode?: string;
     token?: string | null;
   }) {
     const search = new URLSearchParams();
@@ -296,31 +438,34 @@ export const learningClient = {
     if (params?.level) search.set("level", params.level);
     if (params?.page) search.set("page", String(params.page));
     if (params?.pageSize) search.set("page_size", String(params.pageSize));
-    if (params?.countryCode) search.set("country_code", params.countryCode);
     const suffix = search.size ? `?${search.toString()}` : "";
     return learningRequest<CourseListResponse>(`/learning/courses${suffix}`, {
       token: params?.token,
     });
   },
-  getCourseDetail(slug: string, options?: { countryCode?: string; token?: string | null }) {
-    const search = new URLSearchParams();
-    if (options?.countryCode) search.set("country_code", options.countryCode);
-    const suffix = search.size ? `?${search.toString()}` : "";
-    return learningRequest<CourseDetail>(`/learning/courses/${slug}${suffix}`, {
+  getCourseDetail(slug: string, options?: { token?: string | null }) {
+    return learningRequest<CourseDetail>(`/learning/courses/${slug}`, {
       token: options?.token,
     });
   },
-  enrollFree(slug: string, token: string, countryCode?: string) {
+  enrollFree(slug: string, token: string) {
     return learningRequest<{ access: AccessSummary }>(`/learning/courses/${slug}/enroll/free`, {
       method: "POST",
       token,
-      body: { country_code: countryCode ?? "IN" },
+      body: {},
     });
   },
-  getLessonDetail(courseSlug: string, lessonSlug: string, token?: string | null) {
+  getLessonDetail(
+    courseSlug: string,
+    lessonSlug: string,
+    options?: { token?: string | null; includeTranscript?: boolean },
+  ) {
+    const search = new URLSearchParams();
+    if (options?.includeTranscript) search.set("include_transcript", "true");
+    const suffix = search.size ? `?${search.toString()}` : "";
     return learningRequest<LessonDetail>(
-      `/learning/courses/${courseSlug}/lessons/${lessonSlug}`,
-      { token },
+      `/learning/courses/${courseSlug}/lessons/${lessonSlug}${suffix}`,
+      { token: options?.token },
     );
   },
   updateLessonProgress(
@@ -374,7 +519,12 @@ export const learningClient = {
       },
     );
   },
-  createDiscussion(courseSlug: string, lessonSlug: string, token: string, payload: { title: string; body: string }) {
+  createDiscussion(
+    courseSlug: string,
+    lessonSlug: string,
+    token: string,
+    payload: { body: string; title?: string | null },
+  ) {
     return learningRequest<DiscussionThread>(
       `/learning/courses/${courseSlug}/lessons/${lessonSlug}/discussions`,
       {
@@ -382,6 +532,12 @@ export const learningClient = {
         token,
         body: payload,
       },
+    );
+  },
+  listLessonDiscussions(courseSlug: string, lessonSlug: string, token?: string | null) {
+    return learningRequest<LessonDiscussionListResponse>(
+      `/learning/courses/${courseSlug}/lessons/${lessonSlug}/discussions`,
+      { token },
     );
   },
   addDiscussionComment(threadId: string, token: string, payload: { body: string; parentCommentId?: string | null }) {
@@ -440,9 +596,11 @@ export function formatSeconds(seconds: number | null): string {
 export function formatPrice(option: PricingOption | null): string {
   if (!option) return "Pricing unavailable";
   if (option.base_price_minor === 0) return "Free";
+  const priceMinor = option.display_price_minor ?? option.base_price_minor;
+  const currencyCode = option.display_currency_code ?? option.currency_code;
   const formatter = new Intl.NumberFormat("en", {
     style: "currency",
-    currency: option.currency_code,
+    currency: currencyCode,
   });
-  return formatter.format(option.base_price_minor / 100);
+  return formatter.format(priceMinor / 100);
 }

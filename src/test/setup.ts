@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 import { cleanup } from "@testing-library/react";
+import { createElement } from "react";
 import { afterEach, vi } from "vitest";
 import "./mocks/next";
 
@@ -25,6 +26,10 @@ vi.mock("@/components/providers/auth-provider", () => ({
     beginOAuth: vi.fn(),
     refreshSession: vi.fn(),
   }),
+}));
+
+vi.mock("@/components/shared/theme-toggle", () => ({
+  ThemeToggle: () => createElement("button", { type: "button" }, "Theme"),
 }));
 
 afterEach(() => {

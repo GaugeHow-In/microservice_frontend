@@ -14,18 +14,18 @@ export function AiStrip({
   cta = "Ask AI",
 }: AiStripProps) {
   return (
-    <section className="rounded-lg border border-orange-200 bg-orange-50 p-5">
+    <section className="surface-secondary rounded-xl p-5">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex gap-4">
-          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-orange-500 text-white">
+          <div className="flex size-11 shrink-0 items-center justify-center rounded-lg bg-orange-400 text-white shadow-[var(--shadow-sm)]">
             <Bot className="size-5" />
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-slate-950">{title}</h2>
+              <h2 className="type-h4 text-slate-950">{title}</h2>
               <Sparkles className="size-4 text-orange-500" />
             </div>
-            <p className="mt-1 max-w-3xl text-sm leading-6 text-slate-600">
+            <p className="mt-1 max-w-3xl type-small text-slate-600">
               {description}
             </p>
           </div>
@@ -37,4 +37,3 @@ export function AiStrip({
     </section>
   );
 }
-

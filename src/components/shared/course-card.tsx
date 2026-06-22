@@ -17,7 +17,7 @@ export function CourseCard({ course }: CourseCardProps) {
   const hasAccess = course.access?.has_access ?? false;
 
   return (
-    <Card className="overflow-hidden border-slate-200 bg-white">
+    <Card className="panel-depth overflow-hidden">
       <CardContent className="space-y-5 p-5">
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-3">
@@ -26,23 +26,23 @@ export function CourseCard({ course }: CourseCardProps) {
               <Badge variant="blue">{course.level.replaceAll("_", " ")}</Badge>
             </div>
             <div>
-              <h3 className="text-lg font-bold tracking-normal text-slate-950">
+              <h3 className="type-h4 text-slate-950">
                 {course.title}
               </h3>
-              <p className="mt-1 text-sm text-slate-500">by {instructor}</p>
+              <p className="mt-1 type-small text-slate-500">by {instructor}</p>
             </div>
             {course.short_description && (
-              <p className="line-clamp-2 text-sm leading-6 text-slate-600">
+              <p className="line-clamp-2 type-small text-slate-600">
                 {course.short_description}
               </p>
             )}
           </div>
-          <div className="flex size-12 items-center justify-center rounded-lg bg-slate-950 text-white">
+          <div className="signal-line flex size-12 items-center justify-center rounded-lg bg-slate-950 text-white shadow-[var(--shadow-sm)]">
             <BookOpen className="size-5" />
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 text-sm">
+        <div className="grid grid-cols-3 gap-3 type-small">
           <span className="flex items-center gap-1 text-slate-600">
             <Clock3 className="size-4" />
             {formatMinutes(course.duration_minutes)}
@@ -54,13 +54,13 @@ export function CourseCard({ course }: CourseCardProps) {
           </span>
         </div>
 
-        <div className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+        <div className="surface-secondary rounded-lg p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">
                 Access
               </p>
-              <p className="mt-1 font-semibold text-slate-950">
+              <p className="mt-1 type-small font-semibold text-slate-950">
                 {hasAccess
                   ? course.access?.is_lifetime_access
                     ? "Lifetime access"
@@ -70,16 +70,16 @@ export function CourseCard({ course }: CourseCardProps) {
                   : formatPrice(course.pricing)}
               </p>
             </div>
-            {course.pricing?.currency_code && (
+            {(course.pricing?.display_currency_code ?? course.pricing?.currency_code) && (
               <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
                 <Globe2 className="size-3.5" />
-                {course.pricing.currency_code}
+                {course.pricing.display_currency_code ?? course.pricing.currency_code}
               </span>
             )}
           </div>
           {hasAccess && (
             <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between text-sm">
+              <div className="flex items-center justify-between type-small">
                 <span className="font-medium text-slate-600">Progress</span>
                 <span className="font-semibold text-slate-950">{Math.round(progress)}%</span>
               </div>

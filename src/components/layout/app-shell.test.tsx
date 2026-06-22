@@ -19,7 +19,7 @@ vi.mock("@/components/providers/auth-provider", () => ({
 
 describe("AppShell", () => {
   beforeEach(() => {
-    mockUsePathname.mockReturnValue("/notes/dbms-transactions");
+    mockUsePathname.mockReturnValue("/courses/autocad-design-drafting");
   });
 
   it("derives the active section label from nested routes", () => {
@@ -28,9 +28,9 @@ describe("AppShell", () => {
     );
 
     expect(screen.getByRole("link", { name: /gaugehowlearning os/i })).toHaveAttribute("href", "/");
-    expect(screen.getAllByText("Notes").length).toBeGreaterThan(0);
-    expect(screen.getByText("Search courses, notes, books, tests")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /notes/i })[0]).toHaveAttribute("href", "/notes");
+    expect(screen.getAllByText("Courses").length).toBeGreaterThan(0);
+    expect(screen.getByText("Search courses")).toBeInTheDocument();
+    expect(screen.getAllByRole("link", { name: /courses/i })[0]).toHaveAttribute("href", "/courses");
     expect(screen.getByText("Aarav Mehta")).toBeInTheDocument();
   });
 

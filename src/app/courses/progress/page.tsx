@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   formatMinutes,
   learningClient,
@@ -17,19 +18,19 @@ import {
 } from "@/lib/learning-client";
 
 export default function CourseProgressPage() {
-  const { accessToken } = useAuth();
+  const { accessToken, isLoading: isAuthLoading } = useAuth();
   const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    if (isAuthLoading) return;
     let cancelled = false;
 
     async function loadCourses() {
       setLoading(true);
       try {
         const response = await learningClient.listCourses({
-          countryCode: "IN",
           token: accessToken,
         });
         if (!cancelled) {
@@ -51,7 +52,7 @@ export default function CourseProgressPage() {
     return () => {
       cancelled = true;
     };
-  }, [accessToken]);
+  }, [accessToken, isAuthLoading]);
 
   const stats = useMemo(() => {
     const enrolled = courses.length;
@@ -109,7 +110,16 @@ export default function CourseProgressPage() {
             ) : loading ? (
               <div className="grid gap-3">
                 {Array.from({ length: 2 }).map((_, index) => (
-                  <div key={index} className="h-24 animate-pulse rounded-lg border border-slate-200 bg-slate-50" />
+                  <div key={index} className="surface-secondary rounded-xl p-4">
+                    <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex-1 space-y-2">
+                        <Skeleton className="h-6 w-2/3 rounded-md" />
+                        <Skeleton className="h-4 w-1/2 rounded-md" />
+                      </div>
+                      <Skeleton className="h-6 w-24 rounded-full" />
+                    </div>
+                    <Skeleton className="mt-4 h-2.5 rounded-full" />
+                  </div>
                 ))}
               </div>
             ) : courses.length ? (
