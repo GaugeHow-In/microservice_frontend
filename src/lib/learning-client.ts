@@ -74,6 +74,7 @@ export type CourseCatalogItem = {
   level: CourseLevel;
   duration_minutes: number | null;
   lesson_count: number;
+  certificate_enabled: boolean;
   average_rating: number;
   total_reviews: number;
   thumbnail_url: string | null;
@@ -145,6 +146,37 @@ export type CourseDetail = {
   recommended_pricing: PricingOption | null;
   access: AccessSummary | null;
   reviews: CourseReview[];
+};
+
+export type CertificateTextPosition = {
+  x: number;
+  y: number;
+  font_size: number;
+  color: string;
+  align: CanvasTextAlign;
+  font_family: string;
+  font_weight: string;
+};
+
+export type Certificate = {
+  certificate_number: string;
+  recipient_name: string;
+  course_title: string;
+  course_slug: string;
+  issued_at: string;
+  status: "pending" | "issued" | "revoked";
+  valid: boolean;
+  verification_url: string;
+  template_url: string | null;
+  render_config: {
+    width: number;
+    height: number;
+    name: CertificateTextPosition;
+    course: CertificateTextPosition;
+    issue_date: CertificateTextPosition;
+    certificate_number: CertificateTextPosition;
+    qr: { x: number; y: number; size: number };
+  };
 };
 
 export type Transcript = {
@@ -447,6 +479,21 @@ export const learningClient = {
     return learningRequest<CourseDetail>(`/learning/courses/${slug}`, {
       token: options?.token,
     });
+  },
+  getMyCertificate(slug: string, token: string) {
+    return learningRequest<Certificate>(`/learning/courses/${slug}/certificate/me`, { token });
+  },
+  issueCertificate(slug: string, token: string) {
+    return learningRequest<Certificate>(`/learning/courses/${slug}/certificate`, {
+      method: "POST",
+      token,
+      body: {},
+    });
+  },
+  verifyCertificate(certificateNumber: string) {
+    return learningRequest<Certificate>(
+      `/learning/certificates/${encodeURIComponent(certificateNumber)}`,
+    );
   },
   enrollFree(slug: string, token: string) {
     return learningRequest<{ access: AccessSummary }>(`/learning/courses/${slug}/enroll/free`, {

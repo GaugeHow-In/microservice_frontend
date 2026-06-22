@@ -143,9 +143,16 @@ export default function CourseProgressPage() {
                   </div>
                   <Progress value={course.access?.progress_percent ?? 0} className="mt-4" />
                   <div className="mt-4 flex justify-end">
-                    <Button asChild variant="secondary" size="sm">
-                      <Link href={`/courses/${course.slug}`}>Review</Link>
-                    </Button>
+                    <div className="flex gap-2">
+                      {course.certificate_enabled && (course.access?.progress_percent ?? 0) >= 100 ? (
+                        <Button asChild size="sm">
+                          <Link href={`/courses/${course.slug}/certificate`}>Certificate</Link>
+                        </Button>
+                      ) : null}
+                      <Button asChild variant="secondary" size="sm">
+                        <Link href={`/courses/${course.slug}`}>Review</Link>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               ))
