@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Award, Bell, GraduationCap, Home, LogOut, Menu, Search, Settings, X } from "lucide-react";
+import { Award, Bell, BookOpen, GraduationCap, Home, LogOut, Menu, Search, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ type AppShellProps = {
 const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Courses", href: "/courses", icon: GraduationCap },
+  { label: "Library", href: "/library", icon: BookOpen },
   { label: "Profile", href: "/profile", icon: Award },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
@@ -181,7 +182,7 @@ export function AppShell({ children }: AppShellProps) {
       </div>
 
       <nav className="chrome-surface fixed inset-x-0 bottom-0 z-30 rounded-t-xl border-t border-white/50 px-2 py-2 lg:hidden">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {bottomNav.map((item) => {
             const Icon = item.icon;
             const active =
