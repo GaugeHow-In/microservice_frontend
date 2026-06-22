@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Award, Bell, BookOpen, GraduationCap, Home, LogOut, Menu, Search, Settings, X } from "lucide-react";
+import { Award, Bell, BookOpen, Bot, GraduationCap, Home, LogOut, Map, Menu, Search, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { QuickMentor } from "@/components/shared/quick-mentor";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -19,11 +20,15 @@ const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Courses", href: "/courses", icon: GraduationCap },
   { label: "Library", href: "/library", icon: BookOpen },
+  { label: "Roadmaps", href: "/roadmaps", icon: Map },
+  { label: "AI Mentor", href: "/mentor", icon: Bot },
   { label: "Profile", href: "/profile", icon: Award },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-const bottomNav = platformNav;
+const bottomNav = platformNav.filter((item) =>
+  ["/dashboard", "/courses", "/roadmaps", "/mentor", "/profile"].includes(item.href),
+);
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -233,6 +238,7 @@ export function AppShell({ children }: AppShellProps) {
           </aside>
         </div>
       )}
+      <QuickMentor />
     </div>
   );
 }
