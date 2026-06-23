@@ -33,6 +33,9 @@ export type RoadmapStep = {
   weekly_hours: number;
   course_slug: string | null;
   important_points: string[];
+  completed: boolean;
+  progress_percent: number | null;
+  progress_source: "course" | "manual" | "none";
 };
 
 export type RoadmapPlan = {

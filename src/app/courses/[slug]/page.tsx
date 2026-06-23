@@ -31,7 +31,7 @@ import {
 import { paymentClient, type PaymentCheckout } from "@/lib/payment-client";
 
 type Props = {
-  params: Promise<{ slug: string }> | { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 type RazorpayResponse = {

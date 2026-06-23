@@ -27,7 +27,7 @@ import {
 } from "@/lib/learning-client";
 
 type Props = {
-  params: Promise<{ slug: string }> | { slug: string };
+  params: Promise<{ slug: string }>;
 };
 
 type PlayerJsEventData = {
