@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BookOpen, GraduationCap, Settings } from "lucide-react";
+import { BookOpen, ExternalLink, GraduationCap, Settings } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -58,12 +59,22 @@ export default function ProfilePage() {
         <PageHeader
           eyebrow="Profile"
           title="Your learning profile."
-          description="This profile now renders authenticated identity and live course enrollment data only. Mock achievements, streaks, XP, and goals have been removed."
+          description="Manage how your learning identity appears across GaugeHow and open the public profile you can share with peers."
           action={
-            <Button variant="secondary">
-              <Settings />
-              Preferences
-            </Button>
+            <div className="flex flex-wrap gap-2">
+              {user?.handle && (
+                <Button asChild variant="default">
+                  <Link href={`/profiles/${user.handle}`}>
+                    <ExternalLink />
+                    Public profile
+                  </Link>
+                </Button>
+              )}
+              <Button variant="secondary">
+                <Settings />
+                Preferences
+              </Button>
+            </div>
           }
         />
         <Card className="panel-depth reveal-delay-1 reveal-up overflow-hidden">
