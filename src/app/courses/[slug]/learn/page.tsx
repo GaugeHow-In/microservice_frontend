@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Clock3, FileText, MessageCircle, Play, Sparkles } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -303,7 +303,7 @@ function runPlayerCommand(command: () => void): void {
   }
 }
 
-export default function VideoLearningPage({ params }: Props) {
+function VideoLearningPageContent({ params }: Props) {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -1535,5 +1535,13 @@ export default function VideoLearningPage({ params }: Props) {
         </aside>
       </div>
     </AppShell>
+  );
+}
+
+export default function VideoLearningPage(props: Props) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
+      <VideoLearningPageContent {...props} />
+    </Suspense>
   );
 }

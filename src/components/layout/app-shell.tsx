@@ -8,6 +8,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
+import { PointsBalance } from "@/components/shared/points-balance";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { QuickMentor } from "@/components/shared/quick-mentor";
 import { cn } from "@/lib/utils";
@@ -65,7 +66,7 @@ export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading, logout } = useAuth();
+  const { accessToken, user, isLoading, logout } = useAuth();
   const activeLabel =
     platformNav.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
       ?.label ?? "Dashboard";
@@ -153,6 +154,7 @@ export function AppShell({ children }: AppShellProps) {
               <span className="type-small text-slate-500">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
+              <PointsBalance accessToken={accessToken} />
               <ThemeToggle />
               <Button asChild variant="soft" size="sm">
                 <Link href="/courses">

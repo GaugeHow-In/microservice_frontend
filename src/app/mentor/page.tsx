@@ -2,7 +2,7 @@
 
 import { Bot, LoaderCircle, MessageSquarePlus, Send } from "lucide-react";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { FormEvent, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { PageHeader } from "@/components/shared/page-header";
@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { aiClient, type AIMessage, type Conversation } from "@/lib/ai-client";
 
-export default function MentorPage() {
+function MentorPageContent() {
   const searchParams = useSearchParams();
   const { accessToken } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -116,5 +116,13 @@ export default function MentorPage() {
         </div>
       </div>
     </AppShell>
+  );
+}
+
+export default function MentorPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-transparent" />}>
+      <MentorPageContent />
+    </Suspense>
   );
 }
