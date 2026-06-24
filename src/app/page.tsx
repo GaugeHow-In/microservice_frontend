@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, GraduationCap, Play, ShieldCheck, Sparkles } from "lucide-react";
+import { ArrowRight, BookOpen, GraduationCap, Play, ShieldCheck } from "lucide-react";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { MotionPanel } from "@/components/shared/motion";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -25,6 +25,7 @@ export default async function Home() {
           <nav className="hidden items-center gap-6 text-sm font-semibold text-slate-600 md:flex">
             <a href="#courses">Courses</a>
             <a href="#platform">Platform</a>
+            <Link href="/verify-certificate">Verify certificate</Link>
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
@@ -57,9 +58,9 @@ export default async function Home() {
                 </Link>
               </Button>
               <Button asChild size="lg" variant="secondary">
-                <Link href="/login">
-                  <Sparkles />
-                  Continue learning
+                <Link href="/verify-certificate">
+                  <ShieldCheck />
+                  Verify certificate
                 </Link>
               </Button>
             </div>

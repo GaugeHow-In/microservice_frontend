@@ -7,6 +7,7 @@ import { mockUsePathname } from "@/test/mocks/next";
 
 vi.mock("@/components/providers/auth-provider", () => ({
   useAuth: () => ({
+    accessToken: null,
     user: {
       display_name: "Aarav Mehta",
       email: "aarav@example.com",

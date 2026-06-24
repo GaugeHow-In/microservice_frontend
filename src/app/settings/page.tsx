@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { AIContextSettings } from "@/components/sections/ai-context-settings";
 
 export default function SettingsPage() {
   const router = useRouter();
@@ -40,6 +41,7 @@ export default function SettingsPage() {
             </Button>
           }
         />
+        <AIContextSettings />
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sections.map(({ icon: Icon, title, text }, index) => (
             <Card

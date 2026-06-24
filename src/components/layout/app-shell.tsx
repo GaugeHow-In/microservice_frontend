@@ -2,13 +2,15 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Award, Bell, GraduationCap, Home, LogOut, Menu, Search, Settings, X } from "lucide-react";
+import { Award, Bell, BookOpen, Bot, GraduationCap, Home, LogOut, Map, Menu, Search, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
+import { PointsBalance } from "@/components/shared/points-balance";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
+import { QuickMentor } from "@/components/shared/quick-mentor";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -18,11 +20,16 @@ type AppShellProps = {
 const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Courses", href: "/courses", icon: GraduationCap },
+  { label: "Library", href: "/library", icon: BookOpen },
+  { label: "Roadmaps", href: "/roadmaps", icon: Map },
+  { label: "AI Mentor", href: "/mentor", icon: Bot },
   { label: "Profile", href: "/profile", icon: Award },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-const bottomNav = platformNav;
+const bottomNav = platformNav.filter((item) =>
+  ["/dashboard", "/courses", "/roadmaps", "/mentor", "/profile"].includes(item.href),
+);
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
@@ -59,7 +66,7 @@ export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { user, isLoading, logout } = useAuth();
+  const { accessToken, user, isLoading, logout } = useAuth();
   const activeLabel =
     platformNav.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
       ?.label ?? "Dashboard";
@@ -147,6 +154,7 @@ export function AppShell({ children }: AppShellProps) {
               <span className="type-small text-slate-500">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
+              <PointsBalance accessToken={accessToken} />
               <ThemeToggle />
               <Button asChild variant="soft" size="sm">
                 <Link href="/courses">
@@ -181,7 +189,7 @@ export function AppShell({ children }: AppShellProps) {
       </div>
 
       <nav className="chrome-surface fixed inset-x-0 bottom-0 z-30 rounded-t-xl border-t border-white/50 px-2 py-2 lg:hidden">
-        <div className="grid grid-cols-4 gap-1">
+        <div className="grid grid-cols-5 gap-1">
           {bottomNav.map((item) => {
             const Icon = item.icon;
             const active =
@@ -232,6 +240,7 @@ export function AppShell({ children }: AppShellProps) {
           </aside>
         </div>
       )}
+      <QuickMentor />
     </div>
   );
 }

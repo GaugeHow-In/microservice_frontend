@@ -15,6 +15,7 @@ const apiPayload = {
       level: "beginner",
       duration_minutes: 180,
       lesson_count: 6,
+      certificate_enabled: true,
       average_rating: 4.7,
       total_reviews: 12,
       thumbnail_url: null,
@@ -55,6 +56,7 @@ const apiPayload = {
       level: "intermediate",
       duration_minutes: 220,
       lesson_count: 8,
+      certificate_enabled: false,
       average_rating: 4.8,
       total_reviews: 9,
       thumbnail_url: null,
@@ -83,15 +85,46 @@ const apiPayload = {
   page_size: 12,
 };
 
+const gamificationPayload = {
+  awarded: false,
+  awarded_points: 0,
+  summary: {
+    available_points: 0,
+    lifetime_points: 0,
+    level: {
+      code: "unranked",
+      name: "Unranked",
+      min_points: 0,
+      max_points: 100,
+      next_level_name: "Beginner",
+      points_to_next_level: 100,
+      progress_percent: 0,
+    },
+    badges: [],
+    daily_check_in: {
+      points: 10,
+      available: false,
+      checked_in_today: true,
+      streak_days: 0,
+      next_reset_at: "2026-06-25T00:00:00Z",
+    },
+    recent_transactions: [],
+  },
+};
+
 describe("CoursesPage", () => {
   beforeEach(() => {
     vi.restoreAllMocks();
-    vi.spyOn(global, "fetch").mockResolvedValue(
-      new Response(JSON.stringify(apiPayload), {
+    vi.spyOn(global, "fetch").mockImplementation(async (input) => {
+      const url = input instanceof Request ? input.url : String(input);
+      const payload = url.includes("/gamification/daily-check-in")
+        ? gamificationPayload
+        : apiPayload;
+      return new Response(JSON.stringify(payload), {
         status: 200,
         headers: { "Content-Type": "application/json" },
-      }),
-    );
+      });
+    });
   });
 
   it("loads and renders the backend-backed catalog", async () => {

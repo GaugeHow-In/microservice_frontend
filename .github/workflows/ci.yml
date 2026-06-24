@@ -109,6 +109,9 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Gamification UI tests
+        run: npm run test -- src/components/shared/points-balance.test.tsx src/components/layout/app-shell.test.tsx
+
       - name: Run tests
         if: steps.detect-tests.outputs.has_tests == 'true'
         run: ${{ steps.detect-tests.outputs.test_command }}

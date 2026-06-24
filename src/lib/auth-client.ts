@@ -81,16 +81,24 @@ function mapValidationField(field: string): keyof FieldErrors | null {
 }
 
 async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
-  const response = await fetch(`${API_BASE_URL}${path}`, {
-    method: options.method ?? "GET",
-    headers: {
-      "Content-Type": "application/json",
-      ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
-      ...(options.csrfToken ? { "X-CSRF-Token": options.csrfToken } : {}),
-    },
-    credentials: "include",
-    body: options.body ? JSON.stringify(options.body) : undefined,
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE_URL}${path}`, {
+      method: options.method ?? "GET",
+      headers: {
+        "Content-Type": "application/json",
+        ...(options.token ? { Authorization: `Bearer ${options.token}` } : {}),
+        ...(options.csrfToken ? { "X-CSRF-Token": options.csrfToken } : {}),
+      },
+      credentials: "include",
+      body: options.body ? JSON.stringify(options.body) : undefined,
+    });
+  } catch {
+    throw new AuthApiError(
+      "Unable to reach the authentication service. Check that the backend is running and the frontend origin is allowed.",
+      { status: 0 },
+    );
+  }
 
   if (!response.ok) {
     let detail = "Request failed";

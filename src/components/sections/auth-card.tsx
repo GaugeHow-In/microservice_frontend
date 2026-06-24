@@ -139,6 +139,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const [confirmNewPassword, setConfirmNewPassword] = useState("");
   const [code, setCode] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isOAuthSubmitting, setIsOAuthSubmitting] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
@@ -282,6 +283,19 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
       }
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleOAuthClick = async () => {
+    setIsOAuthSubmitting(true);
+    setError(null);
+    setMessage(null);
+
+    try {
+      await beginOAuth("google");
+    } catch (oauthError) {
+      setError(oauthError instanceof Error ? oauthError.message : "Unable to start Google sign-in");
+      setIsOAuthSubmitting(false);
     }
   };
 
@@ -543,9 +557,10 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                   <div className="grid grid-cols-1 gap-3">
                     <Button
                       variant="secondary"
-                      onClick={() => beginOAuth("google")}
-                      disabled={isSubmitting}
+                      onClick={handleOAuthClick}
+                      disabled={isSubmitting || isOAuthSubmitting}
                     >
+                      {isOAuthSubmitting ? <LoaderCircle className="animate-spin" /> : null}
                       Continue with Google
                     </Button>
                   </div>
