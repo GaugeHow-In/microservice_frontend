@@ -406,6 +406,37 @@ html.dark .premium-bg::after {
   animation: signal-pass 3.8s var(--motion-ease-standard) infinite;
 }
 
+.dashboard-mentor-bg {
+  isolation: isolate;
+}
+
+.dashboard-mentor-bg::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(115deg, rgba(255, 255, 255, 0.86), rgba(255, 246, 232, 0.62)),
+    repeating-linear-gradient(90deg, rgba(8, 127, 91, 0.1) 0 1px, transparent 1px 5.5rem),
+    repeating-linear-gradient(0deg, rgba(31, 95, 191, 0.08) 0 1px, transparent 1px 5.5rem);
+}
+
+.dashboard-mentor-bg::after {
+  content: "";
+  position: absolute;
+  inset: -30% -12%;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.5;
+  background:
+    linear-gradient(100deg, transparent 18%, rgba(110, 231, 183, 0.22) 32%, transparent 46%),
+    linear-gradient(120deg, transparent 48%, rgba(31, 95, 191, 0.16) 58%, transparent 70%),
+    linear-gradient(90deg, transparent, rgba(255, 167, 36, 0.2), transparent);
+  transform: translate3d(-18%, 0, 0);
+  animation: dashboard-signal-flow 14s var(--motion-ease-standard) infinite alternate;
+}
+
 .reveal-up {
   animation: reveal-up 640ms var(--motion-ease-standard) both;
   transform: translate3d(0, 0, 0);
@@ -952,6 +983,15 @@ html.dark .bg-slate-950\/95 {
   78%,
   100% {
     transform: translateX(100%);
+  }
+}
+
+@keyframes dashboard-signal-flow {
+  from {
+    transform: translate3d(-18%, 0, 0) skewX(-4deg);
+  }
+  to {
+    transform: translate3d(18%, -3%, 0) skewX(-4deg);
   }
 }
 

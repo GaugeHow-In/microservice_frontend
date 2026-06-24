@@ -1,7 +1,8 @@
 "use client";
 
 import { Bot, LoaderCircle, MessageSquarePlus, Send } from "lucide-react";
-import { FormEvent, useEffect, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { PageHeader } from "@/components/shared/page-header";
@@ -11,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { aiClient, type AIMessage, type Conversation } from "@/lib/ai-client";
 
 export default function MentorPage() {
+  const searchParams = useSearchParams();
   const { accessToken } = useAuth();
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [active, setActive] = useState<string | null>(null);
@@ -18,15 +20,17 @@ export default function MentorPage() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const handledPromptRef = useRef<string | null>(null);
+  const dashboardPrompt = searchParams.get("prompt")?.trim() ?? "";
 
   useEffect(() => {
     if (!accessToken) return;
     void aiClient.listConversations(accessToken).then((items) => {
       const mentorItems = items.filter((item) => item.interface === "mentor");
       setConversations(mentorItems);
-      if (mentorItems[0]) setActive(mentorItems[0].id);
+      if (mentorItems[0] && !dashboardPrompt) setActive(mentorItems[0].id);
     }).catch(() => setError("Could not load conversations."));
-  }, [accessToken]);
+  }, [accessToken, dashboardPrompt]);
 
   useEffect(() => {
     if (!accessToken || !active) { setMessages([]); return; }
@@ -41,29 +45,49 @@ export default function MentorPage() {
     setMessages([]);
   }
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
-    const content = input.trim();
-    if (!content || !accessToken || busy) return;
+  const sendMentorMessage = useCallback(async function sendMentorMessage(
+    content: string,
+    options: { forceNew?: boolean; route?: string } = {},
+  ) {
+    if (!accessToken || busy) return;
     setBusy(true);
     setError(null);
     setInput("");
     try {
-      let id = active;
+      let id = options.forceNew ? null : active;
       if (!id) {
         const created = await aiClient.createConversation(accessToken, "mentor");
         id = created.id;
         setActive(id);
-        setConversations((items) => [created, ...items]);
+        setConversations((items) => [created, ...items.filter((item) => item.id !== created.id)]);
       }
-      const turn = await aiClient.sendMessage(accessToken, id, content, "/mentor");
-      setMessages((items) => [...items, turn.user_message, turn.assistant_message]);
-      setConversations((items) => items.map((item) => item.id === id ? turn.conversation : item));
+      const turn = await aiClient.sendMessage(accessToken, id, content, options.route ?? "/mentor");
+      setMessages((items) =>
+        options.forceNew ? [turn.user_message, turn.assistant_message] : [...items, turn.user_message, turn.assistant_message],
+      );
+      setConversations((items) => [
+        turn.conversation,
+        ...items.filter((item) => item.id !== turn.conversation.id),
+      ]);
+      setActive(id);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "AI Mentor is unavailable.");
     } finally {
       setBusy(false);
     }
+  }, [accessToken, active, busy]);
+
+  useEffect(() => {
+    if (!accessToken || !dashboardPrompt || handledPromptRef.current === dashboardPrompt || busy) return;
+    handledPromptRef.current = dashboardPrompt;
+    void sendMentorMessage(dashboardPrompt, { forceNew: true, route: "/dashboard" });
+  }, [accessToken, busy, dashboardPrompt, sendMentorMessage]);
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const content = input.trim();
+    if (!content) return;
+    await sendMentorMessage(content);
   }
 
   return (
