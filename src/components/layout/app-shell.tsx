@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Award, Bell, BookOpen, Bot, GraduationCap, Home, LogOut, Map, Menu, Search, Settings, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
@@ -11,6 +12,7 @@ import { BrandLogo } from "@/components/shared/brand-logo";
 import { PointsBalance } from "@/components/shared/points-balance";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { QuickMentor } from "@/components/shared/quick-mentor";
+import { getProfileAvatar } from "@/lib/profile-avatars";
 import { cn } from "@/lib/utils";
 
 type AppShellProps = {
@@ -79,6 +81,7 @@ export function AppShell({ children }: AppShellProps) {
       .slice(0, 2)
       .toUpperCase();
   }, [user?.display_name]);
+  const selectedAvatar = getProfileAvatar(user?.profile?.avatar_key);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -106,7 +109,18 @@ export function AppShell({ children }: AppShellProps) {
         <div className="surface-secondary absolute bottom-5 left-4 right-4 rounded-xl p-4">
           <div className="flex items-center gap-3">
             <Avatar>
-              <AvatarFallback>{initials}</AvatarFallback>
+              {selectedAvatar ? (
+                <Image
+                  src={selectedAvatar.url}
+                  alt=""
+                  width={40}
+                  height={40}
+                  unoptimized
+                  className="size-full rounded-full object-cover"
+                />
+              ) : (
+                <AvatarFallback>{initials}</AvatarFallback>
+              )}
             </Avatar>
             <div>
               <p className="type-small font-semibold text-slate-950">{user.display_name}</p>
@@ -166,7 +180,18 @@ export function AppShell({ children }: AppShellProps) {
                 <Bell />
               </Button>
               <Avatar className="hidden sm:flex">
-                <AvatarFallback>{initials}</AvatarFallback>
+                {selectedAvatar ? (
+                  <Image
+                    src={selectedAvatar.url}
+                    alt=""
+                    width={40}
+                    height={40}
+                    unoptimized
+                    className="size-full rounded-full object-cover"
+                  />
+                ) : (
+                  <AvatarFallback>{initials}</AvatarFallback>
+                )}
               </Avatar>
               <Button
                 variant="ghost"

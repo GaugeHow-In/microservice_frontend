@@ -9,7 +9,13 @@ import {
   useRef,
   useState,
 } from "react";
-import { authClient, type AuthPayload, type AuthUser, getCsrfCookie } from "@/lib/auth-client";
+import {
+  authClient,
+  type AuthPayload,
+  type AuthUser,
+  getCsrfCookie,
+  type ProfileUpdateInput,
+} from "@/lib/auth-client";
 
 type AuthContextValue = {
   accessToken: string | null;
@@ -21,6 +27,7 @@ type AuthContextValue = {
   resendVerification: (email: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (input: { email: string; code: string; newPassword: string }) => Promise<void>;
+  updateProfile: (input: ProfileUpdateInput) => Promise<void>;
   logout: () => Promise<void>;
   logoutAll: () => Promise<void>;
   beginOAuth: (provider: "google") => Promise<void>;
@@ -117,6 +124,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
     async resetPassword(input) {
       await authClient.resetPassword(input);
+    },
+    async updateProfile(input) {
+      if (!accessToken) {
+        throw new Error("You must be logged in to update your profile.");
+      }
+      const updated = await authClient.updateProfile(accessToken, input);
+      setUser(updated);
     },
     async logout() {
       if (accessToken) {

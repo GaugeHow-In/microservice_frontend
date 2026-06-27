@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 import type { LucideIcon } from "lucide-react";
 import {
@@ -31,6 +32,7 @@ import {
   type PublicProfileCertificate,
   type PublicProfileCourse,
 } from "@/lib/profile-client";
+import { getProfileAvatar } from "@/lib/profile-avatars";
 import { cn } from "@/lib/utils";
 
 type Props = {
@@ -187,6 +189,7 @@ function CertificateCard({ certificate }: { certificate: PublicProfileCertificat
 function ProfileContent({ profile }: { profile: PublicProfile }) {
   const [copied, setCopied] = useState(false);
   const initials = getInitials(profile.display_name);
+  const selectedAvatar = getProfileAvatar(profile.avatar_key);
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const shareUrl = publicProfileUrl(profile.handle);
   const socialLinks: Array<{ href: string | null; label: string; icon: LucideIcon }> = [
@@ -215,9 +218,20 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
       <section className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-[var(--shadow-md)] md:p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="flex flex-col gap-5 md:flex-row md:items-center">
-            <Avatar className="size-24 border border-orange-200 bg-orange-50">
-              <AvatarFallback className="text-2xl text-orange-500">{initials}</AvatarFallback>
-            </Avatar>
+            {selectedAvatar ? (
+              <Image
+                src={selectedAvatar.url}
+                alt=""
+                width={96}
+                height={96}
+                unoptimized
+                className="size-24 rounded-full border border-orange-200 bg-orange-50 object-cover"
+              />
+            ) : (
+              <Avatar className="size-24 border border-orange-200 bg-orange-50">
+                <AvatarFallback className="text-2xl text-orange-500">{initials}</AvatarFallback>
+              </Avatar>
+            )}
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="type-h2 text-slate-950">{profile.display_name}</h1>
@@ -226,7 +240,6 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                   {profile.gamification.level.name}
                 </Badge>
               </div>
-              <p className="mt-1 text-sm font-semibold text-slate-500">@{profile.handle}</p>
               {profile.public_bio && (
                 <p className="mt-3 max-w-2xl text-slate-600">{profile.public_bio}</p>
               )}
@@ -241,6 +254,12 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                   <CalendarDays className="size-4 text-orange-500" />
                   Joined {formatMonthYear(profile.joined_at)}
                 </span>
+                {profile.birthday && (
+                  <span className="inline-flex items-center gap-1.5">
+                    <Sparkles className="size-4 text-orange-500" />
+                    Birthday {profile.birthday}
+                  </span>
+                )}
               </div>
               {hasSocialLinks && (
                 <div className="mt-4 flex flex-wrap gap-2">

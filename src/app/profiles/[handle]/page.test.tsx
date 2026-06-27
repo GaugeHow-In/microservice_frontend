@@ -8,6 +8,8 @@ const publicProfilePayload = {
   display_name: "Mira Shah",
   handle: "mira-shah",
   joined_at: "2026-01-15T00:00:00Z",
+  avatar_key: "orbit",
+  birthday: "May 14",
   public_bio: "Mechanical design learner focused on GD&T and CAD workflows.",
   city: "Pune",
   country: "India",
@@ -90,7 +92,8 @@ describe("PublicProfilePage", () => {
       expect(screen.getByRole("heading", { name: "Mira Shah" })).toBeInTheDocument();
     });
 
-    expect(screen.getByText("@mira-shah")).toBeInTheDocument();
+    expect(screen.queryByText("@mira-shah")).not.toBeInTheDocument();
+    expect(screen.getByText("Birthday May 14")).toBeInTheDocument();
     expect(screen.getAllByText("Pathfinder").length).toBeGreaterThan(0);
     expect(screen.getByText("Course Finisher")).toBeInTheDocument();
     expect(screen.getAllByText("GD&T Fundamentals")).toHaveLength(2);

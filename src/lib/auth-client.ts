@@ -33,6 +33,7 @@ export type AuthUser = {
   roles: string[];
   permissions: string[];
   profile: {
+    avatar_key: string | null;
     first_name: string | null;
     last_name: string | null;
     phone_number: string | null;
@@ -46,6 +47,25 @@ export type AuthUser = {
     public_bio: string | null;
     visibility: string;
   } | null;
+};
+
+export type ProfileUpdateInput = {
+  display_name?: string;
+  timezone?: string | null;
+  locale?: string | null;
+  avatar_key?: string | null;
+  first_name?: string | null;
+  last_name?: string | null;
+  phone_number?: string | null;
+  bio?: string | null;
+  city?: string | null;
+  country?: string | null;
+  date_of_birth?: string | null;
+  website_url?: string | null;
+  linkedin_url?: string | null;
+  github_url?: string | null;
+  public_bio?: string | null;
+  visibility?: string | null;
 };
 
 export type AuthPayload = {
@@ -213,6 +233,13 @@ export const authClient = {
   },
   getMe(token: string) {
     return apiRequest<AuthUser>("/auth/me", { token });
+  },
+  updateProfile(token: string, input: ProfileUpdateInput) {
+    return apiRequest<AuthUser>("/users/me", {
+      method: "PATCH",
+      token,
+      body: input,
+    });
   },
   getOAuthUrl(provider: "google", redirectTo = "/dashboard") {
     return apiRequest<{ authorization_url: string }>(

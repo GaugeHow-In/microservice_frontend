@@ -64,6 +64,8 @@ export type PublicProfile = {
   display_name: string;
   handle: string;
   joined_at: string;
+  avatar_key: string | null;
+  birthday: string | null;
   public_bio: string | null;
   city: string | null;
   country: string | null;
