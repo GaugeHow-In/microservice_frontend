@@ -35,3 +35,4 @@ npm test
 - navigation shell state and drawer interactions
 - goals, courses, notes, and tests route composition
 - dynamic goal detail resolution and missing-slug handling
+- modern ui
