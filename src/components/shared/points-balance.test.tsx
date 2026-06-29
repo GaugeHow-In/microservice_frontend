@@ -72,7 +72,7 @@ describe("PointsBalance", () => {
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
-      "http://localhost:8000/api/v1/gamification/daily-check-in",
+      "http://localhost:8000/v1/gamification/daily-check-in",
       expect.objectContaining({
         method: "POST",
         headers: expect.objectContaining({ Authorization: "Bearer test-token" }),
