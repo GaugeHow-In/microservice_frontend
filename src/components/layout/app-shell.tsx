@@ -3,7 +3,21 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
-import { Award, Bell, BookOpen, Bot, GraduationCap, Home, LogOut, Map, Menu, Search, Settings, X } from "lucide-react";
+import {
+  Award,
+  Bell,
+  BookOpen,
+  Bot,
+  ClipboardCheck,
+  GraduationCap,
+  Home,
+  LogOut,
+  Map,
+  Menu,
+  Search,
+  Settings,
+  X,
+} from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -22,6 +36,7 @@ type AppShellProps = {
 const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: Home },
   { label: "Courses", href: "/courses", icon: GraduationCap },
+  { label: "Tests", href: "/tests", icon: ClipboardCheck },
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Roadmaps", href: "/roadmaps", icon: Map },
   { label: "AI Mentor", href: "/mentor", icon: Bot },
@@ -30,7 +45,7 @@ const platformNav = [
 ];
 
 const bottomNav = platformNav.filter((item) =>
-  ["/dashboard", "/courses", "/roadmaps", "/mentor", "/profile"].includes(item.href),
+  ["/dashboard", "/courses", "/tests", "/mentor", "/profile"].includes(item.href),
 );
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {

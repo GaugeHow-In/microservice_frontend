@@ -1,14 +1,59 @@
 import { createElement } from "react";
-import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { render, screen, waitFor } from "@testing-library/react";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import TestsPage from "@/app/tests/page";
 
+const fetchMock = vi.fn();
+
 describe("TestsPage", () => {
-  it("renders the backend-pending state instead of mock tests", () => {
+  beforeEach(() => {
+    fetchMock.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        items: [
+          {
+            id: "test-1",
+            course_id: null,
+            title: "Machine Design Practice",
+            slug: "machine-design-practice",
+            description: "Standalone timed practice.",
+            status: "published",
+            duration_seconds: 1800,
+            passing_percent: 40,
+            is_certificate_required: false,
+            question_count: 12,
+            max_score: 20,
+            access: {
+              has_access: true,
+              access_type: "free",
+              locked_reason: null,
+              course_slug: null,
+              price_minor: 0,
+              currency_code: "INR",
+            },
+          },
+        ],
+        total: 1,
+        page: 1,
+        page_size: 100,
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    fetchMock.mockReset();
+  });
+
+  it("renders real backend tests instead of the pending state", async () => {
     render(createElement(TestsPage));
 
-    expect(screen.getByRole("heading", { name: /practice tests are not connected yet/i })).toBeInTheDocument();
-    expect(screen.getByText(/static test cards and fake performance trends have been removed/i)).toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /analytics/i })).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByRole("heading", { name: /machine design practice/i })).toBeInTheDocument();
+    });
+    expect(screen.getByText(/timed tests for certificates and practice/i)).toBeInTheDocument();
+    expect(screen.getByText("12")).toBeInTheDocument();
+    expect(screen.queryByText(/practice tests are not connected yet/i)).not.toBeInTheDocument();
   });
 });
