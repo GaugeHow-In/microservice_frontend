@@ -29,6 +29,8 @@ export type InstructorSummary = {
   id: string;
   display_name: string;
   handle: string | null;
+  one_line_description: string | null;
+  linkedin_url: string | null;
 };
 
 export type PricingRegion = {
@@ -130,6 +132,10 @@ export type CourseDetail = {
   slug: string;
   short_description: string | null;
   long_description: string | null;
+  language_code: string;
+  skills: string[];
+  prerequisites_markdown: string | null;
+  faqs: Array<{ question: string; answer: string }>;
   status: string;
   level: CourseLevel;
   duration_minutes: number | null;
@@ -251,6 +257,14 @@ export type LessonProgress = {
   completed_at: string | null;
 };
 
+export type LessonNote = {
+  id: string;
+  timestamp_seconds: number;
+  body: string;
+  created_at: string;
+  updated_at: string;
+};
+
 export type LessonDetail = {
   id: string;
   course_id: string;
@@ -261,6 +275,22 @@ export type LessonDetail = {
   status: LessonStatus;
   summary: string | null;
   content_markdown: string | null;
+  flashcard_markdown: string | null;
+  has_simulation: boolean;
+  simulation_config: {
+    title?: string;
+    xLabel?: string;
+    yLabel?: string;
+    amplitude?: number;
+    frequency?: number;
+    phase?: number;
+  };
+  has_jupyter_notebook: boolean;
+  jupyter_config: {
+    embedUrl?: string;
+    maxSessionMinutes?: number;
+    instructions?: string;
+  };
   duration_seconds: number | null;
   is_preview: boolean;
   accessible: boolean;
@@ -272,6 +302,9 @@ export type LessonDetail = {
   resources: LessonResource[];
   progress: LessonProgress | null;
   discussions: DiscussionThread[];
+  like_count: number;
+  liked_by_me: boolean;
+  notes: LessonNote[];
   access: AccessSummary | null;
 };
 
@@ -594,6 +627,31 @@ export const learningClient = {
       body: {
         body: payload.body,
         parent_comment_id: payload.parentCommentId ?? null,
+      },
+    });
+  },
+  setLessonLike(courseSlug: string, lessonSlug: string, token: string, liked: boolean) {
+    return learningRequest<{ liked: boolean; like_count: number }>(
+      `/learning/courses/${courseSlug}/lessons/${lessonSlug}/like`,
+      {
+        method: liked ? "POST" : "DELETE",
+        token,
+        body: liked ? {} : undefined,
+      },
+    );
+  },
+  createLessonNote(
+    courseSlug: string,
+    lessonSlug: string,
+    token: string,
+    payload: { timestampSeconds: number; body: string },
+  ) {
+    return learningRequest<LessonNote>(`/learning/courses/${courseSlug}/lessons/${lessonSlug}/notes`, {
+      method: "POST",
+      token,
+      body: {
+        timestamp_seconds: payload.timestampSeconds,
+        body: payload.body,
       },
     });
   },

@@ -3,12 +3,9 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
-  BadgeCheck,
-  Clock3,
-  FileText,
-  MessageSquareText,
+  ExternalLink,
   Play,
-  Star,
+  Tags,
   Ticket,
 } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -366,6 +363,7 @@ export default function CourseDetailPage({ params }: Props) {
 
   const instructorLine =
     course.instructors.map((item) => item.display_name).join(", ") || "GaugeHow Faculty";
+  const leadInstructor = course.instructors[0] ?? null;
   const access = course.access;
   const isFree = course.recommended_pricing?.base_price_minor === 0;
   const canReview = Boolean(access?.has_access);
@@ -376,7 +374,7 @@ export default function CourseDetailPage({ params }: Props) {
         <PageHeader
           eyebrow={course.categories.map((item) => item.name).join(" · ")}
           title={course.title}
-          description={course.long_description ?? course.short_description ?? "Course details"}
+          description={course.short_description ?? "Course details"}
           action={
             access?.has_access && continueLessonSlug ? (
               <Button asChild>
@@ -408,8 +406,16 @@ export default function CourseDetailPage({ params }: Props) {
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <Card className="overflow-hidden">
             <CardContent className="p-5">
-              <div className="aspect-video rounded-lg bg-slate-950 p-6 text-white">
-                <div className="flex h-full flex-col justify-between">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-slate-950 p-6 text-white">
+                {course.thumbnail_url ? (
+                  <img
+                    src={course.thumbnail_url}
+                    alt={course.title}
+                    className="absolute inset-0 h-full w-full object-cover opacity-70"
+                  />
+                ) : null}
+                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/20" />
+                <div className="relative flex h-full flex-col justify-between">
                   <div className="flex items-center justify-between gap-3">
                     <Badge variant="orange">Backend-backed course</Badge>
                     {access?.has_access ? (
@@ -459,39 +465,40 @@ export default function CourseDetailPage({ params }: Props) {
 
           <Card>
             <CardHeader>
-              <CardTitle>What works right now</CardTitle>
+              <CardTitle>Instructor</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
-              {[
-                {
-                  icon: FileText,
-                  title: "Transcript-backed lessons",
-                  text: "Lesson playback, transcript, and generated notes/flashcards use real learning APIs.",
-                },
-                {
-                  icon: MessageSquareText,
-                  title: "Discussion threads",
-                  text: "Learners can open lesson discussions and reply after they have course access.",
-                },
-                {
-                  icon: BadgeCheck,
-                  title: "Reviews",
-                  text: "Enrolled users can rate the course and leave an optional review.",
-                },
-                {
-                  icon: Clock3,
-                  title: "Access tracking",
-                  text: "The UI shows active access, lifetime access, and days-left state from the backend.",
-                },
-              ].map(({ icon: Icon, title, text }) => (
-                <div key={title} className="flex gap-3 rounded-lg border border-slate-200 p-3">
-                  <Icon className="mt-0.5 size-5 text-orange-500" />
-                  <div>
-                    <p className="font-semibold text-slate-950">{title}</p>
-                    <p className="mt-1 text-sm text-slate-500">{text}</p>
-                  </div>
+            <CardContent className="space-y-4">
+              <div className="rounded-lg border border-slate-200 p-4">
+                <p className="font-semibold text-slate-950">
+                  {leadInstructor?.display_name ?? "GaugeHow Faculty"}
+                </p>
+                {leadInstructor?.one_line_description ? (
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    {leadInstructor.one_line_description}
+                  </p>
+                ) : null}
+                {leadInstructor?.linkedin_url ? (
+                  <Button asChild className="mt-3" variant="secondary">
+                    <a href={leadInstructor.linkedin_url} target="_blank" rel="noreferrer">
+                      <ExternalLink className="size-4" />
+                      LinkedIn
+                    </a>
+                  </Button>
+                ) : null}
+              </div>
+              <div className="rounded-lg border border-slate-200 p-4">
+                <div className="flex items-center gap-2 font-semibold text-slate-950">
+                  <Tags className="size-4 text-orange-500" />
+                  Skills you&apos;ll gain
                 </div>
-              ))}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {course.skills.length ? (
+                    course.skills.map((skill) => <Badge key={skill}>{skill}</Badge>)
+                  ) : (
+                    <span className="text-sm text-slate-500">Skills will be added soon.</span>
+                  )}
+                </div>
+              </div>
             </CardContent>
           </Card>
         </section>
@@ -499,13 +506,31 @@ export default function CourseDetailPage({ params }: Props) {
         <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
           <Card>
             <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle>Modules and lessons</CardTitle>
-                <span className="flex items-center gap-1 text-sm font-semibold text-slate-600">
-                  <Star className="size-4 fill-orange-400 text-orange-400" />
-                  {course.average_rating.toFixed(1)}
-                </span>
-              </div>
+              <CardTitle>What you&apos;ll learn</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600">
+                {course.long_description ?? "Learning outcomes will be added soon."}
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Pre-requisites</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p className="whitespace-pre-wrap text-sm leading-7 text-slate-600">
+                {course.prerequisites_markdown ?? "No pre-requisites listed."}
+              </p>
+            </CardContent>
+          </Card>
+        </section>
+
+        <section className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+          <Card>
+            <CardHeader>
+              <CardTitle>Curriculum</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
               {course.modules.map((module, index) => (
@@ -562,27 +587,52 @@ export default function CourseDetailPage({ params }: Props) {
                 <CardTitle>Pricing and access</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                {course.pricing_options.map((option) => (
-                  <div key={option.id} className="rounded-lg border border-slate-200 p-4">
+                {course.recommended_pricing ? (
+                  <div className="rounded-lg border border-slate-200 p-4">
                     <div className="flex items-center justify-between gap-3">
                       <div>
                         <p className="font-semibold capitalize text-slate-950">
-                          {option.purchase_type.replace("_", " ")}
+                          {course.recommended_pricing.purchase_type.replace("_", " ")}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
-                          {option.region.name}
-                          {option.pricing_tier ? ` · ${option.pricing_tier.replace("_", " ")}` : ""}
+                          {course.recommended_pricing.subscription_days
+                            ? `${course.recommended_pricing.subscription_days} days access`
+                            : "Lifetime access"}
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="font-bold text-slate-950">{formatPrice(option)}</p>
-                        {option.is_display_price_estimated ? (
+                        <p className="font-bold text-slate-950">{formatPrice(course.recommended_pricing)}</p>
+                        {course.recommended_pricing.is_display_price_estimated ? (
                           <p className="mt-1 text-xs text-slate-500">Estimated local price</p>
                         ) : null}
                       </div>
                     </div>
                   </div>
-                ))}
+                ) : (
+                  <p className="text-sm text-slate-500">Pricing is not available yet.</p>
+                )}
+                <div className="rounded-lg border border-slate-200 p-4">
+                  <p className="font-semibold text-slate-950">Language</p>
+                  <p className="mt-1 text-sm uppercase text-slate-500">{course.language_code}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader>
+                <CardTitle>FAQs</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {course.faqs.length ? (
+                  course.faqs.map((faq, index) => (
+                    <div key={index} className="rounded-lg border border-slate-200 p-4">
+                      <p className="font-semibold text-slate-950">{faq.question}</p>
+                      <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-sm text-slate-500">No FAQs yet.</p>
+                )}
               </CardContent>
             </Card>
 

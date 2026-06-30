@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Clock3, FileText, MessageCircle, Play, Sparkles } from "lucide-react";
+import { Clock3, Download, FileText, MessageCircle, Play, Sparkles, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -303,6 +303,73 @@ function runPlayerCommand(command: () => void): void {
   }
 }
 
+function SimulationPanel({
+  config,
+}: {
+  config: {
+    title?: string;
+    xLabel?: string;
+    yLabel?: string;
+    amplitude?: number;
+    frequency?: number;
+    phase?: number;
+  };
+}) {
+  const [amplitude, setAmplitude] = useState(config.amplitude ?? 1);
+  const [frequency, setFrequency] = useState(config.frequency ?? 1);
+  const [phase, setPhase] = useState(config.phase ?? 0);
+  const points = Array.from({ length: 80 }, (_, index) => {
+    const x = index / 79;
+    const y = amplitude * Math.sin(x * Math.PI * 2 * frequency + (phase * Math.PI) / 180);
+    return { x, y };
+  });
+  const maxY = Math.max(1, ...points.map((point) => Math.abs(point.y)));
+  const path = points
+    .map((point, index) => {
+      const x = 40 + point.x * 520;
+      const y = 160 - (point.y / maxY) * 110;
+      return `${index === 0 ? "M" : "L"} ${x.toFixed(1)} ${y.toFixed(1)}`;
+    })
+    .join(" ");
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{config.title || "Graph simulation"}</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="rounded-xl border border-slate-200 bg-white p-3">
+          <svg viewBox="0 0 600 320" className="h-72 w-full">
+            <line x1="40" y1="160" x2="560" y2="160" stroke="#cbd5e1" />
+            <line x1="40" y1="36" x2="40" y2="284" stroke="#cbd5e1" />
+            <path d={path} fill="none" stroke="#f97316" strokeWidth="4" />
+            <text x="300" y="306" textAnchor="middle" className="fill-slate-500 text-xs">
+              {config.xLabel || "Input"}
+            </text>
+            <text x="18" y="160" textAnchor="middle" transform="rotate(-90 18 160)" className="fill-slate-500 text-xs">
+              {config.yLabel || "Output"}
+            </text>
+          </svg>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <label className="text-sm font-medium text-slate-700">
+            Amplitude
+            <input className="mt-2 w-full" type="range" min="0" max="10" step="0.1" value={amplitude} onChange={(event) => setAmplitude(Number(event.target.value))} />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Frequency
+            <input className="mt-2 w-full" type="range" min="0" max="10" step="0.1" value={frequency} onChange={(event) => setFrequency(Number(event.target.value))} />
+          </label>
+          <label className="text-sm font-medium text-slate-700">
+            Phase
+            <input className="mt-2 w-full" type="range" min="-180" max="180" step="1" value={phase} onChange={(event) => setPhase(Number(event.target.value))} />
+          </label>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 function VideoLearningPageContent({ params }: Props) {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const searchParams = useSearchParams();
@@ -337,6 +404,8 @@ function VideoLearningPageContent({ params }: Props) {
   >({});
   const [discussionBody, setDiscussionBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
+  const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
+  const [noteBody, setNoteBody] = useState("");
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
@@ -843,9 +912,9 @@ function VideoLearningPageContent({ params }: Props) {
     };
   }, [flushProgress, handlePlaybackSample, lesson, scheduleIdleSync, youtubeEmbedUrl]);
 
-  async function handleQuestionAttempt(questionId: string, optionId?: string) {
+  async function handleQuestionAttempt(questionId: string, optionId?: string, answerText?: string) {
     if (!courseSlug || !lesson || !accessToken) return;
-    if (!optionId) return;
+    if (!optionId && !answerText?.trim()) return;
 
     if (questionLockRef.current[questionId]) {
       return;
@@ -855,7 +924,7 @@ function VideoLearningPageContent({ params }: Props) {
     setQuestionStates((current) => ({
       ...current,
       [questionId]: {
-        selectedOptionId: optionId,
+        selectedOptionId: optionId ?? null,
         isLocked: true,
         isSubmitting: true,
         result: null,
@@ -869,24 +938,25 @@ function VideoLearningPageContent({ params }: Props) {
         lesson.slug,
         questionId,
         accessToken,
-        { selectedOptionId: optionId },
+        { selectedOptionId: optionId, answerText },
       );
       setQuestionStates((current) => ({
         ...current,
         [questionId]: {
-          selectedOptionId: optionId,
+          selectedOptionId: optionId ?? null,
           isLocked: true,
           isSubmitting: false,
           result: { correct: result.is_correct, explanation: result.explanation },
           error: null,
         },
       }));
+      setAnswerDrafts((current) => ({ ...current, [questionId]: "" }));
     } catch (cause) {
       questionLockRef.current[questionId] = false;
       setQuestionStates((current) => ({
         ...current,
         [questionId]: {
-          selectedOptionId: optionId,
+          selectedOptionId: optionId ?? null,
           isLocked: false,
           isSubmitting: false,
           result: null,
@@ -894,6 +964,71 @@ function VideoLearningPageContent({ params }: Props) {
         },
       }));
     }
+  }
+
+  async function handleLessonLike() {
+    if (!courseSlug || !lesson || !accessToken) return;
+    const nextLiked = !lesson.liked_by_me;
+    try {
+      const response = await learningClient.setLessonLike(courseSlug, lesson.slug, accessToken, nextLiked);
+      setLesson((current) =>
+        current ? { ...current, liked_by_me: response.liked, like_count: response.like_count } : current,
+      );
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to update like.");
+    }
+  }
+
+  async function handleCreateNote() {
+    if (!courseSlug || !lesson || !accessToken || !noteBody.trim()) return;
+    setSubmitting("note");
+    try {
+      const note = await learningClient.createLessonNote(courseSlug, lesson.slug, accessToken, {
+        timestampSeconds: Math.floor(progressDraftRef.current.lastPositionSeconds),
+        body: noteBody,
+      });
+      setLesson((current) => (current ? { ...current, notes: [...current.notes, note] } : current));
+      setNoteBody("");
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to save note.");
+    } finally {
+      setSubmitting(null);
+    }
+  }
+
+  function downloadFlashcardPng() {
+    if (!lesson?.flashcard_markdown) return;
+    const canvas = document.createElement("canvas");
+    canvas.width = 1200;
+    canvas.height = 675;
+    const context = canvas.getContext("2d");
+    if (!context) return;
+    context.fillStyle = "#0f172a";
+    context.fillRect(0, 0, canvas.width, canvas.height);
+    context.fillStyle = "#f97316";
+    context.fillRect(0, 0, canvas.width, 12);
+    context.fillStyle = "#ffffff";
+    context.font = "700 44px sans-serif";
+    context.fillText(lesson.title, 64, 92);
+    context.font = "400 30px sans-serif";
+    const words = lesson.flashcard_markdown.replace(/[#*_`>-]/g, "").split(/\s+/);
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const next = `${line} ${word}`.trim();
+      if (context.measureText(next).width > 1060) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = next;
+      }
+    }
+    if (line) lines.push(line);
+    lines.slice(0, 12).forEach((item, index) => context.fillText(item, 64, 160 + index * 42));
+    const link = document.createElement("a");
+    link.download = `${lesson.slug}-flashcard.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
   }
 
   async function handleArtifact(type: "lesson_notes" | "flashcards") {
@@ -1153,32 +1288,49 @@ function VideoLearningPageContent({ params }: Props) {
                     </Badge>
                   </div>
                   <p className="mt-4 text-lg font-semibold text-white">{activeCheckpoint.prompt}</p>
-                  <div className="mt-4 grid gap-2">
-                    {activeCheckpoint.options.map((option) => (
+                  {activeCheckpoint.question_type === "fill_blank" ? (
+                    <div className="mt-4 flex gap-2">
+                      <Input
+                        value={answerDrafts[activeCheckpoint.id] ?? ""}
+                        onChange={(event) => setAnswerDrafts((current) => ({ ...current, [activeCheckpoint.id]: event.target.value }))}
+                        placeholder="Type your answer"
+                        disabled={Boolean(activeCheckpointState?.result)}
+                      />
                       <Button
-                        key={option.id}
-                        variant="secondary"
-                        className={getQuestionOptionClass(activeCheckpointState, option.id)}
-                        onClick={() => void handleQuestionAttempt(activeCheckpoint.id, option.id)}
-                        disabled={
-                          activeCheckpointState?.isLocked ||
-                          activeCheckpointState?.isSubmitting ||
-                          Boolean(activeCheckpointState?.result)
-                        }
+                        onClick={() => void handleQuestionAttempt(activeCheckpoint.id, undefined, answerDrafts[activeCheckpoint.id])}
+                        disabled={activeCheckpointState?.isSubmitting || Boolean(activeCheckpointState?.result)}
                       >
-                        <span className="flex-1">{option.option_text}</span>
-                        {activeCheckpointState?.selectedOptionId === option.id ? (
-                          <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                            {activeCheckpointState.isSubmitting
-                              ? "Locked"
-                              : activeCheckpointState.result?.correct
-                                ? "Correct"
-                                : "Chosen"}
-                          </span>
-                        ) : null}
+                        Submit
                       </Button>
-                    ))}
-                  </div>
+                    </div>
+                  ) : (
+                    <div className="mt-4 grid gap-2">
+                      {activeCheckpoint.options.map((option) => (
+                        <Button
+                          key={option.id}
+                          variant="secondary"
+                          className={getQuestionOptionClass(activeCheckpointState, option.id)}
+                          onClick={() => void handleQuestionAttempt(activeCheckpoint.id, option.id)}
+                          disabled={
+                            activeCheckpointState?.isLocked ||
+                            activeCheckpointState?.isSubmitting ||
+                            Boolean(activeCheckpointState?.result)
+                          }
+                        >
+                          <span className="flex-1">{option.option_text}</span>
+                          {activeCheckpointState?.selectedOptionId === option.id ? (
+                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                              {activeCheckpointState.isSubmitting
+                                ? "Locked"
+                                : activeCheckpointState.result?.correct
+                                  ? "Correct"
+                                  : "Chosen"}
+                            </span>
+                          ) : null}
+                        </Button>
+                      ))}
+                    </div>
+                  )}
                   {activeCheckpointState?.isSubmitting ? (
                     <div className="mt-4 rounded-lg bg-orange-50/10 px-3 py-2 text-sm text-orange-200">
                       Answer saved locally. Validating now.
@@ -1225,7 +1377,11 @@ function VideoLearningPageContent({ params }: Props) {
             <CardHeader className="pb-3">
               <CardTitle>Study tools</CardTitle>
             </CardHeader>
-            <CardContent className="grid gap-3 p-5 pt-0 sm:grid-cols-3">
+            <CardContent className="grid gap-3 p-5 pt-0 sm:grid-cols-4">
+              <Button variant={lesson.liked_by_me ? "default" : "secondary"} onClick={() => void handleLessonLike()}>
+                <ThumbsUp className="size-4" />
+                {lesson.like_count}
+              </Button>
               <Button variant="secondary" onClick={() => void handleArtifact("lesson_notes")}>
                 <FileText className="size-4" />
                 {submitting === "lesson_notes" ? "Generating..." : "Lesson notes"}
@@ -1234,9 +1390,92 @@ function VideoLearningPageContent({ params }: Props) {
                 <Sparkles className="size-4" />
                 {submitting === "flashcards" ? "Generating..." : "Flashcards"}
               </Button>
-              <Button asChild variant="ghost">
-                <Link href={`/courses/${course.slug}`}>Back to course overview</Link>
+              <Button asChild variant="secondary">
+                <Link href={`/courses/${course.slug}`}>Overview</Link>
               </Button>
+            </CardContent>
+          </Card>
+
+          {lesson.flashcard_markdown ? (
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between gap-3">
+                  <CardTitle>Flashcard</CardTitle>
+                  <Button variant="secondary" onClick={downloadFlashcardPng}>
+                    <Download className="size-4" />
+                    PNG
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="rounded-xl border border-slate-200 bg-slate-950 p-5 text-white">
+                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-orange-300">
+                    GaugeHow flashcard
+                  </p>
+                  <h3 className="mt-3 text-xl font-semibold">{lesson.title}</h3>
+                  <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-200">
+                    {lesson.flashcard_markdown}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          ) : null}
+
+          {lesson.has_simulation ? (
+            <SimulationPanel config={lesson.simulation_config} />
+          ) : null}
+
+          {lesson.has_jupyter_notebook ? (
+            <Card>
+              <CardHeader>
+                <CardTitle>Notebook</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                {lesson.jupyter_config.instructions ? (
+                  <p className="text-sm leading-6 text-slate-600">{lesson.jupyter_config.instructions}</p>
+                ) : null}
+                {lesson.jupyter_config.embedUrl ? (
+                  <iframe
+                    src={lesson.jupyter_config.embedUrl}
+                    title={`${lesson.title} notebook`}
+                    sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
+                    className="h-[520px] w-full rounded-lg border border-slate-200"
+                  />
+                ) : (
+                  <p className="text-sm text-slate-500">Notebook embed is not configured yet.</p>
+                )}
+              </CardContent>
+            </Card>
+          ) : null}
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Your notes</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+                <Textarea
+                  placeholder="Save a key point at the current timestamp"
+                  value={noteBody}
+                  onChange={(event) => setNoteBody(event.target.value)}
+                  className="min-h-24 border-0 bg-white"
+                />
+                <div className="flex justify-end">
+                  <Button onClick={() => void handleCreateNote()} disabled={submitting === "note" || !noteBody.trim()}>
+                    {submitting === "note" ? "Saving..." : "Save note"}
+                  </Button>
+                </div>
+              </div>
+              {lesson.notes.length ? (
+                lesson.notes.map((note) => (
+                  <div key={note.id} className="rounded-lg border border-slate-200 p-3">
+                    <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
+                    <p className="mt-2 text-sm leading-6 text-slate-700">{note.body}</p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">No personal notes yet.</p>
+              )}
             </CardContent>
           </Card>
 
@@ -1281,32 +1520,50 @@ function VideoLearningPageContent({ params }: Props) {
                         <p className="font-semibold text-slate-950">{question.prompt}</p>
                         <Badge variant="blue">{formatSeconds(question.timestamp_seconds)}</Badge>
                       </div>
-                      <div className="mt-3 grid gap-2">
-                        {question.options.map((option) => (
+                      {question.question_type === "fill_blank" ? (
+                        <div className="mt-3 flex gap-2">
+                          <Input
+                            value={answerDrafts[question.id] ?? ""}
+                            onChange={(event) => setAnswerDrafts((current) => ({ ...current, [question.id]: event.target.value }))}
+                            placeholder="Type your answer"
+                            disabled={Boolean(questionState?.result)}
+                          />
                           <Button
-                            key={option.id}
                             variant="secondary"
-                            className={getQuestionOptionClass(questionState, option.id)}
-                            onClick={() => void handleQuestionAttempt(question.id, option.id)}
-                            disabled={
-                              questionState?.isLocked ||
-                              questionState?.isSubmitting ||
-                              Boolean(questionState?.result)
-                            }
+                            onClick={() => void handleQuestionAttempt(question.id, undefined, answerDrafts[question.id])}
+                            disabled={questionState?.isSubmitting || Boolean(questionState?.result)}
                           >
-                            <span className="flex-1">{option.option_text}</span>
-                            {questionState?.selectedOptionId === option.id ? (
-                              <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
-                                {questionState.isSubmitting
-                                  ? "Locked"
-                                  : questionState.result?.correct
-                                    ? "Correct"
-                                    : "Chosen"}
-                              </span>
-                            ) : null}
+                            Submit
                           </Button>
-                        ))}
-                      </div>
+                        </div>
+                      ) : (
+                        <div className="mt-3 grid gap-2">
+                          {question.options.map((option) => (
+                            <Button
+                              key={option.id}
+                              variant="secondary"
+                              className={getQuestionOptionClass(questionState, option.id)}
+                              onClick={() => void handleQuestionAttempt(question.id, option.id)}
+                              disabled={
+                                questionState?.isLocked ||
+                                questionState?.isSubmitting ||
+                                Boolean(questionState?.result)
+                              }
+                            >
+                              <span className="flex-1">{option.option_text}</span>
+                              {questionState?.selectedOptionId === option.id ? (
+                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                                  {questionState.isSubmitting
+                                    ? "Locked"
+                                    : questionState.result?.correct
+                                      ? "Correct"
+                                      : "Chosen"}
+                                </span>
+                              ) : null}
+                            </Button>
+                          ))}
+                        </div>
+                      )}
                       {questionState?.isSubmitting ? (
                         <div className="mt-3 rounded-lg bg-orange-50 px-3 py-2 text-sm text-orange-700">
                           Answer submitted. Checking now.
