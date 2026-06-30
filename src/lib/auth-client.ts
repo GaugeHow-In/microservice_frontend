@@ -76,6 +76,8 @@ export type AuthPayload = {
   user: AuthUser;
 };
 
+const CSRF_STORAGE_KEY = "gaugehow_csrf_token";
+
 type RequestOptions = {
   method?: string;
   token?: string | null;
@@ -160,7 +162,24 @@ export function getCsrfCookie(): string | null {
   const cookie = document.cookie
     .split("; ")
     .find((item) => item.startsWith("gaugehow_csrf_token="));
-  return cookie ? decodeURIComponent(cookie.split("=")[1] ?? "") : null;
+  if (cookie) {
+    return decodeURIComponent(cookie.split("=")[1] ?? "");
+  }
+  return window.localStorage.getItem(CSRF_STORAGE_KEY);
+}
+
+export function storeCsrfToken(csrfToken: string): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.setItem(CSRF_STORAGE_KEY, csrfToken);
+}
+
+export function clearStoredCsrfToken(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+  window.localStorage.removeItem(CSRF_STORAGE_KEY);
 }
 
 export const authClient = {

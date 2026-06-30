@@ -11,9 +11,11 @@ import {
 } from "react";
 import {
   authClient,
+  clearStoredCsrfToken,
   type AuthPayload,
   type AuthUser,
   getCsrfCookie,
+  storeCsrfToken,
   type ProfileUpdateInput,
 } from "@/lib/auth-client";
 
@@ -51,6 +53,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const clearAuthState = useCallback(() => {
     setAccessToken(null);
     setUser(null);
+    clearStoredCsrfToken();
     if (refreshTimerRef.current) {
       window.clearTimeout(refreshTimerRef.current);
       refreshTimerRef.current = null;
@@ -60,6 +63,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const applyPayload = useCallback((payload: AuthPayload) => {
     setAccessToken(payload.access_token);
     setUser(payload.user);
+    storeCsrfToken(payload.csrf_token);
     if (refreshTimerRef.current) {
       window.clearTimeout(refreshTimerRef.current);
     }
