@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -408,9 +409,12 @@ export default function CourseDetailPage({ params }: Props) {
             <CardContent className="p-5">
               <div className="relative aspect-video overflow-hidden rounded-lg bg-slate-950 p-6 text-white">
                 {course.thumbnail_url ? (
-                  <img
+                  <Image
                     src={course.thumbnail_url}
                     alt={course.title}
+                    fill
+                    unoptimized
+                    sizes="(min-width: 1024px) 55vw, 100vw"
                     className="absolute inset-0 h-full w-full object-cover opacity-70"
                   />
                 ) : null}
