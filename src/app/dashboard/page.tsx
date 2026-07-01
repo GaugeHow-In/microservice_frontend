@@ -171,7 +171,7 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="rounded-[28px] border border-orange-200/70 bg-[#fffaf2] p-3 shadow-[var(--shadow-md)] sm:p-5">
+      <div className="rounded-[28px] border border-orange-200/70 bg-[#fffaf2] p-3 text-[#1c1b1b] shadow-[var(--shadow-md)] [--background:#fffaf2] [--border:rgba(219,132,0,0.2)] [--card:#ffffff] [--foreground:#1c1b1b] [--muted:#544435] [--slate-50:#fffaf2] [--slate-100:#fff7eb] [--slate-200:#ffe0b3] [--slate-300:#d9c2af] [--slate-400:#877462] [--slate-500:#6f5f4e] [--slate-600:#544435] [--slate-700:#402e0f] [--slate-800:#281900] [--slate-900:#1c1b1b] [--slate-950:#1c1b1b] [--surface-elevated:#ffffff] [--surface-primary:#ffffff] [--surface-secondary:#fff7eb] sm:p-5">
         <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_21rem]">
           <div className="space-y-4">
             <section className="relative overflow-hidden rounded-2xl border border-orange-200/70 bg-white px-5 py-7 shadow-sm sm:px-8">

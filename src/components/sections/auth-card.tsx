@@ -305,7 +305,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#fffaf2]">
+    <main className="min-h-screen bg-[#fffaf2] text-[#1c1b1b] [--background:#fffaf2] [--border:rgba(219,132,0,0.2)] [--card:#ffffff] [--foreground:#1c1b1b] [--muted:#544435] [--slate-50:#fffaf2] [--slate-100:#fff7eb] [--slate-200:#ffe0b3] [--slate-300:#d9c2af] [--slate-400:#877462] [--slate-500:#6f5f4e] [--slate-600:#544435] [--slate-700:#402e0f] [--slate-800:#281900] [--slate-900:#1c1b1b] [--slate-950:#1c1b1b] [--surface-chrome:#ffffff] [--surface-elevated:#ffffff] [--surface-primary:#ffffff] [--surface-secondary:#fff7eb]">
       <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.08fr)_minmax(28rem,0.92fr)]">
         <section className="relative hidden overflow-hidden border-r border-orange-200/70 bg-[#fff7eb] p-10 text-slate-950 lg:flex lg:flex-col lg:justify-between">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(219,132,0,0.17),transparent_18rem),radial-gradient(circle_at_82%_8%,rgba(255,196,107,0.24),transparent_16rem),linear-gradient(rgba(148,89,0,0.052)_1px,transparent_1px),linear-gradient(90deg,rgba(148,89,0,0.052)_1px,transparent_1px)] bg-[size:auto,auto,30px_30px,30px_30px]" />

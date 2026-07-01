@@ -44,10 +44,6 @@ const platformNav = [
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
-const bottomNav = platformNav.filter((item) =>
-  ["/dashboard", "/courses", "/tests", "/mentor", "/profile"].includes(item.href),
-);
-
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
@@ -116,61 +112,21 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="premium-bg min-h-screen bg-transparent">
-      <aside className="chrome-surface fixed inset-y-0 left-0 z-30 hidden w-72 rounded-r-xl px-4 py-5 lg:block">
-        <BrandLogo />
-        <div className="mt-8">
-          <NavLinks />
-        </div>
-        <div className="surface-secondary absolute bottom-5 left-4 right-4 rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <Avatar>
-              {selectedAvatar ? (
-                <Image
-                  src={selectedAvatar.url}
-                  alt=""
-                  width={40}
-                  height={40}
-                  unoptimized
-                  className="size-full rounded-full object-cover"
-                />
-              ) : (
-                <AvatarFallback>{initials}</AvatarFallback>
-              )}
-            </Avatar>
-            <div>
-              <p className="type-small font-semibold text-slate-950">{user.display_name}</p>
-              <p className="type-caption text-slate-500">{user.email}</p>
-            </div>
-          </div>
-          <div className="mt-4 flex items-center justify-between gap-2 type-caption text-slate-500">
-            <span>{user.roles.length ? user.roles.join(", ") : "member"}</span>
-            <button
-              type="button"
-              className="font-semibold text-orange-600 hover:text-orange-700"
-              onClick={async () => {
-                await logout();
-                router.replace("/login");
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        </div>
-      </aside>
-
-      <div className="lg:pl-72">
+      <div>
         <header className="chrome-surface sticky top-0 z-20 rounded-b-xl border-b border-white/40">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
                 size="icon"
-                className="lg:hidden"
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Open navigation"
               >
                 <Menu />
               </Button>
+              <div className="hidden sm:block">
+                <BrandLogo />
+              </div>
               <div>
                 <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">
                   GaugeHow
@@ -208,6 +164,9 @@ export function AppShell({ children }: AppShellProps) {
                   <AvatarFallback>{initials}</AvatarFallback>
                 )}
               </Avatar>
+              <span className="hidden max-w-36 truncate type-small font-semibold text-slate-950 md:inline">
+                {user.display_name}
+              </span>
               <Button
                 variant="ghost"
                 size="icon"
@@ -228,35 +187,8 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      <nav className="chrome-surface fixed inset-x-0 bottom-0 z-30 rounded-t-xl border-t border-white/50 px-2 py-2 lg:hidden">
-        <div className="grid grid-cols-5 gap-1">
-          {bottomNav.map((item) => {
-            const Icon = item.icon;
-            const active =
-              pathname === item.href ||
-              (item.href !== "/dashboard" && pathname.startsWith(item.href));
-
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 rounded-lg px-1 py-2 text-[11px] font-semibold",
-                  active
-                    ? "bg-orange-50 text-orange-700 shadow-[var(--shadow-sm)]"
-                    : "text-slate-500",
-                )}
-              >
-                <Icon className="size-4" />
-                <span>{item.label}</span>
-              </Link>
-            );
-          })}
-        </div>
-      </nav>
-
       {drawerOpen && (
-        <div className="fixed inset-0 z-40 lg:hidden">
+        <div className="fixed inset-0 z-50">
           <button
             className="absolute inset-0 bg-slate-950/20 backdrop-blur-[2px]"
             aria-label="Close navigation"
@@ -276,6 +208,38 @@ export function AppShell({ children }: AppShellProps) {
             </div>
             <div className="mt-8">
               <NavLinks onNavigate={() => setDrawerOpen(false)} />
+            </div>
+            <div className="surface-secondary absolute bottom-5 left-5 right-5 rounded-xl p-4">
+              <div className="flex items-center gap-3">
+                <Avatar>
+                  {selectedAvatar ? (
+                    <Image
+                      src={selectedAvatar.url}
+                      alt=""
+                      width={40}
+                      height={40}
+                      unoptimized
+                      className="size-full rounded-full object-cover"
+                    />
+                  ) : (
+                    <AvatarFallback>{initials}</AvatarFallback>
+                  )}
+                </Avatar>
+                <div className="min-w-0">
+                  <p className="truncate type-small font-semibold text-slate-950">{user.display_name}</p>
+                  <p className="truncate type-caption text-slate-500">{user.email}</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                className="mt-4 font-semibold text-orange-600 hover:text-orange-700"
+                onClick={async () => {
+                  await logout();
+                  router.replace("/login");
+                }}
+              >
+                Logout
+              </button>
             </div>
           </aside>
         </div>
