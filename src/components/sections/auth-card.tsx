@@ -4,12 +4,17 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   ArrowLeft,
+  BookOpen,
   Check,
   Eye,
   EyeOff,
+  Gauge,
   LoaderCircle,
   Mail,
+  NotebookText,
   ShieldCheck,
+  Sparkles,
+  Wrench,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -300,29 +305,64 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   };
 
   return (
-    <main className="min-h-screen bg-slate-50">
-      <div className="grid min-h-screen lg:grid-cols-[1fr_0.9fr]">
-        <section className="hidden bg-slate-950 p-10 text-white lg:flex lg:flex-col lg:justify-between">
-          <BrandLogo className="text-white" />
-          <div className="max-w-xl">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-3 py-1 text-sm font-semibold text-orange-200">
-              <ShieldCheck className="size-4" />
-              Frontend prototype
-            </div>
-            <h1 className="text-5xl font-bold tracking-normal">
-              Your Learning. Measured.
-            </h1>
-            <p className="mt-5 text-lg leading-8 text-slate-300">
-              A focused workspace where students turn goals into weekly study
-              momentum with courses, notes, tests, and AI assistance.
-            </p>
+    <main className="min-h-screen bg-[#fffaf2]">
+      <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.08fr)_minmax(28rem,0.92fr)]">
+        <section className="relative hidden overflow-hidden border-r border-orange-200/70 bg-[#fff7eb] p-10 text-slate-950 lg:flex lg:flex-col lg:justify-between">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(219,132,0,0.17),transparent_18rem),radial-gradient(circle_at_82%_8%,rgba(255,196,107,0.24),transparent_16rem),linear-gradient(rgba(148,89,0,0.052)_1px,transparent_1px),linear-gradient(90deg,rgba(148,89,0,0.052)_1px,transparent_1px)] bg-[size:auto,auto,30px_30px,30px_30px]" />
+          <div className="relative z-10">
+            <BrandLogo />
           </div>
-          <div className="grid grid-cols-3 gap-3">
-            {["23-day streak", "68% goal", "12.4k XP"].map((item) => (
-              <div key={item} className="rounded-lg border border-white/10 bg-white/5 p-4">
-                <p className="text-sm font-semibold text-white">{item}</p>
+          <div className="relative z-10 max-w-2xl">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/80 px-3 py-1 text-sm font-semibold text-orange-700 shadow-sm">
+              <ShieldCheck className="size-4" />
+              Engineering learning OS
+            </div>
+            <h1 className="max-w-xl text-5xl font-bold tracking-normal">
+              Start every session from a focused engineering cockpit.
+            </h1>
+            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
+              A precise workspace where students turn goals into weekly study momentum with
+              courses, notes, tests, and AI assistance.
+            </p>
+
+            <div className="mt-8 max-w-xl rounded-2xl border border-orange-200/80 bg-white/88 p-3 shadow-[0_20px_60px_-38px_rgba(148,89,0,0.55)]">
+              <div className="rounded-xl border border-orange-100 bg-[#fffaf2] p-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-orange-600 text-white">
+                    <Sparkles className="size-5" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-slate-950">Ask GaugeHow Mentor</p>
+                    <p className="text-xs text-slate-500">Explain, calculate, verify, and plan your next module.</p>
+                  </div>
+                </div>
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {["Calculate gear ratios", "Explain stress-strain", "Verify FEA mesh"].map((item) => (
+                    <span
+                      key={item}
+                      className="rounded-lg border border-orange-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
               </div>
-            ))}
+            </div>
+          </div>
+          <div className="relative z-10 grid grid-cols-3 gap-3">
+            {[
+              { label: "CAD Pro", icon: Wrench },
+              { label: "68% goal", icon: Gauge },
+              { label: "Notes ready", icon: NotebookText },
+            ].map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="rounded-xl border border-orange-200/80 bg-white/80 p-4 shadow-sm">
+                  <Icon className="size-5 text-orange-700" />
+                  <p className="mt-3 text-sm font-semibold text-slate-950">{item.label}</p>
+                </div>
+              );
+            })}
           </div>
         </section>
         <section className="flex items-center justify-center p-4 sm:p-8">
@@ -336,8 +376,19 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                 </Link>
               </Button>
             </div>
-            <Card>
+            <Card className="overflow-hidden border-orange-200/80 bg-white shadow-[0_24px_70px_-42px_rgba(148,89,0,0.55)]">
               <CardContent className="space-y-6 p-6 sm:p-8">
+                <div className="rounded-xl border border-orange-100 bg-[#fff7eb] p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-orange-600 text-white">
+                      <BookOpen className="size-5" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-slate-950">GaugeHow workspace</p>
+                      <p className="text-xs text-slate-500">Courses, tests, mentor, and notes in one place.</p>
+                    </div>
+                  </div>
+                </div>
                 <div>
                   <h1 className="text-2xl font-bold tracking-normal text-slate-950">
                     {data.title}
