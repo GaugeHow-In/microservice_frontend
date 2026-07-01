@@ -27,8 +27,20 @@ export function QuickMentor() {
     try {
       const id = conversationId ?? (await aiClient.createConversation(accessToken, "quick_chat")).id;
       setConversationId(id);
+      const pendingMessage: AIMessage = {
+        id: `pending-${Date.now()}`,
+        role: "user",
+        content,
+        disposition: "answered",
+        created_at: new Date().toISOString(),
+      };
+      setMessages((current) => [...current, pendingMessage]);
       const turn = await aiClient.sendMessage(accessToken, id, content, pathname);
-      setMessages((current) => [...current, turn.user_message, turn.assistant_message]);
+      setMessages((current) => [
+        ...current.filter((message) => message.id !== pendingMessage.id),
+        turn.user_message,
+        turn.assistant_message,
+      ]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Mentor is unavailable");
     } finally {

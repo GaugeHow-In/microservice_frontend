@@ -251,7 +251,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
 
       if (mode === "signup") {
         await register({ displayName, email, password });
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        router.push("/dashboard");
       }
 
       if (mode === "forgot") {

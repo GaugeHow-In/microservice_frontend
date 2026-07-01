@@ -61,9 +61,23 @@ function MentorPageContent() {
         setActive(id);
         setConversations((items) => [created, ...items.filter((item) => item.id !== created.id)]);
       }
+      const pendingMessage: AIMessage = {
+        id: `pending-${Date.now()}`,
+        role: "user",
+        content,
+        disposition: "answered",
+        created_at: new Date().toISOString(),
+      };
+      setMessages((items) => (options.forceNew ? [pendingMessage] : [...items, pendingMessage]));
       const turn = await aiClient.sendMessage(accessToken, id, content, options.route ?? "/mentor");
       setMessages((items) =>
-        options.forceNew ? [turn.user_message, turn.assistant_message] : [...items, turn.user_message, turn.assistant_message],
+        options.forceNew
+          ? [turn.user_message, turn.assistant_message]
+          : [
+              ...items.filter((message) => message.id !== pendingMessage.id),
+              turn.user_message,
+              turn.assistant_message,
+            ],
       );
       setConversations((items) => [
         turn.conversation,
