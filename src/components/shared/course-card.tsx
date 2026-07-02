@@ -1,9 +1,8 @@
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock3, Globe2, Star } from "lucide-react";
+import { ArrowRight, Clock3, Globe2, Star } from "lucide-react";
 import { CourseCatalogItem, formatMinutes, formatPrice } from "@/lib/learning-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 
 type CourseCardProps = {
@@ -11,97 +10,93 @@ type CourseCardProps = {
 };
 
 export function CourseCard({ course }: CourseCardProps) {
-  const primaryCategory = course.categories[0]?.name ?? "Course";
+  const primaryCategory = course.categories[0]?.name ?? "Engineering";
   const instructor = course.instructors[0]?.display_name ?? "GaugeHow Faculty";
   const progress = course.access?.progress_percent ?? 0;
   const hasAccess = course.access?.has_access ?? false;
 
   return (
-    <Card className="panel-depth overflow-hidden">
-      <CardContent className="space-y-5 p-5">
-        <div className="flex items-start justify-between gap-4">
-          <div className="space-y-3">
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="orange">{primaryCategory}</Badge>
-              <Badge variant="blue">{course.level.replaceAll("_", " ")}</Badge>
-            </div>
-            <div>
-              <h3 className="type-h4 text-slate-950">
-                {course.title}
-              </h3>
-              <p className="mt-1 type-small text-slate-500">by {instructor}</p>
-            </div>
-            {course.short_description && (
-              <p className="line-clamp-2 type-small text-slate-600">
-                {course.short_description}
-              </p>
-            )}
-          </div>
-          <div className="signal-line flex size-12 items-center justify-center rounded-lg bg-slate-950 text-white shadow-[var(--shadow-sm)]">
-            <BookOpen className="size-5" />
-          </div>
+    <article className="glass-card group flex h-full flex-col overflow-hidden rounded-xl bg-white">
+      <div className="course-visual relative aspect-video overflow-hidden">
+        <div className="absolute inset-0 surface-grid opacity-40" />
+        <div className="absolute left-4 top-4 rounded bg-orange-600 px-3 py-1 text-xs font-bold uppercase text-white">
+          {hasAccess ? "Enrolled" : "Best Seller"}
+        </div>
+      </div>
+
+      <div className="flex flex-1 flex-col p-5">
+        <div className="mb-3 flex flex-wrap items-center gap-2">
+          <Badge variant="green" className="rounded">
+            {primaryCategory}
+          </Badge>
+          <span className="text-xs font-semibold text-slate-500">
+            {course.average_rating.toFixed(1)} ★ ({course.total_reviews})
+          </span>
         </div>
 
-        <div className="grid grid-cols-3 gap-3 type-small">
-          <span className="flex items-center gap-1 text-slate-600">
+        <h3 className="text-xl font-bold leading-tight text-slate-950 transition group-hover:text-orange-700">
+          {course.title}
+        </h3>
+        {course.short_description && (
+          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
+            {course.short_description}
+          </p>
+        )}
+
+        <div className="mt-4 flex items-center gap-2">
+          <span className="flex size-7 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">
+            {instructor
+              .split(" ")
+              .map((part) => part[0])
+              .join("")
+              .slice(0, 2)}
+          </span>
+          <span className="text-sm font-semibold text-slate-600">{instructor}</span>
+        </div>
+
+        <div className="mt-5 grid grid-cols-3 gap-3 text-xs font-semibold text-slate-600">
+          <span className="flex items-center gap-1">
             <Clock3 className="size-4" />
             {formatMinutes(course.duration_minutes)}
           </span>
-          <span className="text-slate-600">{course.lesson_count} lessons</span>
-          <span className="flex items-center gap-1 text-slate-600">
-            <Star className="size-4 fill-orange-400 text-orange-400" />
-            {course.average_rating.toFixed(1)}
+          <span>{course.lesson_count} lessons</span>
+          <span className="flex items-center gap-1">
+            <Star className="size-4 fill-orange-500 text-orange-500" />
+            {course.level.replaceAll("_", " ")}
           </span>
         </div>
 
-        <div className="surface-secondary rounded-lg p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)]">
-          <div className="flex items-center justify-between gap-3">
-            <div>
-              <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Access
-              </p>
-              <p className="mt-1 type-small font-semibold text-slate-950">
-                {hasAccess
-                  ? course.access?.is_lifetime_access
-                    ? "Lifetime access"
-                    : course.access?.days_left
-                      ? `${course.access.days_left} days left`
-                      : "Active access"
-                  : formatPrice(course.pricing)}
-              </p>
+        {hasAccess && (
+          <div className="mt-5 rounded-lg border border-orange-200 bg-[#fff7eb] p-3">
+            <div className="mb-2 flex items-center justify-between text-sm">
+              <span className="font-semibold text-slate-600">Progress</span>
+              <span className="font-bold text-slate-950">{Math.round(progress)}%</span>
             </div>
+            <Progress value={progress} />
+          </div>
+        )}
+
+        <div className="mt-auto flex items-center justify-between gap-4 border-t border-black/5 pt-5">
+          <div>
+            <p className="text-xs font-bold uppercase text-slate-500">Access</p>
+            <p className="text-xl font-bold text-slate-950">
+              {hasAccess ? "Active" : formatPrice(course.pricing)}
+            </p>
             {(course.pricing?.display_currency_code ?? course.pricing?.currency_code) && (
-              <span className="flex items-center gap-1 text-xs font-medium text-slate-500">
+              <span className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-500">
                 <Globe2 className="size-3.5" />
                 {course.pricing.display_currency_code ?? course.pricing.currency_code}
               </span>
             )}
           </div>
-          {hasAccess && (
-            <div className="mt-3 space-y-2">
-              <div className="flex items-center justify-between type-small">
-                <span className="font-medium text-slate-600">Progress</span>
-                <span className="font-semibold text-slate-950">{Math.round(progress)}%</span>
-              </div>
-              <Progress value={progress} />
-            </div>
-          )}
-        </div>
-
-        <div className="flex gap-2">
-          <Button asChild className="flex-1">
+          <Button asChild>
             <Link href={`/courses/${course.slug}`}>
-              View details
+              {hasAccess ? "Continue" : "Enroll Now"}
               <ArrowRight />
             </Link>
           </Button>
-          {hasAccess && (
-            <Button asChild variant="secondary" className="flex-1">
-              <Link href={`/courses/${course.slug}/learn`}>Continue</Link>
-            </Button>
-          )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </article>
   );
 }

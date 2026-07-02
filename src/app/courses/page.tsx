@@ -2,13 +2,10 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { Award, Search } from "lucide-react";
+import { Award, Bell, Search } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
-import { AiStrip } from "@/components/shared/ai-strip";
 import { CourseCard } from "@/components/shared/course-card";
-import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -18,6 +15,13 @@ import {
   learningClient,
   type CourseCatalogItem,
 } from "@/lib/learning-client";
+
+const defaultCategories = [
+  { slug: "engineering", name: "Engineering" },
+  { slug: "ai-data-science", name: "AI & Data Science" },
+  { slug: "design", name: "Design" },
+  { slug: "manufacturing", name: "Manufacturing" },
+];
 
 export default function CoursesPage() {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
@@ -82,112 +86,104 @@ export default function CoursesPage() {
         map.set(category.slug, category.name);
       }
     }
-    return Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
+    const fromData = Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
+    return fromData.length ? fromData : defaultCategories;
   }, [courses]);
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <PageHeader
-          eyebrow="Courses"
-          title="Practical courses for engineering workflows."
-          description="Search by course name, filter by category, compare access status, and continue only where the backend already supports real course flow."
-          action={
-            <Button asChild variant="secondary">
+      <div className="light-system rounded-2xl border border-black/5 p-4 shadow-[0_24px_80px_-54px_rgba(0,0,0,0.65)] sm:p-6">
+        <header className="mb-6 flex items-center justify-between border-b border-black/5 pb-5">
+          <div>
+            <p className="text-sm font-extrabold text-orange-700">GaugeHow</p>
+            <p className="text-xs font-semibold text-slate-500">Engineering Course Catalog</p>
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="hidden rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold text-orange-700 sm:inline-flex">
+              Real backend data
+            </span>
+            <Button asChild variant="secondary" size="sm">
               <Link href="/courses/progress">
                 <Award />
                 Progress report
               </Link>
             </Button>
-          }
-        />
+            <Button variant="ghost" size="icon" aria-label="Notifications">
+              <Bell />
+            </Button>
+          </div>
+        </header>
 
-        <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 shadow-[var(--shadow-sm)] md:grid-cols-[1fr_auto]">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+        <section className="mx-auto flex max-w-3xl flex-col items-center py-12 text-center">
+          <h2 className="sr-only">Practical courses for engineering workflows.</h2>
+          <h1 className="text-5xl font-extrabold leading-tight text-slate-950">Explore Courses</h1>
+          <p className="mt-4 text-lg leading-8 text-slate-600">
+            Master the intricacies of modern engineering with professional-grade technical courses
+            designed by industry experts.
+          </p>
+          <div className="relative mt-8 w-full">
+            <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
             <Input
-              className="pl-10"
+              className="min-h-14 rounded-xl border-slate-300 bg-white pl-12 pr-28"
               placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
             />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={activeCategory === "all" ? "default" : "secondary"}
-              onClick={() => setActiveCategory("all")}
-            >
-              All
+            <Button className="absolute right-2 top-1/2 min-h-10 -translate-y-1/2 rounded-lg px-5">
+              Search
             </Button>
-            {categoryOptions.map((category) => (
-              <Button
-                key={category.slug}
-                variant={activeCategory === category.slug ? "default" : "secondary"}
-                onClick={() => setActiveCategory(category.slug)}
-              >
-                {category.name}
-              </Button>
-            ))}
           </div>
-        </div>
+        </section>
 
-        <Card className="signal-line panel-depth reveal-delay-2 reveal-up border-slate-200 bg-slate-950 text-white">
-          <CardContent className="flex flex-col gap-4 p-5 md:flex-row md:items-center md:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-orange-300">
-                Catalog status
-              </p>
-              <h2 className="mt-2 text-2xl font-bold">
-                {isLoading ? "Loading courses..." : `${courses.length} courses ready`}
-              </h2>
-            </div>
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="orange">Real backend data</Badge>
-              <Badge variant="dark">No course mock state</Badge>
-            </div>
-          </CardContent>
-        </Card>
+        <section className="mb-12 flex items-center justify-center gap-3 overflow-x-auto pb-2">
+          <button
+            type="button"
+            onClick={() => setActiveCategory("all")}
+            className={
+              activeCategory === "all"
+                ? "rounded-full bg-orange-600 px-6 py-2 text-sm font-bold text-white"
+                : "rounded-full border border-slate-300 bg-white px-6 py-2 text-sm font-bold text-slate-600 transition hover:bg-[#f6f3f2]"
+            }
+          >
+            All
+          </button>
+          {categoryOptions.map((category) => (
+            <button
+              key={category.slug}
+              type="button"
+              onClick={() => setActiveCategory(category.slug)}
+              className={
+                activeCategory === category.slug
+                  ? "rounded-full bg-orange-600 px-6 py-2 text-sm font-bold text-white"
+                  : "rounded-full border border-slate-300 bg-white px-6 py-2 text-sm font-bold text-slate-600 transition hover:bg-[#f6f3f2]"
+              }
+            >
+              {category.name}
+            </button>
+          ))}
+        </section>
 
         {error ? (
           <Card>
             <CardContent className="p-5 text-sm font-medium text-rose-600">{error}</CardContent>
           </Card>
         ) : isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 3 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="space-y-5 p-5">
-                  <div className="flex items-start justify-between gap-4">
-                    <div className="min-w-0 flex-1 space-y-3">
-                      <div className="flex gap-2">
-                        <Skeleton className="h-6 w-20 rounded-full" />
-                        <Skeleton className="h-6 w-24 rounded-full" />
-                      </div>
-                      <div className="space-y-2">
-                        <Skeleton className="h-7 w-4/5 rounded-md" />
-                        <Skeleton className="h-4 w-1/2 rounded-md" />
-                      </div>
-                      <Skeleton className="h-4 w-full rounded-md" />
-                      <Skeleton className="h-4 w-4/5 rounded-md" />
-                    </div>
-                    <Skeleton className="size-12 rounded-lg" />
-                  </div>
-                  <div className="grid grid-cols-3 gap-3">
-                    <Skeleton className="h-5 rounded-md" />
-                    <Skeleton className="h-5 rounded-md" />
-                    <Skeleton className="h-5 rounded-md" />
-                  </div>
-                  <Skeleton className="h-24 rounded-xl" />
-                  <div className="grid grid-cols-2 gap-2">
-                    <Skeleton className="h-11 rounded-lg" />
-                    <Skeleton className="h-11 rounded-lg" />
-                  </div>
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <Card key={index} className="overflow-hidden">
+                <Skeleton className="aspect-video rounded-none" />
+                <CardContent className="space-y-4 p-5">
+                  <Skeleton className="h-5 w-24 rounded" />
+                  <Skeleton className="h-7 w-4/5 rounded" />
+                  <Skeleton className="h-4 w-full rounded" />
+                  <Skeleton className="h-4 w-2/3 rounded" />
+                  <Skeleton className="h-12 rounded" />
                 </CardContent>
               </Card>
             ))}
           </div>
         ) : courses.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {courses.map((course) => (
               <CourseCard key={course.slug} course={course} />
             ))}
@@ -199,12 +195,6 @@ export default function CoursesPage() {
             </CardContent>
           </Card>
         )}
-
-        <AiStrip
-          title="AI support in lessons"
-          description="The current course flow supports generated lesson notes and flashcards from transcript-backed lessons."
-          cta="Open AI mentor"
-        />
       </div>
     </AppShell>
   );

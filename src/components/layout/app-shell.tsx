@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import {
   Award,
@@ -10,6 +10,7 @@ import {
   Bot,
   ClipboardCheck,
   GraduationCap,
+  HelpCircle,
   Home,
   LogOut,
   Map,
@@ -24,7 +25,6 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { PointsBalance } from "@/components/shared/points-balance";
-import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { QuickMentor } from "@/components/shared/quick-mentor";
 import { getProfileAvatar } from "@/lib/profile-avatars";
 import { cn } from "@/lib/utils";
@@ -48,7 +48,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
-    <nav className="space-y-1">
+    <nav className="flex flex-col gap-1">
       {platformNav.map((item) => {
         const active =
           pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
@@ -60,10 +60,10 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             href={item.href}
             onClick={onNavigate}
             className={cn(
-              "flex items-center gap-3 rounded-lg px-3 py-2.5 type-small font-semibold transition",
+              "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition",
               active
-                ? "bg-orange-50 text-orange-700 shadow-[var(--shadow-sm)]"
-                : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
+                ? "bg-[#3c4a5e] text-[#d5e3fc] shadow-[inset_2px_0_0_#f59e0b]"
+                : "text-[#dbc2b0] hover:bg-white/5 hover:text-[#f8fafc]",
             )}
           >
             <Icon className="size-4" />
@@ -102,18 +102,73 @@ export function AppShell({ children }: AppShellProps) {
 
   if (isLoading || !user) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-transparent">
-        <div className="chrome-surface rounded-xl px-6 py-4 type-small font-semibold text-slate-600">
+      <div className="app-shell-dark flex min-h-screen items-center justify-center">
+        <div className="glass-card rounded-xl px-6 py-4 text-sm font-bold text-[#dce1fb]">
           Restoring your session...
         </div>
       </div>
     );
   }
 
+  const account = (
+    <div className="glass-card rounded-xl p-4">
+      <div className="flex items-center gap-3">
+        <Avatar className="border border-white/10">
+          {selectedAvatar ? (
+            <Image
+              src={selectedAvatar.url}
+              alt=""
+              width={40}
+              height={40}
+              unoptimized
+              className="size-full rounded-full object-cover"
+            />
+          ) : (
+            <AvatarFallback>{initials}</AvatarFallback>
+          )}
+        </Avatar>
+        <div className="min-w-0">
+          <p className="truncate text-sm font-bold text-[#f8fafc]">Welcome back</p>
+          <p className="truncate text-xs text-[#94a3b8]">{user.display_name}</p>
+        </div>
+      </div>
+      <button
+        type="button"
+        className="mt-4 flex items-center gap-2 text-xs font-bold text-[#ffb77d] hover:text-[#f59e0b]"
+        onClick={async () => {
+          await logout();
+          router.replace("/login");
+        }}
+      >
+        <LogOut className="size-4" />
+        Logout
+      </button>
+    </div>
+  );
+
   return (
-    <div className="premium-bg min-h-screen bg-transparent">
-      <div>
-        <header className="chrome-surface sticky top-0 z-20 rounded-b-xl border-b border-white/40">
+    <div className="dark-system app-shell-dark min-h-screen">
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0f172a]/90 p-5 backdrop-blur-xl lg:flex">
+        <div className="px-2 py-3">
+          <BrandLogo />
+        </div>
+        <div className="mt-8">
+          <NavLinks />
+        </div>
+        <div className="mt-auto space-y-3">
+          <Link
+            href="/mentor"
+            className="flex items-center gap-3 rounded-xl border border-[#d97706]/25 bg-[#d97706]/10 p-4 text-sm font-bold text-[#ffb77d] transition hover:bg-[#d97706]/15"
+          >
+            <HelpCircle className="size-5" />
+            Engineering help
+          </Link>
+          {account}
+        </div>
+      </aside>
+
+      <div className="lg:pl-64">
+        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0c1324]/78 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Button
@@ -121,27 +176,25 @@ export function AppShell({ children }: AppShellProps) {
                 size="icon"
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Open navigation"
+                className="lg:hidden"
               >
                 <Menu />
               </Button>
-              <div className="hidden sm:block">
-                <BrandLogo />
+              <div className="lg:hidden">
+                <BrandLogo compact />
               </div>
               <div>
-                <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">
-                  GaugeHow
-                </p>
-                <p className="type-small font-semibold text-slate-950">{activeLabel}</p>
+                <p className="text-xs font-bold uppercase text-[#94a3b8]">GaugeHow</p>
+                <p className="text-sm font-bold text-[#f8fafc]">{activeLabel}</p>
               </div>
             </div>
-            <div className="surface-secondary hidden w-full max-w-md items-center gap-2 rounded-xl px-3 py-2 md:flex">
-              <Search className="size-4 text-slate-400" />
-              <span className="type-small text-slate-500">Search courses</span>
+            <div className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-white/10 bg-[#151b2d] px-3 py-2 md:flex">
+              <Search className="size-4 text-[#94a3b8]" />
+              <span className="text-sm text-[#94a3b8]">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
               <PointsBalance accessToken={accessToken} />
-              <ThemeToggle />
-              <Button asChild variant="soft" size="sm">
+              <Button asChild variant="soft" size="sm" className="hidden sm:inline-flex">
                 <Link href="/courses">
                   <GraduationCap />
                   Courses
@@ -150,7 +203,7 @@ export function AppShell({ children }: AppShellProps) {
               <Button variant="ghost" size="icon" aria-label="Notifications">
                 <Bell />
               </Button>
-              <Avatar className="hidden sm:flex">
+              <Avatar className="hidden border border-white/10 sm:flex">
                 {selectedAvatar ? (
                   <Image
                     src={selectedAvatar.url}
@@ -164,20 +217,6 @@ export function AppShell({ children }: AppShellProps) {
                   <AvatarFallback>{initials}</AvatarFallback>
                 )}
               </Avatar>
-              <span className="hidden max-w-36 truncate type-small font-semibold text-slate-950 md:inline">
-                {user.display_name}
-              </span>
-              <Button
-                variant="ghost"
-                size="icon"
-                aria-label="Logout"
-                onClick={async () => {
-                  await logout();
-                  router.replace("/login");
-                }}
-              >
-                <LogOut />
-              </Button>
             </div>
           </div>
         </header>
@@ -188,13 +227,13 @@ export function AppShell({ children }: AppShellProps) {
       </div>
 
       {drawerOpen && (
-        <div className="fixed inset-0 z-50">
+        <div className="fixed inset-0 z-50 lg:hidden">
           <button
-            className="absolute inset-0 bg-slate-950/20 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
             aria-label="Close navigation"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="chrome-surface relative h-full w-80 max-w-[86vw] rounded-r-xl p-5 shadow-[var(--shadow-lg)]">
+          <aside className="relative flex h-full w-80 max-w-[86vw] flex-col border-r border-white/10 bg-[#0f172a] p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <BrandLogo />
               <Button
@@ -209,38 +248,7 @@ export function AppShell({ children }: AppShellProps) {
             <div className="mt-8">
               <NavLinks onNavigate={() => setDrawerOpen(false)} />
             </div>
-            <div className="surface-secondary absolute bottom-5 left-5 right-5 rounded-xl p-4">
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  {selectedAvatar ? (
-                    <Image
-                      src={selectedAvatar.url}
-                      alt=""
-                      width={40}
-                      height={40}
-                      unoptimized
-                      className="size-full rounded-full object-cover"
-                    />
-                  ) : (
-                    <AvatarFallback>{initials}</AvatarFallback>
-                  )}
-                </Avatar>
-                <div className="min-w-0">
-                  <p className="truncate type-small font-semibold text-slate-950">{user.display_name}</p>
-                  <p className="truncate type-caption text-slate-500">{user.email}</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="mt-4 font-semibold text-orange-600 hover:text-orange-700"
-                onClick={async () => {
-                  await logout();
-                  router.replace("/login");
-                }}
-              >
-                Logout
-              </button>
-            </div>
+            <div className="mt-auto">{account}</div>
           </aside>
         </div>
       )}

@@ -305,42 +305,44 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   };
 
   return (
-    <main className="min-h-screen bg-[#fffaf2] text-[#1c1b1b] [--background:#fffaf2] [--border:rgba(219,132,0,0.2)] [--card:#ffffff] [--foreground:#1c1b1b] [--muted:#544435] [--slate-50:#fffaf2] [--slate-100:#fff7eb] [--slate-200:#ffe0b3] [--slate-300:#d9c2af] [--slate-400:#877462] [--slate-500:#6f5f4e] [--slate-600:#544435] [--slate-700:#402e0f] [--slate-800:#281900] [--slate-900:#1c1b1b] [--slate-950:#1c1b1b] [--surface-chrome:#ffffff] [--surface-elevated:#ffffff] [--surface-primary:#ffffff] [--surface-secondary:#fff7eb]">
+    <main className="dark-system min-h-screen overflow-hidden bg-[#020617] text-[#dce1fb]">
       <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.08fr)_minmax(28rem,0.92fr)]">
-        <section className="relative hidden overflow-hidden border-r border-orange-200/70 bg-[#fff7eb] p-10 text-slate-950 lg:flex lg:flex-col lg:justify-between">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_14%,rgba(219,132,0,0.17),transparent_18rem),radial-gradient(circle_at_82%_8%,rgba(255,196,107,0.24),transparent_16rem),linear-gradient(rgba(148,89,0,0.052)_1px,transparent_1px),linear-gradient(90deg,rgba(148,89,0,0.052)_1px,transparent_1px)] bg-[size:auto,auto,30px_30px,30px_30px]" />
+        <section className="relative hidden overflow-hidden border-r border-white/10 bg-[#070d1f] p-10 text-[#f8fafc] lg:flex lg:flex-col lg:justify-between">
+          <div className="industrial-hero-media absolute inset-0 opacity-80" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/40 to-[#020617]/90" />
+          <div className="absolute inset-0 surface-grid opacity-20" />
           <div className="relative z-10">
             <BrandLogo />
           </div>
           <div className="relative z-10 max-w-2xl">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-orange-200 bg-white/80 px-3 py-1 text-sm font-semibold text-orange-700 shadow-sm">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/25 bg-[#f59e0b]/10 px-3 py-1 text-sm font-semibold text-[#ffb77d] shadow-sm">
               <ShieldCheck className="size-4" />
-              Engineering learning OS
+              ISO 9001 Certified Learning
             </div>
-            <h1 className="max-w-xl text-5xl font-bold tracking-normal">
-              Start every session from a focused engineering cockpit.
+            <h1 className="max-w-xl text-5xl font-extrabold leading-tight text-[#ffb77d]">
+              Master the mechanics of tomorrow.
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-slate-600">
-              A precise workspace where students turn goals into weekly study momentum with
-              courses, notes, tests, and AI assistance.
+            <p className="mt-5 max-w-xl text-lg leading-8 text-[#dbc2b0]/80">
+              Join thousands of engineering students accelerating their careers with expert-led
+              courses, verified certificates, and an AI study cockpit.
             </p>
 
-            <div className="mt-8 max-w-xl rounded-2xl border border-orange-200/80 bg-white/88 p-3 shadow-[0_20px_60px_-38px_rgba(148,89,0,0.55)]">
-              <div className="rounded-xl border border-orange-100 bg-[#fffaf2] p-4">
+            <div className="glass-card mt-8 max-w-xl rounded-xl p-4">
+              <div className="rounded-xl border border-white/5 bg-[#151b2d]/70 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-orange-600 text-white">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-[#d97706] text-[#2f1500]">
                     <Sparkles className="size-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-slate-950">Ask GaugeHow Mentor</p>
-                    <p className="text-xs text-slate-500">Explain, calculate, verify, and plan your next module.</p>
+                    <p className="text-sm font-bold text-[#f8fafc]">Ask GaugeHow Mentor</p>
+                    <p className="text-xs text-[#94a3b8]">Explain, calculate, verify, and plan your next module.</p>
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {["Calculate gear ratios", "Explain stress-strain", "Verify FEA mesh"].map((item) => (
                     <span
                       key={item}
-                      className="rounded-lg border border-orange-200 bg-white px-3 py-1.5 text-xs font-semibold text-slate-700"
+                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-[#dce1fb]"
                     >
                       {item}
                     </span>
@@ -357,9 +359,9 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
             ].map((item) => {
               const Icon = item.icon;
               return (
-                <div key={item.label} className="rounded-xl border border-orange-200/80 bg-white/80 p-4 shadow-sm">
-                  <Icon className="size-5 text-orange-700" />
-                  <p className="mt-3 text-sm font-semibold text-slate-950">{item.label}</p>
+                <div key={item.label} className="glass-card rounded-xl p-4">
+                  <Icon className="size-5 text-[#ffb77d]" />
+                  <p className="mt-3 text-sm font-semibold text-[#f8fafc]">{item.label}</p>
                 </div>
               );
             })}
@@ -376,24 +378,24 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                 </Link>
               </Button>
             </div>
-            <Card className="overflow-hidden border-orange-200/80 bg-white shadow-[0_24px_70px_-42px_rgba(148,89,0,0.55)]">
+            <Card className="glass-card overflow-hidden rounded-xl border-white/10 bg-[#0f172a]/80 shadow-[0_0_44px_rgba(217,119,7,0.12)]">
               <CardContent className="space-y-6 p-6 sm:p-8">
-                <div className="rounded-xl border border-orange-100 bg-[#fff7eb] p-4">
+                <div className="rounded-xl border border-white/5 bg-[#151b2d] p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-orange-600 text-white">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-[#d97706] text-[#2f1500]">
                       <BookOpen className="size-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-slate-950">GaugeHow workspace</p>
-                      <p className="text-xs text-slate-500">Courses, tests, mentor, and notes in one place.</p>
+                      <p className="text-sm font-bold text-[#f8fafc]">GaugeHow workspace</p>
+                      <p className="text-xs text-[#94a3b8]">Courses, tests, mentor, and notes in one place.</p>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-2xl font-bold tracking-normal text-slate-950">
+                  <h1 className="text-3xl font-bold tracking-normal text-[#f8fafc]">
                     {data.title}
                   </h1>
-                  <p className="mt-2 text-sm leading-6 text-slate-600">{data.subtitle}</p>
+                  <p className="mt-2 text-sm leading-6 text-[#94a3b8]">{data.subtitle}</p>
                 </div>
                 <div className="space-y-4">
                   {mode !== "verify" && mode !== "reset" && (

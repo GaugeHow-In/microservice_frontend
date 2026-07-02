@@ -371,7 +371,7 @@ export default function CourseDetailPage({ params }: Props) {
 
   return (
     <AppShell>
-      <div className="space-y-6">
+      <div className="dark-system space-y-6">
         <PageHeader
           eyebrow={course.categories.map((item) => item.name).join(" · ")}
           title={course.title}
@@ -405,9 +405,9 @@ export default function CourseDetailPage({ params }: Props) {
         )}
 
         <section className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="overflow-hidden">
+          <Card className="glass-card overflow-hidden border-white/10 bg-[#0f172a]/80">
             <CardContent className="p-5">
-              <div className="relative aspect-video overflow-hidden rounded-lg bg-slate-950 p-6 text-white">
+              <div className="course-visual relative aspect-video overflow-hidden rounded-lg p-6 text-white">
                 {course.thumbnail_url ? (
                   <Image
                     src={course.thumbnail_url}
@@ -418,7 +418,7 @@ export default function CourseDetailPage({ params }: Props) {
                     className="absolute inset-0 h-full w-full object-cover opacity-70"
                   />
                 ) : null}
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/55 to-slate-950/20" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-[#020617] via-[#020617]/55 to-[#020617]/20" />
                 <div className="relative flex h-full flex-col justify-between">
                   <div className="flex items-center justify-between gap-3">
                     <Badge variant="orange">Backend-backed course</Badge>
@@ -458,7 +458,7 @@ export default function CourseDetailPage({ params }: Props) {
                   ["Rating", course.average_rating.toFixed(1)],
                   ["Level", course.level.replaceAll("_", " ")],
                 ].map(([label, value]) => (
-                  <div key={String(label)} className="rounded-lg bg-slate-50 p-3">
+                  <div key={String(label)} className="rounded-lg border border-white/10 bg-white/5 p-3">
                     <p className="text-sm font-medium text-slate-500">{label}</p>
                     <p className="mt-1 font-bold capitalize text-slate-950">{value}</p>
                   </div>

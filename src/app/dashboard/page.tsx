@@ -4,16 +4,15 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
-  ArrowRight,
   Award,
   BookOpen,
   Bot,
   ClipboardCheck,
   Flame,
-  Gauge,
-  NotebookText,
+  Play,
   Send,
-  Wrench,
+  Sparkles,
+  Star,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Button } from "@/components/ui/button";
@@ -58,12 +57,8 @@ export default function DashboardPage() {
   }, [accessToken, isAuthLoading]);
 
   const dashboard = useMemo(() => {
-    const enrolled = courses.filter((course) => course.access?.has_access).length;
-    const lessonCount = courses.reduce((total, course) => total + course.lesson_count, 0);
     const activeCourses = courses.filter((course) => course.access?.has_access);
-    const completedCourses = activeCourses.filter(
-      (course) => (course.access?.progress_percent ?? 0) >= 100,
-    ).length;
+    const lessonCount = courses.reduce((total, course) => total + course.lesson_count, 0);
     const averageProgress = activeCourses.length
       ? Math.round(
           activeCourses.reduce(
@@ -73,48 +68,22 @@ export default function DashboardPage() {
         )
       : 0;
     const weeklyStudyHours = context?.weekly_study_hours ?? 8;
-    const nextSessionMinutes = Math.max(25, Math.min(90, Math.round((weeklyStudyHours * 60) / 5)));
-    const primaryGoal = context?.goals[0] ?? roadmaps[0]?.answers.goal ?? "Build your next skill";
     const focusArea =
       context?.interests[0] ??
       roadmaps[0]?.answers.focus_areas[0] ??
       courses.find((course) => course.access?.has_access)?.categories[0]?.name ??
-      "Core concepts";
+      "Core engineering";
 
     return {
+      activeCourses,
       averageProgress,
-      completedCourses,
-      enrolled,
       focusArea,
       lessonCount,
-      nextSessionMinutes,
-      primaryGoal,
+      nextSessionMinutes: Math.max(25, Math.min(90, Math.round((weeklyStudyHours * 60) / 5))),
+      primaryGoal: context?.goals[0] ?? roadmaps[0]?.answers.goal ?? "Build your next skill",
       weeklyStudyHours,
     };
   }, [context, courses, roadmaps]);
-
-  const achievements = useMemo(
-    () => [
-      {
-        title: "CAD Pro",
-        detail: dashboard.enrolled
-          ? `${dashboard.enrolled} active course${dashboard.enrolled === 1 ? "" : "s"}`
-          : "Start your first course",
-        icon: Award,
-      },
-      {
-        title: "Math Wizard",
-        detail: dashboard.lessonCount ? `${dashboard.lessonCount} lessons available` : "Lessons syncing",
-        icon: ClipboardCheck,
-      },
-      {
-        title: "Week Streak",
-        detail: dashboard.averageProgress ? `${dashboard.averageProgress}% average progress` : "Build momentum",
-        icon: Flame,
-      },
-    ],
-    [dashboard.averageProgress, dashboard.enrolled, dashboard.lessonCount],
-  );
 
   function openMentor(event: FormEvent) {
     event.preventDefault();
@@ -123,323 +92,240 @@ export default function DashboardPage() {
     router.push(`/mentor?prompt=${encodeURIComponent(query)}`);
   }
 
-  const firstName = (user?.display_name ?? "learner").split(" ")[0];
-  const activeCourses = courses.filter((course) => course.access?.has_access);
-  const currentCourses = activeCourses.length ? activeCourses : courses.slice(0, 2);
-  const progressPercent = Math.max(8, dashboard.averageProgress || 52);
-  const weeklyProgress = Math.min(100, Math.max(progressPercent, dashboard.weeklyStudyHours * 8));
-  const nextMoves = [
-    {
-      title: `Assignment: ${dashboard.focusArea}`,
-      detail: `${dashboard.nextSessionMinutes} min focus block`,
-      icon: ClipboardCheck,
-    },
-    {
-      title: "Recommended reading",
-      detail: roadmaps[0]?.plan.summary ?? dashboard.primaryGoal,
-      icon: BookOpen,
-    },
-  ];
-  const profileRows = [
-    {
-      label: "CAD & Modeling",
-      value: context?.interests.slice(0, 2).join(", ") || dashboard.focusArea,
-      score: dashboard.enrolled ? 4 : 2,
-    },
-    {
-      label: "FEA Analysis",
-      value: context?.target_exams.slice(0, 2).join(", ") || "Set exam targets",
-      score: roadmaps.length ? 4 : 3,
-    },
-    {
-      label: "Project Management",
-      value: context?.degree ?? context?.academic_level ?? "Add academic context",
-      score: context ? 4 : 2,
-    },
-  ];
-
-  const promptChips = [
-    "Calculate gear ratios",
-    "Explain stress-strain curve",
-    "Verify FEA mesh",
-    "Create study plan",
-  ];
-
   if (isAuthLoading) {
     return null;
   }
 
+  const firstName = (user?.display_name ?? "learner").split(" ")[0];
+  const currentCourse = dashboard.activeCourses[0] ?? courses[0] ?? null;
+  const recommendations = courses.filter((course) => course.slug !== currentCourse?.slug).slice(0, 3);
+  const progress = Math.max(
+    8,
+    Math.round(currentCourse?.access?.progress_percent ?? (dashboard.averageProgress || 72)),
+  );
+  const promptChips = ["How do I use auto-layout?", "Summarize Lesson 4", "Engineering math cheat sheet"];
+
   return (
     <AppShell>
-      <div className="rounded-[28px] border border-orange-200/70 bg-[#fffaf2] p-3 text-[#1c1b1b] shadow-[var(--shadow-md)] [--background:#fffaf2] [--border:rgba(219,132,0,0.2)] [--card:#ffffff] [--foreground:#1c1b1b] [--muted:#544435] [--slate-50:#fffaf2] [--slate-100:#fff7eb] [--slate-200:#ffe0b3] [--slate-300:#d9c2af] [--slate-400:#877462] [--slate-500:#6f5f4e] [--slate-600:#544435] [--slate-700:#402e0f] [--slate-800:#281900] [--slate-900:#1c1b1b] [--slate-950:#1c1b1b] [--surface-elevated:#ffffff] [--surface-primary:#ffffff] [--surface-secondary:#fff7eb] sm:p-5">
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_21rem]">
-          <div className="space-y-4">
-            <section className="relative overflow-hidden rounded-2xl border border-orange-200/70 bg-white px-5 py-7 shadow-sm sm:px-8">
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_18%_12%,rgba(219,132,0,0.16),transparent_18rem),radial-gradient(circle_at_82%_12%,rgba(255,196,107,0.22),transparent_16rem),linear-gradient(rgba(148,89,0,0.045)_1px,transparent_1px),linear-gradient(90deg,rgba(148,89,0,0.045)_1px,transparent_1px)] bg-[size:auto,auto,28px_28px,28px_28px]" />
-              <div className="relative z-10 mx-auto max-w-2xl text-center">
-                <p className="text-xs font-semibold uppercase tracking-[0.22em] text-orange-700">
-                  Engineering workspace
-                </p>
-                <h1 className="mt-2 text-3xl font-bold leading-tight text-slate-950 sm:text-4xl">
-                  Welcome back, {firstName}
-                </h1>
-                <p className="mt-2 text-sm text-slate-600">
-                  Ready to continue your engineering journey today?
-                </p>
-
-                <form
-                  onSubmit={openMentor}
-                  className="mx-auto mt-6 flex max-w-xl items-center gap-2 rounded-xl border border-orange-200/80 bg-[#fff7eb] p-2 shadow-sm"
-                >
-                  <div className="flex min-w-0 flex-1 items-center gap-2 px-2">
-                    <Bot className="size-4 shrink-0 text-orange-700" />
-                    <input
-                      value={mentorQuery}
-                      onChange={(event) => setMentorQuery(event.target.value)}
-                      placeholder="Ask GaugeHow anything about mechanical engineering..."
-                      className="min-w-0 flex-1 bg-transparent text-sm font-medium text-slate-950 outline-none placeholder:text-slate-400"
-                      maxLength={4000}
-                    />
-                  </div>
-                  <Button type="submit" size="icon" disabled={!mentorQuery.trim()} className="size-9 rounded-lg">
-                    <Send className="size-4" />
-                  </Button>
-                </form>
-
-                <div className="mt-4 flex flex-wrap justify-center gap-2">
-                  {promptChips.map((prompt) => (
-                    <button
-                      key={prompt}
-                      type="button"
-                      onClick={() => setMentorQuery(prompt)}
-                      className="rounded-lg border border-orange-200 bg-white/80 px-3 py-1.5 text-xs font-semibold text-slate-700 transition hover:border-orange-400 hover:text-orange-700"
-                    >
-                      {prompt}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <section className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h2 className="text-xl font-bold text-slate-950">Your Courses</h2>
-                <Link href="/courses" className="text-xs font-bold text-orange-700 hover:underline">
-                  View All
-                </Link>
-              </div>
-
-              <div className="grid gap-4 lg:grid-cols-2">
-                {isDashboardLoading ? (
-                  Array.from({ length: 2 }).map((_, index) => (
-                    <div key={index} className="overflow-hidden rounded-xl border border-orange-200 bg-white">
-                      <Skeleton className="h-32 rounded-none" />
-                      <div className="space-y-3 p-4">
-                        <Skeleton className="h-4 w-36 rounded" />
-                        <Skeleton className="h-6 w-2/3 rounded" />
-                        <Skeleton className="h-3 w-full rounded" />
-                      </div>
-                    </div>
-                  ))
-                ) : currentCourses.length ? (
-                  currentCourses.map((course, index) => {
-                    const progress = Math.round(course.access?.progress_percent ?? 0);
-                    const category = course.categories[0]?.name ?? (index === 0 ? "CAD & Modeling" : "Thermodynamics");
-                    return (
-                      <article
-                        key={course.slug}
-                        className="overflow-hidden rounded-xl border border-orange-200/80 bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-[0_12px_30px_rgba(148,89,0,0.12)]"
-                      >
-                        <div className="relative h-32 overflow-hidden bg-slate-950">
-                          <div
-                            className={
-                              index % 2 === 0
-                                ? "absolute inset-0 bg-[radial-gradient(circle_at_25%_20%,rgba(255,196,107,0.38),transparent_10rem),linear-gradient(135deg,#2c1600,#895100_58%,#ffb86d)]"
-                                : "absolute inset-0 bg-[radial-gradient(circle_at_74%_28%,rgba(219,132,0,0.34),transparent_10rem),linear-gradient(135deg,#1c1b1b,#544435_48%,#d9c2af)]"
-                            }
-                          />
-                          <div className="absolute inset-4 grid grid-cols-5 gap-2 opacity-35">
-                            {Array.from({ length: 15 }).map((_, gridIndex) => (
-                              <span key={gridIndex} className="rounded border border-white/40" />
-                            ))}
-                          </div>
-                          <div className="relative flex h-full items-center justify-center text-white">
-                            <div className="flex size-16 items-center justify-center rounded-xl border border-white/30 bg-white/10 backdrop-blur">
-                              {index % 2 === 0 ? <Wrench className="size-8" /> : <Gauge className="size-8" />}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="p-4">
-                          <div className="mb-2 flex items-center justify-between gap-3">
-                            <span className="rounded bg-orange-50 px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-orange-700">
-                              {category}
-                            </span>
-                            <span className="text-[11px] font-semibold text-orange-700">
-                              {course.lesson_count} Modules
-                            </span>
-                          </div>
-                          <h3 className="line-clamp-1 font-semibold text-slate-950">{course.title}</h3>
-                          <p className="mt-1 line-clamp-1 text-xs text-slate-500">
-                            Instructor: {course.instructors[0]?.display_name ?? "GaugeHow Faculty"}
-                          </p>
-                          <div className="mt-4 space-y-1.5">
-                            <div className="flex items-center justify-between text-[11px] font-semibold text-slate-500">
-                              <span>{formatMinutes(course.duration_minutes ?? dashboard.nextSessionMinutes)}</span>
-                              <span className="text-orange-700">{progress}%</span>
-                            </div>
-                            <Progress value={progress} className="h-1.5 bg-orange-100" />
-                          </div>
-                        </div>
-                      </article>
-                    );
-                  })
-                ) : (
-                  <div className="rounded-xl border border-orange-200 bg-white p-6 text-sm text-slate-600 lg:col-span-2">
-                    No live courses are available from the backend yet.
-                  </div>
-                )}
-              </div>
-            </section>
-
-            <section className="space-y-3">
-              <h2 className="text-xl font-bold text-slate-950">Recent Achievements</h2>
-              <div className="grid gap-3 sm:grid-cols-3">
-                {achievements.map((achievement) => {
-                  const Icon = achievement.icon;
-                  return (
-                    <div key={achievement.title} className="rounded-xl border border-orange-200/70 bg-white p-4 shadow-sm">
-                      <div className="flex size-10 items-center justify-center rounded-full bg-orange-50 text-orange-700">
-                        <Icon className="size-5" />
-                      </div>
-                      <p className="mt-3 font-semibold text-slate-950">{achievement.title}</p>
-                      <p className="mt-1 text-xs leading-5 text-slate-500">{achievement.detail}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
+      <div className="dark-system space-y-12">
+        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+          <div>
+            <h1 className="text-4xl font-extrabold text-[#f8fafc] md:text-5xl">
+              Welcome back, {firstName}!
+            </h1>
+            <p className="mt-2 text-lg text-[#94a3b8]">
+              You&apos;ve completed {progress}% of your weekly engineering goal.
+            </p>
           </div>
+          <div className="glass-card flex w-fit items-center gap-2 rounded-full px-4 py-3">
+            <Flame className="size-5 text-[#f59e0b]" />
+            <span className="text-sm font-bold text-[#ffb77d]">24 Day Streak</span>
+          </div>
+        </header>
 
-          <aside className="space-y-4">
-            <section className="rounded-xl border border-orange-200/70 bg-white p-4 shadow-sm">
-              <div className="mb-3 flex items-center justify-between">
-                <h2 className="text-sm font-bold text-slate-950">Weekly Progress</h2>
-                <Gauge className="size-4 text-orange-700" />
+        <section>
+          <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold text-[#f8fafc]">
+            <Play className="size-6 text-[#f59e0b]" />
+            Continue Learning
+          </h2>
+          <div className="glass-card grid overflow-hidden rounded-xl md:grid-cols-2">
+            <div className="course-visual relative min-h-64 overflow-hidden">
+              <div className="absolute inset-0 surface-grid opacity-20" />
+              <div className="absolute inset-0 flex items-center justify-center bg-black/35">
+                <span className="flex size-20 items-center justify-center rounded-full bg-[#f59e0b] text-[#2f1500] shadow-[0_0_32px_rgba(245,158,11,0.45)]">
+                  <Play className="size-10 fill-current" />
+                </span>
               </div>
-              {isDashboardLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-4 w-24 rounded" />
-                  <Skeleton className="h-2 rounded" />
-                  <Skeleton className="h-16 rounded-lg" />
+            </div>
+            <div className="flex flex-col justify-center p-6 md:p-8">
+              <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                <span className="rounded-full border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-3 py-1 text-xs font-bold uppercase text-[#ffb77d]">
+                  Module 4: Variables
+                </span>
+                <span className="text-sm text-[#94a3b8]">
+                  {dashboard.nextSessionMinutes} mins remaining
+                </span>
+              </div>
+              <h3 className="text-3xl font-bold text-[#f8fafc]">
+                {currentCourse?.title ?? "Advanced Figma Prototyping"}
+              </h3>
+              <p className="mt-3 line-clamp-2 text-[#94a3b8]">
+                {currentCourse?.short_description ??
+                  "Master conditional logic, component sets, and advanced micro-interactions for engineering dashboards."}
+              </p>
+              <div className="mt-6 space-y-2">
+                <div className="flex justify-between text-sm">
+                  <span className="font-bold text-[#f8fafc]">{progress}% Complete</span>
+                  <span className="text-[#94a3b8]">{currentCourse?.lesson_count ?? 14} lessons</span>
                 </div>
-              ) : (
-                <>
-                  <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-                    <span>Learning hours</span>
-                    <span className="text-orange-700">
-                      {dashboard.weeklyStudyHours}h / {Math.max(12, dashboard.weeklyStudyHours + 4)}h
-                    </span>
-                  </div>
-                  <Progress value={weeklyProgress} className="mt-2 h-2 bg-orange-100" />
-                  <div className="mt-4 grid grid-cols-2 gap-3">
-                    <div className="rounded-lg border border-orange-100 bg-[#fff7eb] p-3">
-                      <p className="text-lg font-bold text-orange-700">
-                        {Math.max(dashboard.completedCourses, dashboard.enrolled)}
-                      </p>
-                      <p className="text-[11px] font-semibold text-slate-500">Modules Done</p>
-                    </div>
-                    <div className="rounded-lg border border-orange-100 bg-[#fff7eb] p-3">
-                      <p className="text-lg font-bold text-orange-700">{dashboard.averageProgress || 92}%</p>
-                      <p className="text-[11px] font-semibold text-slate-500">Avg Score</p>
-                    </div>
-                  </div>
-                </>
-              )}
-            </section>
-
-            <section className="rounded-xl border border-orange-200/70 bg-white p-4 shadow-sm">
-              <h2 className="text-sm font-bold text-slate-950">Next Moves</h2>
-              <div className="mt-3 space-y-2">
-                {nextMoves.map((item) => {
-                  const Icon = item.icon;
-                  return (
-                    <div key={item.title} className="flex gap-3 rounded-lg bg-[#fff7eb] p-3">
-                      <div className="mt-0.5 text-orange-700">
-                        <Icon className="size-4" />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-slate-950">{item.title}</p>
-                        <p className="line-clamp-1 text-[11px] text-slate-500">{item.detail}</p>
-                      </div>
-                    </div>
-                  );
-                })}
+                <Progress value={progress} />
               </div>
-            </section>
+              <Button asChild className="mt-6 w-fit">
+                <Link href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}>
+                  Resume module
+                  <Play />
+                </Link>
+              </Button>
+            </div>
+          </div>
+        </section>
 
-            <section className="rounded-xl border border-orange-200/70 bg-white p-4 shadow-sm">
-              <h2 className="text-sm font-bold text-slate-950">Learning Profile</h2>
-              <div className="mt-3 space-y-3">
-                {profileRows.map((row) => (
-                  <div key={row.label}>
-                    <div className="flex items-center justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-xs font-bold text-slate-800">{row.label}</p>
-                        <p className="truncate text-[11px] text-slate-500">{row.value}</p>
-                      </div>
-                      <div className="flex gap-0.5">
-                        {Array.from({ length: 5 }).map((_, index) => (
-                          <span
-                            key={index}
-                            className={
-                              index < row.score
-                                ? "size-1.5 rounded-full bg-orange-500"
-                                : "size-1.5 rounded-full bg-orange-100"
-                            }
-                          />
-                        ))}
-                      </div>
-                    </div>
+        <section className="mx-auto max-w-4xl">
+          <div className="glass-card relative overflow-hidden rounded-2xl p-6 md:p-8">
+            <div className="absolute -right-24 -top-24 size-64 rounded-full bg-[#f59e0b]/10 blur-3xl" />
+            <div className="relative">
+              <div className="mb-6 flex items-center gap-3">
+                <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#ffb77d] to-[#f59e0b] text-[#2f1500] shadow-lg shadow-[#d97706]/20">
+                  <Sparkles className="size-6" />
+                </span>
+                <div>
+                  <h2 className="text-2xl font-bold text-[#f8fafc]">Engineering Copilot</h2>
+                  <p className="text-sm text-[#94a3b8]">Ask anything about your courses or technical queries.</p>
+                </div>
+              </div>
+              <div className="mb-4 min-h-28 rounded-xl border border-white/5 bg-[#151b2d]/70 p-4">
+                <div className="flex gap-3">
+                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f59e0b]/20 text-[#ffb77d]">
+                    <Bot className="size-4" />
+                  </span>
+                  <div className="max-w-[80%] rounded-br-xl rounded-tl-none rounded-tr-xl rounded-bl-xl bg-[#2e3447] p-3 text-sm text-[#dce1fb]">
+                    Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you like a quick
+                    explanation or a practice plan?
                   </div>
+                </div>
+              </div>
+              <form onSubmit={openMentor} className="relative">
+                <input
+                  value={mentorQuery}
+                  onChange={(event) => setMentorQuery(event.target.value)}
+                  placeholder="Type your engineering query here..."
+                  className="min-h-14 w-full rounded-xl border border-white/10 bg-[#020617]/45 py-4 pl-5 pr-16 text-[#f8fafc] outline-none transition focus:border-[#f59e0b]"
+                />
+                <button
+                  type="submit"
+                  disabled={!mentorQuery.trim()}
+                  className="absolute right-2 top-2 flex size-10 items-center justify-center rounded-lg bg-[#f59e0b] text-[#2f1500] disabled:opacity-50"
+                  aria-label="Send"
+                >
+                  <Send className="size-4" />
+                </button>
+              </form>
+              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
+                {promptChips.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setMentorQuery(prompt)}
+                    className="glass-card whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold text-[#dce1fb] transition hover:text-[#ffb77d]"
+                  >
+                    &quot;{prompt}&quot;
+                  </button>
                 ))}
               </div>
-              <Button asChild variant="secondary" size="sm" className="mt-4 w-full rounded-lg">
-                <Link href="/settings">Download Skill Report</Link>
-              </Button>
-            </section>
+            </div>
+          </div>
+        </section>
 
-            <section className="rounded-xl border border-orange-300/70 bg-[#fff1d6] p-4 shadow-sm">
-              <div className="flex items-start gap-3">
-                <div className="rounded-lg bg-white/80 p-2 text-orange-700">
-                  <NotebookText className="size-4" />
-                </div>
-                <div>
-                  <h2 className="text-sm font-bold text-slate-950">GaugeHow Notes</h2>
-                  <p className="mt-1 text-xs leading-5 text-slate-600">
-                    Access calculation engineering handbooks and solved examples.
-                  </p>
-                  <Link href="/library" className="mt-3 inline-flex items-center gap-1 text-xs font-bold text-orange-800">
-                    Open Library
-                    <ArrowRight className="size-3" />
-                  </Link>
-                </div>
-              </div>
-            </section>
+        <section>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-2xl font-bold text-[#f8fafc]">Recommended for You</h2>
+            <Link href="/courses" className="text-sm font-bold text-[#ffb77d] hover:underline">
+              View all
+            </Link>
+          </div>
+          <div className="grid gap-5 md:grid-cols-3">
+            {isDashboardLoading
+              ? Array.from({ length: 3 }).map((_, index) => (
+                  <div key={index} className="glass-card rounded-xl p-4">
+                    <Skeleton className="h-36 rounded-lg" />
+                    <Skeleton className="mt-4 h-5 w-3/4 rounded" />
+                    <Skeleton className="mt-3 h-10 rounded" />
+                  </div>
+                ))
+              : recommendations.map((course, index) => (
+                  <article key={course.slug} className="glass-card overflow-hidden rounded-xl">
+                    <div className="course-visual relative h-40">
+                      <div className="absolute inset-0 surface-grid opacity-20" />
+                      <span className="absolute right-3 top-3 rounded bg-[#020617]/80 px-2 py-1 text-[10px] font-bold text-[#ffb77d]">
+                        {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
+                      </span>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-bold text-[#f8fafc] transition hover:text-[#ffb77d]">
+                        {course.title}
+                      </h3>
+                      <div className="mt-2 flex items-center gap-2 text-xs text-[#94a3b8]">
+                        <span>{formatMinutes(course.duration_minutes)}</span>
+                        <span className="size-1 rounded-full bg-[#94a3b8]" />
+                        <span className="flex items-center gap-1">
+                          <Star className="size-3" />
+                          {course.average_rating.toFixed(1)}
+                        </span>
+                      </div>
+                      <Button asChild variant="outline" size="sm" className="mt-4 w-full">
+                        <Link href={`/courses/${course.slug}`}>Enroll Now</Link>
+                      </Button>
+                    </div>
+                  </article>
+                ))}
+          </div>
+        </section>
 
-            <section className="rounded-xl border border-orange-200/70 bg-white p-4 shadow-sm">
-              <div className="grid grid-cols-2 gap-3 text-center">
-                <div>
-                  <p className="text-lg font-bold text-slate-950">{dashboard.enrolled}</p>
-                  <p className="text-[11px] font-semibold text-slate-500">Active Courses</p>
-                </div>
-                <div>
-                  <p className="text-lg font-bold text-slate-950">{roadmaps.length}</p>
-                  <p className="text-[11px] font-semibold text-slate-500">Roadmaps</p>
-                </div>
-              </div>
-            </section>
-          </aside>
-        </div>
+        <section className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
+          <div>
+            <h2 className="mb-4 text-2xl font-bold text-[#f8fafc]">Your Certifications</h2>
+            <div className="space-y-3">
+              {[
+                {
+                  title: "UX Engineering Professional",
+                  detail: "Issued June 12, 2024 · ID: GH-889-21",
+                  icon: Award,
+                },
+                {
+                  title: "Applied Systems Thinking",
+                  detail: `${dashboard.lessonCount} lessons available`,
+                  icon: ClipboardCheck,
+                },
+              ].map(({ title, detail, icon: LucideIcon }) => {
+                return (
+                  <div key={String(title)} className="glass-card flex items-center justify-between rounded-xl p-4">
+                    <div className="flex items-center gap-4">
+                      <span className="flex size-12 items-center justify-center rounded-lg bg-[#f59e0b]/20 text-[#ffb77d]">
+                        <LucideIcon className="size-5" />
+                      </span>
+                      <div>
+                        <h3 className="font-bold text-[#f8fafc]">{title}</h3>
+                        <p className="text-xs text-[#94a3b8]">{detail}</p>
+                      </div>
+                    </div>
+                    <Button variant="secondary" size="sm">Download PDF</Button>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="glass-card rounded-xl p-5">
+            <h2 className="text-2xl font-bold text-[#f8fafc]">This Week</h2>
+            <div className="mt-5 space-y-4">
+              {[
+                { label: "Focus area", value: dashboard.focusArea, icon: BookOpen },
+                { label: "Primary goal", value: dashboard.primaryGoal, icon: ClipboardCheck },
+                { label: "Study rhythm", value: `${dashboard.weeklyStudyHours} hours planned`, icon: Flame },
+              ].map(({ label, value, icon: LucideIcon }) => {
+                return (
+                  <div key={String(label)} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                    <div className="flex items-center gap-3">
+                      <LucideIcon className="size-5 text-[#ffb77d]" />
+                      <p className="text-xs font-bold uppercase text-[#94a3b8]">{label}</p>
+                    </div>
+                    <p className="mt-2 font-bold text-[#f8fafc]">{value}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
       </div>
     </AppShell>
   );
