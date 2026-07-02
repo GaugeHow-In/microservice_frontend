@@ -149,16 +149,39 @@ export function AppShell({ children }: AppShellProps) {
 
   return (
     <div className="premium-bg min-h-screen">
-      <aside className="chrome-surface fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col rounded-none border-y-0 border-l-0 p-5 backdrop-blur-xl lg:flex">
-        <div className="px-2 py-3">
+      {drawerOpen && (
+        <button
+          className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm transition-opacity"
+          aria-label="Close navigation"
+          onClick={() => setDrawerOpen(false)}
+        />
+      )}
+
+      <aside
+        className={cn(
+          "chrome-surface fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl transition-transform duration-300 ease-out",
+          drawerOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+        aria-hidden={!drawerOpen}
+      >
+        <div className="flex items-center justify-between px-2 py-3">
           <BrandLogo />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setDrawerOpen(false)}
+            aria-label="Close navigation"
+          >
+            <X />
+          </Button>
         </div>
         <div className="mt-8">
-          <NavLinks />
+          <NavLinks onNavigate={() => setDrawerOpen(false)} />
         </div>
         <div className="mt-auto space-y-3">
           <Link
             href="/mentor"
+            onClick={() => setDrawerOpen(false)}
             className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-700 transition hover:border-orange-300"
           >
             <HelpCircle className="size-5" />
@@ -168,7 +191,7 @@ export function AppShell({ children }: AppShellProps) {
         </div>
       </aside>
 
-      <div className="lg:pl-64">
+      <div>
         <header className="chrome-surface sticky top-0 z-30 rounded-none border-x-0 border-t-0 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
@@ -177,11 +200,10 @@ export function AppShell({ children }: AppShellProps) {
                 size="icon"
                 onClick={() => setDrawerOpen(true)}
                 aria-label="Open navigation"
-                className="lg:hidden"
               >
                 <Menu />
               </Button>
-              <div className="lg:hidden">
+              <div className="hidden sm:block">
                 <BrandLogo compact />
               </div>
               <div>
@@ -228,32 +250,6 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 lg:hidden">
-          <button
-            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
-            aria-label="Close navigation"
-            onClick={() => setDrawerOpen(false)}
-          />
-          <aside className="chrome-surface relative flex h-full w-80 max-w-[86vw] flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl">
-            <div className="flex items-center justify-between">
-              <BrandLogo />
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDrawerOpen(false)}
-                aria-label="Close navigation"
-              >
-                <X />
-              </Button>
-            </div>
-            <div className="mt-8">
-              <NavLinks onNavigate={() => setDrawerOpen(false)} />
-            </div>
-            <div className="mt-auto">{account}</div>
-          </aside>
-        </div>
-      )}
       <QuickMentor />
     </div>
   );

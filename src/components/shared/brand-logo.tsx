@@ -11,6 +11,7 @@ export function BrandLogo({ className, compact = false }: BrandLogoProps) {
   return (
     <Link
       href="/"
+      aria-label="GaugeHowLearning OS"
       className={cn("flex items-center gap-3 text-slate-950", className)}
     >
       <span className="flex size-10 items-center justify-center overflow-hidden rounded-lg border border-orange-200 bg-white shadow-[var(--shadow-sm)]">
