@@ -107,7 +107,7 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="dark-system -mx-4 -my-6 min-h-screen overflow-hidden px-4 py-7 sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+      <div className="relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl space-y-16">
           <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
               ].map(({ label, value, icon: LucideIcon }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-slate-600 backdrop-blur"
+                  className="flex items-center gap-3 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-4 py-2 text-slate-600 backdrop-blur"
                 >
                   <LucideIcon className="size-4 text-orange-400" />
                   <span className="text-slate-500">{label}</span>
@@ -137,7 +137,7 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <section className="overflow-hidden rounded-xl border border-white/10 bg-[#0f172a]/60 backdrop-blur-xl">
+          <section className="overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
             <div className="grid lg:grid-cols-[1.08fr_0.92fr]">
               <Link
                 href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
@@ -168,7 +168,7 @@ export default function DashboardPage() {
                 </div>
               </Link>
 
-              <div className="flex flex-col justify-center border-t border-white/10 p-6 md:p-10 lg:border-l lg:border-t-0">
+              <div className="flex flex-col justify-center border-t border-[color:var(--border)] p-6 md:p-10 lg:border-l lg:border-t-0">
                 <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
                   <span className="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-xs font-bold uppercase text-orange-300">
                     Module 4: Variables
@@ -201,7 +201,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="mx-auto max-w-4xl rounded-2xl border border-white/10 bg-[#0f172a]/60 p-5 backdrop-blur-xl md:p-7">
+          <section className="mx-auto max-w-4xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur-xl md:p-7">
             <div className="flex items-center gap-3">
               <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950">
                 <Bot className="size-6" />
@@ -214,12 +214,12 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            <div className="mt-6 rounded-xl border border-white/5 bg-[#070e1e]/55 p-4">
+            <div className="mt-6 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
               <div className="flex gap-3">
                 <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-300/15 text-orange-300">
                   <Bot className="size-4" />
                 </span>
-                <div className="max-w-[82%] rounded-xl rounded-tl-sm bg-white/[0.07] p-3 text-sm leading-6 text-slate-600">
+                <div className="max-w-[82%] rounded-xl rounded-tl-sm bg-[color:var(--surface-elevated)] p-3 text-sm leading-6 text-slate-600">
                   Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you
                   like a quick explanation or a practice plan?
                 </div>
@@ -231,7 +231,7 @@ export default function DashboardPage() {
                 value={mentorQuery}
                 onChange={(event) => setMentorQuery(event.target.value)}
                 placeholder="Type your engineering query here..."
-                className="w-full rounded-xl border border-white/10 bg-[#020617]/60 py-4 pl-5 pr-16 text-slate-950 outline-none transition focus:border-orange-300"
+                className="w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] py-4 pl-5 pr-16 text-slate-950 outline-none transition focus:border-orange-300"
               />
               <button
                 type="submit"
@@ -248,7 +248,7 @@ export default function DashboardPage() {
                   key={prompt}
                   type="button"
                   onClick={() => setMentorQuery(prompt)}
-                  className="shrink-0 rounded-full border border-white/10 bg-white/[0.04] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/40 hover:text-orange-300"
+                  className="shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/40 hover:text-orange-300"
                 >
                   {prompt}
                 </button>
@@ -266,7 +266,7 @@ export default function DashboardPage() {
             <div className="grid gap-5 md:grid-cols-3">
               {isDashboardLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+                    <div key={index} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4">
                       <Skeleton className="h-40 rounded-lg" />
                       <Skeleton className="mt-4 h-5 w-3/4 rounded" />
                     </div>
@@ -275,7 +275,7 @@ export default function DashboardPage() {
                     <Link
                       key={course.slug}
                       href={`/courses/${course.slug}`}
-                      className="group overflow-hidden rounded-xl border border-white/10 bg-[#0f172a]/60 transition hover:border-orange-300/35"
+                      className="group overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] transition hover:border-orange-300/35"
                     >
                       <div className="industrial-hero-media relative h-48 overflow-hidden">
                         {course.thumbnail_url ? (
@@ -311,10 +311,10 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="grid gap-8 border-t border-white/10 pt-10 lg:grid-cols-[1fr_0.9fr]">
+          <section className="grid gap-8 border-t border-[color:var(--border)] pt-10 lg:grid-cols-[1fr_0.9fr]">
             <div>
               <h2 className="mb-5 text-2xl font-extrabold text-slate-950">Your Certifications</h2>
-              <div className="divide-y divide-white/10 overflow-hidden rounded-xl border border-white/10 bg-[#0f172a]/45">
+              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)]">
                 {[
                   {
                     title: "UX Engineering Professional",
@@ -353,7 +353,7 @@ export default function DashboardPage() {
                   { label: "Primary goal", value: dashboard.primaryGoal, icon: ClipboardCheck },
                   { label: "Study rhythm", value: `${dashboard.weeklyStudyHours} hours planned`, icon: Flame },
                 ].map(({ label, value, icon: LucideIcon }) => (
-                  <div key={String(label)} className="flex gap-4 border-b border-white/10 pb-4 last:border-b-0">
+                  <div key={String(label)} className="flex gap-4 border-b border-[color:var(--border)] pb-4 last:border-b-0">
                     <LucideIcon className="mt-1 size-5 shrink-0 text-orange-300" />
                     <div>
                       <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
