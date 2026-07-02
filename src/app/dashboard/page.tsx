@@ -107,56 +107,127 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="dark-system space-y-12">
-        <header className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h1 className="text-4xl font-extrabold text-[#f8fafc] md:text-5xl">
-              Welcome back, {firstName}!
-            </h1>
-            <p className="mt-2 text-lg text-[#94a3b8]">
-              You&apos;ve completed {progress}% of your weekly engineering goal.
-            </p>
-          </div>
-          <div className="glass-card flex w-fit items-center gap-2 rounded-full px-4 py-3">
-            <Flame className="size-5 text-[#f59e0b]" />
-            <span className="text-sm font-bold text-[#ffb77d]">24 Day Streak</span>
+      <div className="space-y-8">
+        <header className="surface-elevated relative overflow-hidden rounded-2xl p-6 md:p-8">
+          <div className="absolute inset-0 surface-grid opacity-50" />
+          <div className="relative z-10 flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div>
+              <p className="text-sm font-bold uppercase text-orange-600">Dashboard</p>
+              <h1 className="mt-2 text-4xl font-extrabold text-slate-950 md:text-5xl">
+                Welcome back, {firstName}!
+              </h1>
+              <p className="mt-2 text-lg text-slate-600">
+                You&apos;ve completed {progress}% of your weekly engineering goal.
+              </p>
+            </div>
+            <div className="surface-secondary flex w-fit items-center gap-2 rounded-full px-4 py-3">
+              <Flame className="size-5 text-orange-600" />
+              <span className="text-sm font-bold text-orange-700">24 Day Streak</span>
+            </div>
           </div>
         </header>
 
+        <section className="surface-elevated relative overflow-hidden rounded-2xl p-5 md:p-7">
+          <div className="absolute -right-24 -top-24 size-64 rounded-full bg-orange-200/20 blur-3xl" />
+          <div className="relative z-10 grid gap-6 lg:grid-cols-[0.8fr_1.2fr] lg:items-center">
+            <div>
+              <div className="flex items-center gap-3">
+                <span className="flex size-12 items-center justify-center rounded-xl bg-orange-600 text-white shadow-[var(--shadow-md)]">
+                  <Sparkles className="size-6" />
+                </span>
+                <div>
+                  <h2 className="text-3xl font-bold text-slate-950">Engineering Copilot</h2>
+                  <p className="text-sm text-slate-600">
+                    Ask anything about your courses or technical queries.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-5 flex flex-wrap gap-2">
+                {promptChips.map((prompt) => (
+                  <button
+                    key={prompt}
+                    type="button"
+                    onClick={() => setMentorQuery(prompt)}
+                    className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-600 transition hover:border-orange-300 hover:text-orange-700"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
+              <div className="mb-4 flex gap-3">
+                <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-100 text-orange-700">
+                  <Bot className="size-4" />
+                </span>
+                <div className="max-w-[85%] rounded-xl rounded-tl-sm bg-[color:var(--surface-elevated)] p-3 text-sm leading-6 text-slate-700 shadow-[var(--shadow-sm)]">
+                  Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you
+                  like a quick explanation or a practice plan?
+                </div>
+              </div>
+              <form onSubmit={openMentor} className="relative">
+                <input
+                  value={mentorQuery}
+                  onChange={(event) => setMentorQuery(event.target.value)}
+                  placeholder="Type your engineering query here..."
+                  className="ui-field min-h-14 w-full rounded-xl py-4 pl-5 pr-16 text-slate-950"
+                />
+                <button
+                  type="submit"
+                  disabled={!mentorQuery.trim()}
+                  className="absolute right-2 top-2 flex size-10 items-center justify-center rounded-lg bg-orange-600 text-white transition hover:bg-orange-700 disabled:opacity-50"
+                  aria-label="Send"
+                >
+                  <Send className="size-4" />
+                </button>
+              </form>
+            </div>
+          </div>
+        </section>
+
         <section>
-          <h2 className="mb-4 flex items-center gap-2 text-2xl font-bold text-[#f8fafc]">
-            <Play className="size-6 text-[#f59e0b]" />
-            Continue Learning
-          </h2>
-          <div className="glass-card grid overflow-hidden rounded-xl md:grid-cols-2">
-            <div className="course-visual relative min-h-64 overflow-hidden">
-              <div className="absolute inset-0 surface-grid opacity-20" />
-              <div className="absolute inset-0 flex items-center justify-center bg-black/35">
-                <span className="flex size-20 items-center justify-center rounded-full bg-[#f59e0b] text-[#2f1500] shadow-[0_0_32px_rgba(245,158,11,0.45)]">
+          <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="flex items-center gap-2 text-2xl font-bold text-slate-950">
+                <Play className="size-6 text-orange-600" />
+                Continue Learning
+              </h2>
+              <p className="text-sm text-slate-600">Pick up from your current course.</p>
+            </div>
+            <Button asChild variant="secondary">
+              <Link href="/courses">Browse catalog</Link>
+            </Button>
+          </div>
+          <div className="ui-card grid overflow-hidden md:grid-cols-[0.95fr_1.05fr]">
+            <div className="industrial-light-media relative min-h-64 overflow-hidden">
+              <div className="absolute inset-0 surface-grid opacity-60" />
+              <div className="absolute inset-0 flex items-center justify-center">
+                <span className="flex size-20 items-center justify-center rounded-full bg-orange-600 text-white shadow-[var(--shadow-lg)]">
                   <Play className="size-10 fill-current" />
                 </span>
               </div>
             </div>
             <div className="flex flex-col justify-center p-6 md:p-8">
               <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-                <span className="rounded-full border border-[#f59e0b]/30 bg-[#f59e0b]/10 px-3 py-1 text-xs font-bold uppercase text-[#ffb77d]">
+                <span className="rounded-full border border-orange-200 bg-orange-50 px-3 py-1 text-xs font-bold uppercase text-orange-700">
                   Module 4: Variables
                 </span>
-                <span className="text-sm text-[#94a3b8]">
+                <span className="text-sm text-slate-500">
                   {dashboard.nextSessionMinutes} mins remaining
                 </span>
               </div>
-              <h3 className="text-3xl font-bold text-[#f8fafc]">
+              <h3 className="text-3xl font-bold text-slate-950">
                 {currentCourse?.title ?? "Advanced Figma Prototyping"}
               </h3>
-              <p className="mt-3 line-clamp-2 text-[#94a3b8]">
+              <p className="mt-3 line-clamp-2 text-slate-600">
                 {currentCourse?.short_description ??
                   "Master conditional logic, component sets, and advanced micro-interactions for engineering dashboards."}
               </p>
               <div className="mt-6 space-y-2">
                 <div className="flex justify-between text-sm">
-                  <span className="font-bold text-[#f8fafc]">{progress}% Complete</span>
-                  <span className="text-[#94a3b8]">{currentCourse?.lesson_count ?? 14} lessons</span>
+                  <span className="font-bold text-slate-950">{progress}% Complete</span>
+                  <span className="text-slate-500">{currentCourse?.lesson_count ?? 14} lessons</span>
                 </div>
                 <Progress value={progress} />
               </div>
@@ -170,93 +241,37 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        <section className="mx-auto max-w-4xl">
-          <div className="glass-card relative overflow-hidden rounded-2xl p-6 md:p-8">
-            <div className="absolute -right-24 -top-24 size-64 rounded-full bg-[#f59e0b]/10 blur-3xl" />
-            <div className="relative">
-              <div className="mb-6 flex items-center gap-3">
-                <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-[#ffb77d] to-[#f59e0b] text-[#2f1500] shadow-lg shadow-[#d97706]/20">
-                  <Sparkles className="size-6" />
-                </span>
-                <div>
-                  <h2 className="text-2xl font-bold text-[#f8fafc]">Engineering Copilot</h2>
-                  <p className="text-sm text-[#94a3b8]">Ask anything about your courses or technical queries.</p>
-                </div>
-              </div>
-              <div className="mb-4 min-h-28 rounded-xl border border-white/5 bg-[#151b2d]/70 p-4">
-                <div className="flex gap-3">
-                  <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-[#f59e0b]/20 text-[#ffb77d]">
-                    <Bot className="size-4" />
-                  </span>
-                  <div className="max-w-[80%] rounded-br-xl rounded-tl-none rounded-tr-xl rounded-bl-xl bg-[#2e3447] p-3 text-sm text-[#dce1fb]">
-                    Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you like a quick
-                    explanation or a practice plan?
-                  </div>
-                </div>
-              </div>
-              <form onSubmit={openMentor} className="relative">
-                <input
-                  value={mentorQuery}
-                  onChange={(event) => setMentorQuery(event.target.value)}
-                  placeholder="Type your engineering query here..."
-                  className="min-h-14 w-full rounded-xl border border-white/10 bg-[#020617]/45 py-4 pl-5 pr-16 text-[#f8fafc] outline-none transition focus:border-[#f59e0b]"
-                />
-                <button
-                  type="submit"
-                  disabled={!mentorQuery.trim()}
-                  className="absolute right-2 top-2 flex size-10 items-center justify-center rounded-lg bg-[#f59e0b] text-[#2f1500] disabled:opacity-50"
-                  aria-label="Send"
-                >
-                  <Send className="size-4" />
-                </button>
-              </form>
-              <div className="mt-4 flex gap-2 overflow-x-auto pb-2">
-                {promptChips.map((prompt) => (
-                  <button
-                    key={prompt}
-                    type="button"
-                    onClick={() => setMentorQuery(prompt)}
-                    className="glass-card whitespace-nowrap rounded-full px-4 py-2 text-xs font-bold text-[#dce1fb] transition hover:text-[#ffb77d]"
-                  >
-                    &quot;{prompt}&quot;
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
-
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-[#f8fafc]">Recommended for You</h2>
-            <Link href="/courses" className="text-sm font-bold text-[#ffb77d] hover:underline">
+            <h2 className="text-2xl font-bold text-slate-950">Recommended for You</h2>
+            <Link href="/courses" className="text-sm font-bold text-orange-700 hover:underline">
               View all
             </Link>
           </div>
           <div className="grid gap-5 md:grid-cols-3">
             {isDashboardLoading
               ? Array.from({ length: 3 }).map((_, index) => (
-                  <div key={index} className="glass-card rounded-xl p-4">
+                  <div key={index} className="ui-card rounded-xl p-4">
                     <Skeleton className="h-36 rounded-lg" />
                     <Skeleton className="mt-4 h-5 w-3/4 rounded" />
                     <Skeleton className="mt-3 h-10 rounded" />
                   </div>
                 ))
               : recommendations.map((course, index) => (
-                  <article key={course.slug} className="glass-card overflow-hidden rounded-xl">
-                    <div className="course-visual relative h-40">
-                      <div className="absolute inset-0 surface-grid opacity-20" />
-                      <span className="absolute right-3 top-3 rounded bg-[#020617]/80 px-2 py-1 text-[10px] font-bold text-[#ffb77d]">
+                  <article key={course.slug} className="ui-card overflow-hidden rounded-xl">
+                    <div className="industrial-light-media relative h-40">
+                      <div className="absolute inset-0 surface-grid opacity-60" />
+                      <span className="absolute right-3 top-3 rounded bg-orange-600 px-2 py-1 text-[10px] font-bold text-white">
                         {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
                       </span>
                     </div>
                     <div className="p-4">
-                      <h3 className="font-bold text-[#f8fafc] transition hover:text-[#ffb77d]">
+                      <h3 className="font-bold text-slate-950 transition hover:text-orange-700">
                         {course.title}
                       </h3>
-                      <div className="mt-2 flex items-center gap-2 text-xs text-[#94a3b8]">
+                      <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
                         <span>{formatMinutes(course.duration_minutes)}</span>
-                        <span className="size-1 rounded-full bg-[#94a3b8]" />
+                        <span className="size-1 rounded-full bg-slate-400" />
                         <span className="flex items-center gap-1">
                           <Star className="size-3" />
                           {course.average_rating.toFixed(1)}
@@ -273,7 +288,7 @@ export default function DashboardPage() {
 
         <section className="grid gap-5 lg:grid-cols-[1fr_0.9fr]">
           <div>
-            <h2 className="mb-4 text-2xl font-bold text-[#f8fafc]">Your Certifications</h2>
+            <h2 className="mb-4 text-2xl font-bold text-slate-950">Your Certifications</h2>
             <div className="space-y-3">
               {[
                 {
@@ -288,25 +303,27 @@ export default function DashboardPage() {
                 },
               ].map(({ title, detail, icon: LucideIcon }) => {
                 return (
-                  <div key={String(title)} className="glass-card flex items-center justify-between rounded-xl p-4">
+                  <div key={String(title)} className="ui-card flex items-center justify-between rounded-xl p-4">
                     <div className="flex items-center gap-4">
-                      <span className="flex size-12 items-center justify-center rounded-lg bg-[#f59e0b]/20 text-[#ffb77d]">
+                      <span className="flex size-12 items-center justify-center rounded-lg bg-orange-50 text-orange-700">
                         <LucideIcon className="size-5" />
                       </span>
                       <div>
-                        <h3 className="font-bold text-[#f8fafc]">{title}</h3>
-                        <p className="text-xs text-[#94a3b8]">{detail}</p>
+                        <h3 className="font-bold text-slate-950">{title}</h3>
+                        <p className="text-xs text-slate-500">{detail}</p>
                       </div>
                     </div>
-                    <Button variant="secondary" size="sm">Download PDF</Button>
+                    <Button variant="secondary" size="sm">
+                      Download PDF
+                    </Button>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          <div className="glass-card rounded-xl p-5">
-            <h2 className="text-2xl font-bold text-[#f8fafc]">This Week</h2>
+          <div className="ui-card rounded-xl p-5">
+            <h2 className="text-2xl font-bold text-slate-950">This Week</h2>
             <div className="mt-5 space-y-4">
               {[
                 { label: "Focus area", value: dashboard.focusArea, icon: BookOpen },
@@ -314,12 +331,12 @@ export default function DashboardPage() {
                 { label: "Study rhythm", value: `${dashboard.weeklyStudyHours} hours planned`, icon: Flame },
               ].map(({ label, value, icon: LucideIcon }) => {
                 return (
-                  <div key={String(label)} className="rounded-lg border border-white/10 bg-white/5 p-4">
+                  <div key={String(label)} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
                     <div className="flex items-center gap-3">
-                      <LucideIcon className="size-5 text-[#ffb77d]" />
-                      <p className="text-xs font-bold uppercase text-[#94a3b8]">{label}</p>
+                      <LucideIcon className="size-5 text-orange-600" />
+                      <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
                     </div>
-                    <p className="mt-2 font-bold text-[#f8fafc]">{value}</p>
+                    <p className="mt-2 font-bold text-slate-950">{value}</p>
                   </div>
                 );
               })}
