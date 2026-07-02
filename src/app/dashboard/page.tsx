@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -201,6 +202,17 @@ export default function DashboardPage() {
           </div>
           <div className="ui-card grid overflow-hidden md:grid-cols-[0.95fr_1.05fr]">
             <div className="industrial-light-media relative min-h-64 overflow-hidden">
+              {currentCourse?.thumbnail_url ? (
+                <Image
+                  src={currentCourse.thumbnail_url}
+                  alt={currentCourse.title}
+                  fill
+                  unoptimized
+                  sizes="(min-width: 768px) 46vw, 100vw"
+                  className="object-cover"
+                />
+              ) : null}
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-slate-950/10 to-transparent" />
               <div className="absolute inset-0 surface-grid opacity-60" />
               <div className="absolute inset-0 flex items-center justify-center">
                 <span className="flex size-20 items-center justify-center rounded-full bg-orange-600 text-white shadow-[var(--shadow-lg)]">
@@ -259,7 +271,18 @@ export default function DashboardPage() {
                 ))
               : recommendations.map((course, index) => (
                   <article key={course.slug} className="ui-card overflow-hidden rounded-xl">
-                    <div className="industrial-light-media relative h-40">
+                    <div className="industrial-light-media relative h-40 overflow-hidden">
+                      {course.thumbnail_url ? (
+                        <Image
+                          src={course.thumbnail_url}
+                          alt={course.title}
+                          fill
+                          unoptimized
+                          sizes="(min-width: 768px) 33vw, 100vw"
+                          className="object-cover transition duration-300 hover:scale-105"
+                        />
+                      ) : null}
+                      <div className="absolute inset-0 bg-gradient-to-t from-slate-950/35 via-transparent to-transparent" />
                       <div className="absolute inset-0 surface-grid opacity-60" />
                       <span className="absolute right-3 top-3 rounded bg-orange-600 px-2 py-1 text-[10px] font-bold text-white">
                         {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
