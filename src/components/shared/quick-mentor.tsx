@@ -1,7 +1,6 @@
 "use client";
 
 import { Bot, LoaderCircle, Send, X } from "lucide-react";
-import { usePathname } from "next/navigation";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Button } from "@/components/ui/button";
@@ -9,7 +8,6 @@ import { aiClient, type AIMessage } from "@/lib/ai-client";
 
 export function QuickMentor() {
   const { accessToken } = useAuth();
-  const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -25,8 +23,6 @@ export function QuickMentor() {
     setBusy(true);
     setError(null);
     try {
-      const id = conversationId ?? (await aiClient.createConversation(accessToken, "quick_chat")).id;
-      setConversationId(id);
       const pendingMessage: AIMessage = {
         id: `pending-${Date.now()}`,
         role: "user",
@@ -35,11 +31,28 @@ export function QuickMentor() {
         created_at: new Date().toISOString(),
       };
       setMessages((current) => [...current, pendingMessage]);
-      const turn = await aiClient.sendMessage(accessToken, id, content, pathname);
+      const turn = await aiClient.queryChat(accessToken, content, conversationId);
+      setConversationId(turn.conversation_id);
+      const userMessage: AIMessage = {
+        id: `user-${turn.message_id}`,
+        conversation_id: turn.conversation_id,
+        role: "user",
+        content,
+        created_at: new Date().toISOString(),
+      };
+      const assistantMessage: AIMessage = {
+        id: turn.message_id,
+        conversation_id: turn.conversation_id,
+        role: "assistant",
+        content: turn.answer,
+        confidence: turn.confidence,
+        retrieved_chunks: turn.retrieved_chunks,
+        created_at: new Date().toISOString(),
+      };
       setMessages((current) => [
         ...current.filter((message) => message.id !== pendingMessage.id),
-        turn.user_message,
-        turn.assistant_message,
+        userMessage,
+        assistantMessage,
       ]);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Mentor is unavailable");

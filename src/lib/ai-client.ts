@@ -2,25 +2,52 @@ import { API_BASE_URL } from "@/lib/api-base";
 
 export type AIMessage = {
   id: string;
+  conversation_id?: string;
   role: "user" | "assistant";
   content: string;
-  disposition: "answered" | "refused" | "crisis_support";
+  disposition?: "answered" | "refused" | "crisis_support";
+  confidence?: number | null;
+  retrieved_chunks?: RetrievedChunk[];
+  processing_time_ms?: number | null;
   created_at: string;
 };
 
-export type Conversation = {
-  id: string;
-  title: string;
-  interface: "mentor" | "quick_chat";
-  created_at: string;
-  updated_at: string;
+export type Citation = {
+  document_name: string;
+  lesson: string | null;
+  page_number: number | null;
+  similarity_score: number;
+  document_id: string;
+  chunk_id: string;
 };
 
-export type ChatTurn = {
-  conversation: Conversation;
-  user_message: AIMessage;
-  assistant_message: AIMessage;
-  suggested_actions: string[];
+export type RetrievedChunk = {
+  chunk_id: string;
+  document_id: string;
+  document_name: string;
+  lesson: string | null;
+  page_number: number | null;
+  content: string;
+  similarity_score: number;
+  lexical_score: number;
+  rerank_score: number;
+  metadata: Record<string, unknown>;
+};
+
+export type ChatFilters = {
+  course_id?: string | null;
+  lesson_id?: string | null;
+  document_types?: Array<"pdf" | "markdown" | "transcript">;
+};
+
+export type RAGChatResponse = {
+  answer: string;
+  citations: Citation[];
+  confidence: number;
+  retrieved_chunks: RetrievedChunk[];
+  processing_time: number;
+  conversation_id: string;
+  message_id: string;
 };
 
 export type RoadmapStep = {
@@ -109,23 +136,30 @@ export const aiClient = {
       body: JSON.stringify(context),
     });
   },
-  createConversation(token: string, interfaceName: Conversation["interface"]) {
-    return request<Conversation>("/ai/conversations", token, {
+  queryChat(token: string, question: string, conversationId?: string | null, filters?: ChatFilters) {
+    return request<RAGChatResponse>("/chat/query", token, {
       method: "POST",
-      body: JSON.stringify({ interface: interfaceName }),
+      body: JSON.stringify({
+        question,
+        conversation_id: conversationId ?? null,
+        filters: filters ?? {},
+      }),
     });
   },
-  listConversations(token: string) {
-    return request<Conversation[]>("/ai/conversations", token);
-  },
-  listMessages(token: string, id: string) {
-    return request<AIMessage[]>(`/ai/conversations/${id}/messages`, token);
-  },
-  sendMessage(token: string, id: string, content: string, route?: string) {
-    return request<ChatTurn>(`/ai/conversations/${id}/messages`, token, {
+  chatHistory(token: string, conversationId?: string | null) {
+    return request<AIMessage[]>("/chat/history", token, {
       method: "POST",
-      body: JSON.stringify({ content, screen_context: route ? { route } : null }),
+      body: JSON.stringify({ conversation_id: conversationId ?? null, limit: 100 }),
     });
+  },
+  regenerateChat(token: string, messageId: string) {
+    return request<RAGChatResponse>("/chat/regenerate", token, {
+      method: "POST",
+      body: JSON.stringify({ message_id: messageId }),
+    });
+  },
+  chatSources(token: string, messageId: string) {
+    return request<{ message_id: string; citations: Citation[] }>(`/chat/sources/${messageId}`, token);
   },
   listRoadmaps(token: string) {
     return request<Roadmap[]>("/roadmaps", token);

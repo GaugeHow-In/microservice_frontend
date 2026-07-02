@@ -9,12 +9,18 @@ import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
-import { aiClient, type AIMessage, type Conversation } from "@/lib/ai-client";
+import { aiClient, type AIMessage } from "@/lib/ai-client";
+
+type RAGConversation = {
+  id: string;
+  title: string;
+  updated_at: string;
+};
 
 function MentorPageContent() {
   const searchParams = useSearchParams();
   const { accessToken } = useAuth();
-  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [conversations, setConversations] = useState<RAGConversation[]>([]);
   const [active, setActive] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [input, setInput] = useState("");
@@ -24,43 +30,24 @@ function MentorPageContent() {
   const dashboardPrompt = searchParams.get("prompt")?.trim() ?? "";
 
   useEffect(() => {
-    if (!accessToken) return;
-    void aiClient.listConversations(accessToken).then((items) => {
-      const mentorItems = items.filter((item) => item.interface === "mentor");
-      setConversations(mentorItems);
-      if (mentorItems[0] && !dashboardPrompt) setActive(mentorItems[0].id);
-    }).catch(() => setError("Could not load conversations."));
-  }, [accessToken, dashboardPrompt]);
-
-  useEffect(() => {
     if (!accessToken || !active) { setMessages([]); return; }
-    void aiClient.listMessages(accessToken, active).then(setMessages).catch(() => setError("Could not load messages."));
+    void aiClient.chatHistory(accessToken, active).then(setMessages).catch(() => setError("Could not load messages."));
   }, [accessToken, active]);
 
   async function newConversation() {
-    if (!accessToken) return;
-    const created = await aiClient.createConversation(accessToken, "mentor");
-    setConversations((items) => [created, ...items]);
-    setActive(created.id);
+    setActive(null);
     setMessages([]);
   }
 
   const sendMentorMessage = useCallback(async function sendMentorMessage(
     content: string,
-    options: { forceNew?: boolean; route?: string } = {},
+    options: { forceNew?: boolean } = {},
   ) {
     if (!accessToken || busy) return;
     setBusy(true);
     setError(null);
     setInput("");
     try {
-      let id = options.forceNew ? null : active;
-      if (!id) {
-        const created = await aiClient.createConversation(accessToken, "mentor");
-        id = created.id;
-        setActive(id);
-        setConversations((items) => [created, ...items.filter((item) => item.id !== created.id)]);
-      }
       const pendingMessage: AIMessage = {
         id: `pending-${Date.now()}`,
         role: "user",
@@ -69,21 +56,39 @@ function MentorPageContent() {
         created_at: new Date().toISOString(),
       };
       setMessages((items) => (options.forceNew ? [pendingMessage] : [...items, pendingMessage]));
-      const turn = await aiClient.sendMessage(accessToken, id, content, options.route ?? "/mentor");
+      const turn = await aiClient.queryChat(accessToken, content, options.forceNew ? null : active);
+      const now = new Date().toISOString();
+      const userMessage: AIMessage = {
+        id: `user-${turn.message_id}`,
+        conversation_id: turn.conversation_id,
+        role: "user",
+        content,
+        created_at: now,
+      };
+      const assistantMessage: AIMessage = {
+        id: turn.message_id,
+        conversation_id: turn.conversation_id,
+        role: "assistant",
+        content: turn.answer,
+        confidence: turn.confidence,
+        retrieved_chunks: turn.retrieved_chunks,
+        processing_time_ms: Math.round(turn.processing_time * 1000),
+        created_at: now,
+      };
       setMessages((items) =>
         options.forceNew
-          ? [turn.user_message, turn.assistant_message]
+          ? [userMessage, assistantMessage]
           : [
               ...items.filter((message) => message.id !== pendingMessage.id),
-              turn.user_message,
-              turn.assistant_message,
+              userMessage,
+              assistantMessage,
             ],
       );
       setConversations((items) => [
-        turn.conversation,
-        ...items.filter((item) => item.id !== turn.conversation.id),
+        { id: turn.conversation_id, title: content.slice(0, 80), updated_at: now },
+        ...items.filter((item) => item.id !== turn.conversation_id),
       ]);
-      setActive(id);
+      setActive(turn.conversation_id);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "AI Mentor is unavailable.");
     } finally {
@@ -94,7 +99,7 @@ function MentorPageContent() {
   useEffect(() => {
     if (!accessToken || !dashboardPrompt || handledPromptRef.current === dashboardPrompt || busy) return;
     handledPromptRef.current = dashboardPrompt;
-    void sendMentorMessage(dashboardPrompt, { forceNew: true, route: "/dashboard" });
+    void sendMentorMessage(dashboardPrompt, { forceNew: true });
   }, [accessToken, busy, dashboardPrompt, sendMentorMessage]);
 
   async function submit(event: FormEvent) {
