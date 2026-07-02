@@ -1,5 +1,6 @@
+import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, Clock3, Globe2, Star } from "lucide-react";
+import { ArrowRight, BookOpen, Clock3, GraduationCap, Star } from "lucide-react";
 import { CourseCatalogItem, formatMinutes, formatPrice } from "@/lib/learning-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -16,58 +17,66 @@ export function CourseCard({ course }: CourseCardProps) {
   const hasAccess = course.access?.has_access ?? false;
 
   return (
-    <article className="glass-card group flex h-full flex-col overflow-hidden rounded-xl bg-white">
-      <div className="course-visual relative aspect-video overflow-hidden">
-        <div className="absolute inset-0 surface-grid opacity-40" />
-        <div className="absolute left-4 top-4 rounded bg-orange-600 px-3 py-1 text-xs font-bold uppercase text-white">
-          {hasAccess ? "Enrolled" : "Best Seller"}
-        </div>
+    <article className="ui-card group grid overflow-hidden md:grid-cols-[15rem_minmax(0,1fr)]">
+      <div className="relative min-h-44 border-b border-[color:var(--border)] bg-[color:var(--surface-secondary)] md:border-b-0 md:border-r">
+        {course.thumbnail_url ? (
+          <Image
+            src={course.thumbnail_url}
+            alt=""
+            fill
+            unoptimized
+            sizes="(min-width: 768px) 240px, 100vw"
+            className="object-cover"
+          />
+        ) : (
+          <div className="industrial-light-media flex h-full min-h-44 items-center justify-center p-6">
+            <div className="surface-grid absolute inset-0 opacity-60" />
+            <div className="relative flex size-16 items-center justify-center rounded-xl bg-slate-950 text-orange-300 shadow-[var(--shadow-md)]">
+              <GraduationCap className="size-8" />
+            </div>
+          </div>
+        )}
+        <span className="absolute left-3 top-3 rounded bg-orange-600 px-2.5 py-1 text-xs font-bold uppercase text-white">
+          {hasAccess ? "Enrolled" : "Course"}
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col p-5">
-        <div className="mb-3 flex flex-wrap items-center gap-2">
-          <Badge variant="green" className="rounded">
+      <div className="flex min-w-0 flex-col gap-4 p-5">
+        <div className="flex flex-wrap items-center gap-2">
+          <Badge variant="orange" className="rounded">
             {primaryCategory}
           </Badge>
-          <span className="text-xs font-semibold text-slate-500">
-            {course.average_rating.toFixed(1)} ★ ({course.total_reviews})
+          <span className="flex items-center gap-1 text-sm font-semibold text-slate-500">
+            <Star className="size-4 fill-orange-500 text-orange-500" />
+            {course.average_rating.toFixed(1)} ({course.total_reviews})
           </span>
         </div>
 
-        <h3 className="text-xl font-bold leading-tight text-slate-950 transition group-hover:text-orange-700">
-          {course.title}
-        </h3>
+        <div>
+          <h3 className="text-2xl font-bold leading-tight text-slate-950 transition group-hover:text-orange-700">
+            {course.title}
+          </h3>
+          <p className="mt-1 text-sm font-semibold text-slate-500">By {instructor}</p>
+        </div>
+
         {course.short_description && (
-          <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
-            {course.short_description}
-          </p>
+          <p className="line-clamp-2 text-sm leading-6 text-slate-600">{course.short_description}</p>
         )}
 
-        <div className="mt-4 flex items-center gap-2">
-          <span className="flex size-7 items-center justify-center rounded-full bg-orange-100 text-[10px] font-bold text-orange-800">
-            {instructor
-              .split(" ")
-              .map((part) => part[0])
-              .join("")
-              .slice(0, 2)}
-          </span>
-          <span className="text-sm font-semibold text-slate-600">{instructor}</span>
-        </div>
-
-        <div className="mt-5 grid grid-cols-3 gap-3 text-xs font-semibold text-slate-600">
-          <span className="flex items-center gap-1">
-            <Clock3 className="size-4" />
+        <div className="flex flex-wrap gap-4 text-sm font-semibold text-slate-600">
+          <span className="flex items-center gap-1.5">
+            <Clock3 className="size-4 text-orange-600" />
             {formatMinutes(course.duration_minutes)}
           </span>
-          <span>{course.lesson_count} lessons</span>
-          <span className="flex items-center gap-1">
-            <Star className="size-4 fill-orange-500 text-orange-500" />
-            {course.level.replaceAll("_", " ")}
+          <span className="flex items-center gap-1.5">
+            <BookOpen className="size-4 text-orange-600" />
+            {course.lesson_count} lessons
           </span>
+          <span className="capitalize">{course.level.replaceAll("_", " ")}</span>
         </div>
 
         {hasAccess && (
-          <div className="mt-5 rounded-lg border border-orange-200 bg-[#fff7eb] p-3">
+          <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-3">
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="font-semibold text-slate-600">Progress</span>
               <span className="font-bold text-slate-950">{Math.round(progress)}%</span>
@@ -76,22 +85,18 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         )}
 
-        <div className="mt-auto flex items-center justify-between gap-4 border-t border-black/5 pt-5">
+        <div className="mt-auto flex flex-col gap-3 border-t border-[color:var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-bold uppercase text-slate-500">Access</p>
+            <p className="text-xs font-bold uppercase text-slate-500">
+              {hasAccess ? "Your access" : "Pricing"}
+            </p>
             <p className="text-xl font-bold text-slate-950">
               {hasAccess ? "Active" : formatPrice(course.pricing)}
             </p>
-            {(course.pricing?.display_currency_code ?? course.pricing?.currency_code) && (
-              <span className="mt-1 flex items-center gap-1 text-xs font-medium text-slate-500">
-                <Globe2 className="size-3.5" />
-                {course.pricing.display_currency_code ?? course.pricing.currency_code}
-              </span>
-            )}
           </div>
           <Button asChild>
             <Link href={`/courses/${course.slug}`}>
-              {hasAccess ? "Continue" : "Enroll Now"}
+              {hasAccess ? "Continue" : "View details"}
               <ArrowRight />
             </Link>
           </Button>

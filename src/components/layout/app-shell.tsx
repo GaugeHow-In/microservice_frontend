@@ -26,6 +26,7 @@ import { Button } from "@/components/ui/button";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { PointsBalance } from "@/components/shared/points-balance";
 import { QuickMentor } from "@/components/shared/quick-mentor";
+import { ThemeToggle } from "@/components/shared/theme-toggle";
 import { getProfileAvatar } from "@/lib/profile-avatars";
 import { cn } from "@/lib/utils";
 
@@ -62,8 +63,8 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             className={cn(
               "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition",
               active
-                ? "bg-[#3c4a5e] text-[#d5e3fc] shadow-[inset_2px_0_0_#f59e0b]"
-                : "text-[#dbc2b0] hover:bg-white/5 hover:text-[#f8fafc]",
+                ? "bg-orange-50 text-orange-700 shadow-[inset_2px_0_0_var(--orange-400)]"
+                : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
             )}
           >
             <Icon className="size-4" />
@@ -102,8 +103,8 @@ export function AppShell({ children }: AppShellProps) {
 
   if (isLoading || !user) {
     return (
-      <div className="app-shell-dark flex min-h-screen items-center justify-center">
-        <div className="glass-card rounded-xl px-6 py-4 text-sm font-bold text-[#dce1fb]">
+      <div className="premium-bg flex min-h-screen items-center justify-center">
+        <div className="chrome-surface rounded-xl px-6 py-4 text-sm font-bold text-slate-600">
           Restoring your session...
         </div>
       </div>
@@ -111,9 +112,9 @@ export function AppShell({ children }: AppShellProps) {
   }
 
   const account = (
-    <div className="glass-card rounded-xl p-4">
+    <div className="surface-secondary rounded-xl p-4">
       <div className="flex items-center gap-3">
-        <Avatar className="border border-white/10">
+        <Avatar>
           {selectedAvatar ? (
             <Image
               src={selectedAvatar.url}
@@ -128,13 +129,13 @@ export function AppShell({ children }: AppShellProps) {
           )}
         </Avatar>
         <div className="min-w-0">
-          <p className="truncate text-sm font-bold text-[#f8fafc]">Welcome back</p>
-          <p className="truncate text-xs text-[#94a3b8]">{user.display_name}</p>
+          <p className="truncate text-sm font-bold text-slate-950">Welcome back</p>
+          <p className="truncate text-xs text-slate-500">{user.display_name}</p>
         </div>
       </div>
       <button
         type="button"
-        className="mt-4 flex items-center gap-2 text-xs font-bold text-[#ffb77d] hover:text-[#f59e0b]"
+        className="mt-4 flex items-center gap-2 text-xs font-bold text-orange-600 hover:text-orange-700"
         onClick={async () => {
           await logout();
           router.replace("/login");
@@ -147,8 +148,8 @@ export function AppShell({ children }: AppShellProps) {
   );
 
   return (
-    <div className="dark-system app-shell-dark min-h-screen">
-      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-white/10 bg-[#0f172a]/90 p-5 backdrop-blur-xl lg:flex">
+    <div className="premium-bg min-h-screen">
+      <aside className="chrome-surface fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col rounded-none border-y-0 border-l-0 p-5 backdrop-blur-xl lg:flex">
         <div className="px-2 py-3">
           <BrandLogo />
         </div>
@@ -158,7 +159,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="mt-auto space-y-3">
           <Link
             href="/mentor"
-            className="flex items-center gap-3 rounded-xl border border-[#d97706]/25 bg-[#d97706]/10 p-4 text-sm font-bold text-[#ffb77d] transition hover:bg-[#d97706]/15"
+            className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-700 transition hover:border-orange-300"
           >
             <HelpCircle className="size-5" />
             Engineering help
@@ -168,7 +169,7 @@ export function AppShell({ children }: AppShellProps) {
       </aside>
 
       <div className="lg:pl-64">
-        <header className="sticky top-0 z-30 border-b border-white/10 bg-[#0c1324]/78 backdrop-blur-xl">
+        <header className="chrome-surface sticky top-0 z-30 rounded-none border-x-0 border-t-0 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
               <Button
@@ -184,16 +185,17 @@ export function AppShell({ children }: AppShellProps) {
                 <BrandLogo compact />
               </div>
               <div>
-                <p className="text-xs font-bold uppercase text-[#94a3b8]">GaugeHow</p>
-                <p className="text-sm font-bold text-[#f8fafc]">{activeLabel}</p>
+                <p className="text-xs font-bold uppercase text-slate-500">GaugeHow</p>
+                <p className="text-sm font-bold text-slate-950">{activeLabel}</p>
               </div>
             </div>
-            <div className="hidden w-full max-w-md items-center gap-2 rounded-lg border border-white/10 bg-[#151b2d] px-3 py-2 md:flex">
-              <Search className="size-4 text-[#94a3b8]" />
-              <span className="text-sm text-[#94a3b8]">Search courses</span>
+            <div className="surface-secondary hidden w-full max-w-md items-center gap-2 rounded-lg px-3 py-2 md:flex">
+              <Search className="size-4 text-slate-500" />
+              <span className="text-sm text-slate-500">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
               <PointsBalance accessToken={accessToken} />
+              <ThemeToggle />
               <Button asChild variant="soft" size="sm" className="hidden sm:inline-flex">
                 <Link href="/courses">
                   <GraduationCap />
@@ -203,7 +205,7 @@ export function AppShell({ children }: AppShellProps) {
               <Button variant="ghost" size="icon" aria-label="Notifications">
                 <Bell />
               </Button>
-              <Avatar className="hidden border border-white/10 sm:flex">
+              <Avatar className="hidden sm:flex">
                 {selectedAvatar ? (
                   <Image
                     src={selectedAvatar.url}
@@ -229,11 +231,11 @@ export function AppShell({ children }: AppShellProps) {
       {drawerOpen && (
         <div className="fixed inset-0 z-50 lg:hidden">
           <button
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            className="absolute inset-0 bg-slate-950/40 backdrop-blur-sm"
             aria-label="Close navigation"
             onClick={() => setDrawerOpen(false)}
           />
-          <aside className="relative flex h-full w-80 max-w-[86vw] flex-col border-r border-white/10 bg-[#0f172a] p-5 shadow-2xl">
+          <aside className="chrome-surface relative flex h-full w-80 max-w-[86vw] flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl">
             <div className="flex items-center justify-between">
               <BrandLogo />
               <Button
