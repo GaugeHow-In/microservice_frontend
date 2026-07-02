@@ -108,7 +108,7 @@ export default function DashboardPage() {
   return (
     <AppShell>
       <div className="relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-16">
+        <div className="mx-auto max-w-7xl space-y-12">
           <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
               <p className="text-sm font-bold uppercase text-orange-400">Dashboard</p>
@@ -137,54 +137,42 @@ export default function DashboardPage() {
             </div>
           </header>
 
-          <section className="mx-auto max-w-5xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur-xl md:p-8">
-            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
-              <span className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950">
-                <Bot className="size-7" />
-              </span>
-              <div>
-                <h2 className="text-3xl font-extrabold text-slate-950">Engineering Copilot</h2>
-                <p className="text-sm text-slate-500">
-                  Ask anything about your courses or technical queries.
-                </p>
-              </div>
+          <section className="mx-auto max-w-5xl pt-1 text-center">
+            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950 shadow-[var(--shadow-sm)]">
+              <Bot className="size-7" />
             </div>
+            <h2 className="mt-5 text-4xl font-extrabold text-slate-950 md:text-5xl">
+              Engineering Copilot
+            </h2>
+            <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
+              Ask anything about your courses or technical queries.
+            </p>
 
-            <div className="mt-7 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
-              <div className="flex gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-300/15 text-orange-300">
-                  <Bot className="size-4" />
-                </span>
-                <div className="max-w-[82%] rounded-xl rounded-tl-sm bg-[color:var(--surface-elevated)] p-3 text-sm leading-6 text-slate-600">
-                  Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you
-                  like a quick explanation or a practice plan?
-                </div>
+            <form onSubmit={openMentor} className="mx-auto mt-7 max-w-4xl">
+              <div className="relative rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-2 shadow-[var(--shadow-md)] backdrop-blur-xl">
+                <input
+                  value={mentorQuery}
+                  onChange={(event) => setMentorQuery(event.target.value)}
+                  placeholder="Ask about lessons, roadmaps, formulas, or your next practice plan..."
+                  className="h-16 w-full rounded-[1.55rem] bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
+                />
+                <button
+                  type="submit"
+                  disabled={!mentorQuery.trim()}
+                  className="absolute right-4 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
+                  aria-label="Send"
+                >
+                  <Send className="size-5" />
+                </button>
               </div>
-            </div>
-
-            <form onSubmit={openMentor} className="relative mt-5">
-              <input
-                value={mentorQuery}
-                onChange={(event) => setMentorQuery(event.target.value)}
-                placeholder="Type your engineering query here..."
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] py-5 pl-5 pr-16 text-slate-950 outline-none transition focus:border-orange-300"
-              />
-              <button
-                type="submit"
-                disabled={!mentorQuery.trim()}
-                className="absolute right-2 top-2 flex size-12 items-center justify-center rounded-lg bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
-                aria-label="Send"
-              >
-                <Send className="size-5" />
-              </button>
             </form>
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+            <div className="mx-auto mt-4 flex max-w-4xl flex-wrap justify-center gap-2">
               {promptChips.map((prompt) => (
                 <button
                   key={prompt}
                   type="button"
                   onClick={() => setMentorQuery(prompt)}
-                  className="shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/40 hover:text-orange-300"
+                  className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/45 hover:text-orange-300"
                 >
                   {prompt}
                 </button>
@@ -192,13 +180,13 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
-            <div className="grid lg:grid-cols-[1.08fr_0.92fr]">
+          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
+            <div className="grid lg:grid-cols-[0.82fr_1fr]">
               <Link
                 href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
-                className="group relative min-h-[25rem] overflow-hidden"
+                className="group relative min-h-[13rem] overflow-hidden lg:min-h-[15rem]"
               >
-                <div className="absolute left-6 top-6 z-10 flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#020617]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
+                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#020617]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
                   <Play className="size-4" />
                   Continue Learning
                 </div>
@@ -208,45 +196,45 @@ export default function DashboardPage() {
                     alt={currentCourse.title}
                     fill
                     unoptimized
-                    sizes="(min-width: 1024px) 56vw, 100vw"
+                    sizes="(min-width: 1024px) 42vw, 100vw"
                     className="object-cover transition duration-500 group-hover:scale-105"
                   />
                 ) : (
                   <div className="industrial-hero-media absolute inset-0" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/90 via-[#020617]/42 to-transparent" />
-                <div className="absolute inset-0 surface-grid opacity-25" />
-                <div className="relative z-10 flex h-full min-h-[25rem] items-center p-6 md:p-10">
-                  <span className="flex size-20 items-center justify-center rounded-full border border-orange-300/40 bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
-                    <Play className="ml-1 size-10 fill-current" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/88 via-[#020617]/36 to-transparent" />
+                <div className="absolute inset-0 surface-grid opacity-20" />
+                <div className="relative z-10 flex h-full min-h-[13rem] items-center p-5 lg:min-h-[15rem]">
+                  <span className="flex size-14 items-center justify-center rounded-full border border-orange-300/40 bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
+                    <Play className="ml-0.5 size-7 fill-current" />
                   </span>
                 </div>
               </Link>
 
-              <div className="flex flex-col justify-center border-t border-[color:var(--border)] p-6 md:p-10 lg:border-l lg:border-t-0">
-                <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-                  <span className="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-xs font-bold uppercase text-orange-300">
+              <div className="flex flex-col justify-center border-t border-[color:var(--border)] p-5 md:p-6 lg:border-l lg:border-t-0">
+                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
+                  <span className="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-[11px] font-bold uppercase text-orange-300">
                     Module 4: Variables
                   </span>
-                  <span className="text-sm text-slate-500">
+                  <span className="text-xs text-slate-500">
                     {dashboard.nextSessionMinutes} mins remaining
                   </span>
                 </div>
-                <h2 className="text-3xl font-extrabold text-slate-950 md:text-4xl">
+                <h2 className="max-w-xl text-2xl font-extrabold text-slate-950 md:text-3xl">
                   {currentCourse?.title ?? "Advanced Figma Prototyping"}
                 </h2>
-                <p className="mt-4 line-clamp-3 text-slate-500">
+                <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
                   {currentCourse?.short_description ??
                     "Master conditional logic, component sets, and advanced micro-interactions for engineering dashboards."}
                 </p>
-                <div className="mt-8 space-y-2">
-                  <div className="flex justify-between text-sm">
+                <div className="mt-5 space-y-2">
+                  <div className="flex justify-between text-xs">
                     <span className="font-bold text-slate-950">{progress}% Complete</span>
                     <span className="text-slate-500">{currentCourse?.lesson_count ?? 14} lessons</span>
                   </div>
                   <Progress value={progress} />
                 </div>
-                <Button asChild className="mt-8 w-fit">
+                <Button asChild className="mt-5 w-fit">
                   <Link href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}>
                     Resume module
                     <Play />
