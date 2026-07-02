@@ -137,6 +137,61 @@ export default function DashboardPage() {
             </div>
           </header>
 
+          <section className="mx-auto max-w-5xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur-xl md:p-8">
+            <div className="flex flex-col items-center gap-3 text-center sm:flex-row sm:text-left">
+              <span className="flex size-14 items-center justify-center rounded-xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950">
+                <Bot className="size-7" />
+              </span>
+              <div>
+                <h2 className="text-3xl font-extrabold text-slate-950">Engineering Copilot</h2>
+                <p className="text-sm text-slate-500">
+                  Ask anything about your courses or technical queries.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-7 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
+              <div className="flex gap-3">
+                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-300/15 text-orange-300">
+                  <Bot className="size-4" />
+                </span>
+                <div className="max-w-[82%] rounded-xl rounded-tl-sm bg-[color:var(--surface-elevated)] p-3 text-sm leading-6 text-slate-600">
+                  Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you
+                  like a quick explanation or a practice plan?
+                </div>
+              </div>
+            </div>
+
+            <form onSubmit={openMentor} className="relative mt-5">
+              <input
+                value={mentorQuery}
+                onChange={(event) => setMentorQuery(event.target.value)}
+                placeholder="Type your engineering query here..."
+                className="w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] py-5 pl-5 pr-16 text-slate-950 outline-none transition focus:border-orange-300"
+              />
+              <button
+                type="submit"
+                disabled={!mentorQuery.trim()}
+                className="absolute right-2 top-2 flex size-12 items-center justify-center rounded-lg bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
+                aria-label="Send"
+              >
+                <Send className="size-5" />
+              </button>
+            </form>
+            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
+              {promptChips.map((prompt) => (
+                <button
+                  key={prompt}
+                  type="button"
+                  onClick={() => setMentorQuery(prompt)}
+                  className="shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/40 hover:text-orange-300"
+                >
+                  {prompt}
+                </button>
+              ))}
+            </div>
+          </section>
+
           <section className="overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
             <div className="grid lg:grid-cols-[1.08fr_0.92fr]">
               <Link
@@ -198,61 +253,6 @@ export default function DashboardPage() {
                   </Link>
                 </Button>
               </div>
-            </div>
-          </section>
-
-          <section className="mx-auto max-w-4xl rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur-xl md:p-7">
-            <div className="flex items-center gap-3">
-              <span className="flex size-12 items-center justify-center rounded-xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950">
-                <Bot className="size-6" />
-              </span>
-              <div>
-                <h2 className="text-2xl font-extrabold text-slate-950">Engineering Copilot</h2>
-                <p className="text-sm text-slate-500">
-                  Ask anything about your courses or technical queries.
-                </p>
-              </div>
-            </div>
-
-            <div className="mt-6 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
-              <div className="flex gap-3">
-                <span className="flex size-8 shrink-0 items-center justify-center rounded-full bg-orange-300/15 text-orange-300">
-                  <Bot className="size-4" />
-                </span>
-                <div className="max-w-[82%] rounded-xl rounded-tl-sm bg-[color:var(--surface-elevated)] p-3 text-sm leading-6 text-slate-600">
-                  Hello {firstName}. I see you&apos;re focused on {dashboard.focusArea}. Would you
-                  like a quick explanation or a practice plan?
-                </div>
-              </div>
-            </div>
-
-            <form onSubmit={openMentor} className="relative mt-4">
-              <input
-                value={mentorQuery}
-                onChange={(event) => setMentorQuery(event.target.value)}
-                placeholder="Type your engineering query here..."
-                className="w-full rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] py-4 pl-5 pr-16 text-slate-950 outline-none transition focus:border-orange-300"
-              />
-              <button
-                type="submit"
-                disabled={!mentorQuery.trim()}
-                className="absolute right-2 top-2 flex size-10 items-center justify-center rounded-lg bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
-                aria-label="Send"
-              >
-                <Send className="size-4" />
-              </button>
-            </form>
-            <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
-              {promptChips.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => setMentorQuery(prompt)}
-                  className="shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/40 hover:text-orange-300"
-                >
-                  {prompt}
-                </button>
-              ))}
             </div>
           </section>
 
