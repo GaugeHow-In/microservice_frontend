@@ -17,8 +17,8 @@ export function CourseCard({ course }: CourseCardProps) {
   const hasAccess = course.access?.has_access ?? false;
 
   return (
-    <article className="ui-card group grid overflow-hidden md:grid-cols-[15rem_minmax(0,1fr)]">
-      <div className="relative min-h-44 border-b border-[color:var(--border)] bg-[color:var(--surface-secondary)] md:border-b-0 md:border-r">
+    <article className="group grid gap-5 py-7 md:grid-cols-[17rem_minmax(0,1fr)]">
+      <div className="relative min-h-48 overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)]">
         {course.thumbnail_url ? (
           <Image
             src={course.thumbnail_url}
@@ -26,7 +26,7 @@ export function CourseCard({ course }: CourseCardProps) {
             fill
             unoptimized
             sizes="(min-width: 768px) 240px, 100vw"
-            className="object-cover"
+            className="object-cover transition duration-500 group-hover:scale-105"
           />
         ) : (
           <div className="industrial-light-media flex h-full min-h-44 items-center justify-center p-6">
@@ -36,14 +36,15 @@ export function CourseCard({ course }: CourseCardProps) {
             </div>
           </div>
         )}
-        <span className="absolute left-3 top-3 rounded bg-orange-600 px-2.5 py-1 text-xs font-bold uppercase text-white">
+        <div className="absolute inset-0 bg-gradient-to-t from-slate-950/45 via-transparent to-transparent" />
+        <span className="absolute left-3 top-3 rounded-full bg-orange-600 px-3 py-1 text-xs font-bold uppercase text-white">
           {hasAccess ? "Enrolled" : "Course"}
         </span>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-4 p-5">
+      <div className="flex min-w-0 flex-col gap-4 py-1">
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="orange" className="rounded">
+          <Badge variant="orange">
             {primaryCategory}
           </Badge>
           <span className="flex items-center gap-1 text-sm font-semibold text-slate-500">
@@ -76,7 +77,7 @@ export function CourseCard({ course }: CourseCardProps) {
         </div>
 
         {hasAccess && (
-          <div className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-3">
+          <div className="max-w-xl">
             <div className="mb-2 flex items-center justify-between text-sm">
               <span className="font-semibold text-slate-600">Progress</span>
               <span className="font-bold text-slate-950">{Math.round(progress)}%</span>
@@ -85,7 +86,7 @@ export function CourseCard({ course }: CourseCardProps) {
           </div>
         )}
 
-        <div className="mt-auto flex flex-col gap-3 border-t border-[color:var(--border)] pt-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mt-auto flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p className="text-xs font-bold uppercase text-slate-500">
               {hasAccess ? "Your access" : "Pricing"}

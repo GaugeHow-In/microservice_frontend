@@ -457,8 +457,8 @@ export default function CourseDetailPage({ params }: Props) {
           </Card>
         )}
 
-        <section className="surface-elevated overflow-hidden rounded-xl">
-          <div className="grid gap-8 p-5 sm:p-8 lg:grid-cols-[minmax(0,1fr)_23rem] lg:p-10">
+        <section className="relative overflow-hidden py-4">
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_23rem] lg:items-start">
             <div>
               <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-orange-600">
                 <Link href="/courses" className="hover:text-orange-700">
@@ -516,7 +516,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
 
               {access?.has_access && (
-                <div className="mt-8 max-w-xl rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
+                <div className="mt-8 max-w-xl border-t border-[color:var(--border)] pt-4">
                   <div className="flex items-center justify-between text-sm">
                     <span className="font-bold text-slate-950">Your course progress</span>
                     <span className="font-bold text-orange-600">
@@ -529,7 +529,7 @@ export default function CourseDetailPage({ params }: Props) {
             </div>
 
             <aside className="lg:sticky lg:top-24">
-              <div className="surface-primary overflow-hidden rounded-xl">
+              <div className="overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
                 <div className="course-visual relative aspect-video overflow-hidden">
                   {course.thumbnail_url ? (
                     <Image
@@ -579,7 +579,7 @@ export default function CourseDetailPage({ params }: Props) {
             </aside>
           </div>
 
-          <div className="grid border-t border-[color:var(--border)] sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-10 grid border-y border-[color:var(--border)] sm:grid-cols-2 lg:grid-cols-4">
             {[
               { icon: BookOpen, label: `${moduleCount} modules`, value: `${course.lesson_count} lessons` },
               { icon: Star, label: `${course.average_rating.toFixed(1)} rating`, value: `${course.total_reviews} reviews` },
@@ -602,7 +602,7 @@ export default function CourseDetailPage({ params }: Props) {
           </div>
         </section>
 
-        <nav className="sticky top-16 z-20 mt-5 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-3 py-2 backdrop-blur-xl">
+        <nav className="sticky top-16 z-20 mt-8 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-3 py-2 backdrop-blur-xl">
           <div className="flex gap-1 overflow-x-auto text-sm font-bold text-slate-600">
             {["About", "Outcomes", "Modules", "Instructor", "Reviews", "FAQ"].map((item) => (
               <a
@@ -616,9 +616,9 @@ export default function CourseDetailPage({ params }: Props) {
           </div>
         </nav>
 
-        <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_22rem]">
-          <main className="space-y-6">
-            <section id="about" className="surface-primary rounded-xl p-5 sm:p-7">
+        <div className="mt-10 grid gap-10 lg:grid-cols-[minmax(0,1fr)_22rem]">
+          <main className="space-y-12">
+            <section id="about" className="scroll-mt-28">
               <h2 className="text-2xl font-extrabold text-slate-950">What you&apos;ll learn</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {outcomes.map((item) => (
@@ -629,7 +629,7 @@ export default function CourseDetailPage({ params }: Props) {
                 ))}
               </div>
 
-              <div id="outcomes" className="mt-8 border-t border-[color:var(--border)] pt-6">
+              <div id="outcomes" className="mt-10 border-t border-[color:var(--border)] pt-8">
                 <h3 className="text-xl font-extrabold text-slate-950">Skills you&apos;ll gain</h3>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {skills.length ? (
@@ -641,7 +641,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </section>
 
-            <section className="surface-primary rounded-xl p-5 sm:p-7">
+            <section className="border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">Details to know</h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
@@ -652,7 +652,7 @@ export default function CourseDetailPage({ params }: Props) {
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
-                    <div key={item.title} className="rounded-lg border border-[color:var(--border)] p-4">
+                    <div key={item.title} className="border-l border-[color:var(--border)] pl-4">
                       <Icon className="size-5 text-orange-500" />
                       <p className="mt-3 font-bold text-slate-950">{item.title}</p>
                       <p className="mt-1 text-sm capitalize text-slate-500">{item.text}</p>
@@ -662,7 +662,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </section>
 
-            <section id="modules" className="surface-primary rounded-xl p-5 sm:p-7">
+            <section id="modules" className="scroll-mt-28 border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">
                 There are {moduleCount} modules in this course
               </h2>
@@ -675,7 +675,7 @@ export default function CourseDetailPage({ params }: Props) {
               {course.modules.map((module, index) => (
                 <details
                   key={module.id}
-                  className="group rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)]"
+                  className="group rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur"
                 >
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
                     <div>
@@ -730,7 +730,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </section>
 
-            <section id="instructor" className="surface-primary rounded-xl p-5 sm:p-7">
+            <section id="instructor" className="scroll-mt-28 border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">Instructor</h2>
               <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-center">
                 <div className="flex size-16 items-center justify-center rounded-full bg-orange-100 text-xl font-extrabold text-orange-700">
@@ -758,7 +758,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </section>
 
-            <section id="reviews" className="surface-primary rounded-xl p-5 sm:p-7">
+            <section id="reviews" className="scroll-mt-28 border-t border-[color:var(--border)] pt-10">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <h2 className="text-2xl font-extrabold text-slate-950">Learner reviews</h2>
@@ -773,7 +773,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
 
               {canReview && (
-                <div className="mt-6 space-y-3 rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-secondary)] p-4">
+                <div className="mt-6 space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4">
                   <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
                     <label className="text-sm font-semibold text-slate-700">Your rating</label>
                     <Input
@@ -798,7 +798,7 @@ export default function CourseDetailPage({ params }: Props) {
               <div className="mt-6 space-y-3">
                 {course.reviews.length ? (
                   course.reviews.map((review) => (
-                    <div key={review.id} className="rounded-xl border border-[color:var(--border)] p-4">
+                    <div key={review.id} className="border-b border-[color:var(--border)] pb-4 last:border-b-0">
                       <div className="flex items-center justify-between gap-3">
                         <p className="font-semibold text-slate-950">{review.user_display_name}</p>
                         <span className="text-sm font-bold text-orange-600">{review.rating}/5</span>
@@ -816,7 +816,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </section>
 
-            <section id="faq" className="surface-primary rounded-xl p-5 sm:p-7">
+            <section id="faq" className="scroll-mt-28 border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">Frequently asked questions</h2>
               <div className="mt-5 space-y-3">
                 {course.faqs.length ? (
@@ -841,8 +841,8 @@ export default function CourseDetailPage({ params }: Props) {
             </section>
           </main>
 
-          <aside className="space-y-6 lg:sticky lg:top-40 lg:self-start">
-            <div className="surface-primary rounded-xl p-5">
+          <aside className="space-y-8 lg:sticky lg:top-40 lg:self-start">
+            <div className="border-t border-[color:var(--border)] pt-5">
               <h2 className="text-lg font-extrabold text-slate-950">Included with this course</h2>
               <div className="mt-4 space-y-3 text-sm text-slate-600">
                 <div className="flex gap-3">
@@ -864,10 +864,10 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
             </div>
 
-            <div className="surface-primary rounded-xl p-5">
+            <div className="border-t border-[color:var(--border)] pt-5">
               <h2 className="text-lg font-extrabold text-slate-950">Pricing and access</h2>
               {course.recommended_pricing ? (
-                <div className="mt-4 rounded-lg border border-[color:var(--border)] p-4">
+                <div className="mt-4">
                   <div className="flex items-center justify-between gap-3">
                     <div>
                       <p className="font-semibold capitalize text-slate-950">
@@ -894,7 +894,7 @@ export default function CourseDetailPage({ params }: Props) {
               )}
             </div>
 
-            <div className="surface-primary rounded-xl p-5">
+            <div className="border-t border-[color:var(--border)] pt-5">
               <h2 className="text-lg font-extrabold text-slate-950">Pre-requisites</h2>
               <p className="mt-3 whitespace-pre-wrap text-sm leading-7 text-slate-600">
                 {course.prerequisites_markdown ?? "No pre-requisites listed."}
