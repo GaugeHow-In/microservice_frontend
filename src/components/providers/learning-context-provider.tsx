@@ -20,6 +20,10 @@ type LearningContextValue = {
 };
 
 const LearningContext = createContext<LearningContextValue | null>(null);
+const defaultLearningContext: LearningContextValue = {
+  context: null,
+  setContext: () => {},
+};
 
 export function LearningContextProvider({ children }: { children: React.ReactNode }) {
   const [context, setContext] = useState<LearningPageContext | null>(null);
@@ -29,9 +33,5 @@ export function LearningContextProvider({ children }: { children: React.ReactNod
 }
 
 export function useLearningContext() {
-  const value = useContext(LearningContext);
-  if (!value) {
-    throw new Error("useLearningContext must be used inside LearningContextProvider");
-  }
-  return value;
+  return useContext(LearningContext) ?? defaultLearningContext;
 }
