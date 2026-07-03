@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useSearchParams } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Clock3, Download, FileText, MessageCircle, Play, Sparkles, ThumbsUp } from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -372,6 +373,8 @@ function SimulationPanel({
 
 function VideoLearningPageContent({ params }: Props) {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
+  const { setContext: setLearningContext } = useLearningContext();
+  const pathname = usePathname();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
@@ -717,6 +720,26 @@ function VideoLearningPageContent({ params }: Props) {
     if (!course) return;
     learningCache.setCourseDetail(course, { viewerKey: user?.id ?? null });
   }, [course, user?.id]);
+
+  useEffect(() => {
+    if (!lesson || !course) {
+      setLearningContext(null);
+      return;
+    }
+    setLearningContext({
+      course_id: course.id,
+      course_title: course.title,
+      course_slug: course.slug,
+      lesson_id: lesson.id,
+      lesson_title: lesson.title,
+      lesson_slug: lesson.slug,
+      lesson_summary: lesson.summary ?? course.short_description ?? null,
+      playback_seconds:
+        lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? null,
+      page_path: pathname,
+    });
+    return () => setLearningContext(null);
+  }, [course, lesson, pathname, setLearningContext]);
 
   useEffect(() => {
     if (!lesson) return;

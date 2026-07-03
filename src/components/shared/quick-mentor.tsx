@@ -3,11 +3,13 @@
 import { Bot, LoaderCircle, Send, X } from "lucide-react";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
+import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { Button } from "@/components/ui/button";
 import { aiClient, type AIMessage } from "@/lib/ai-client";
 
 export function QuickMentor() {
   const { accessToken } = useAuth();
+  const { context } = useLearningContext();
   const [open, setOpen] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
@@ -31,7 +33,16 @@ export function QuickMentor() {
         created_at: new Date().toISOString(),
       };
       setMessages((current) => [...current, pendingMessage]);
-      const turn = await aiClient.queryChat(accessToken, content, conversationId);
+      const turn = await aiClient.queryChat(
+        accessToken,
+        content,
+        conversationId,
+        {
+          course_id: context?.course_id ?? null,
+          lesson_id: context?.lesson_id ?? null,
+        },
+        context,
+      );
       setConversationId(turn.conversation_id);
       const userMessage: AIMessage = {
         id: `user-${turn.message_id}`,
@@ -70,7 +81,13 @@ export function QuickMentor() {
             <Button size="icon" variant="ghost" onClick={() => setOpen(false)} aria-label="Close mentor"><X /></Button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
-            {messages.length === 0 && <p className="rounded-xl bg-orange-50 p-3 text-slate-600">Ask about what you are studying on this page.</p>}
+            {messages.length === 0 && (
+              <p className="rounded-xl bg-orange-50 p-3 text-slate-600">
+                {context?.lesson_title
+                  ? `Ask about ${context.lesson_title}.`
+                  : "Ask about what you are studying on this page."}
+              </p>
+            )}
             {messages.map((message) => <div key={message.id} className={`max-w-[88%] rounded-xl p-3 leading-5 ${message.role === "user" ? "ml-auto bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}>{message.content}</div>)}
             {busy && <LoaderCircle className="size-5 animate-spin text-orange-600" />}
             {error && <p className="text-red-600">{error}</p>}

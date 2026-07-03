@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter, Manrope, Noto_Sans, Noto_Sans_Thaana } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
+import { LearningContextProvider } from "@/components/providers/learning-context-provider";
 import { PlayerErrorGuard } from "@/components/providers/player-error-guard";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import "./globals.css";
@@ -61,7 +62,9 @@ export default function RootLayout({
       >
         <ThemeProvider>
           <PlayerErrorGuard />
-          <AuthProvider>{children}</AuthProvider>
+          <AuthProvider>
+            <LearningContextProvider>{children}</LearningContextProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>

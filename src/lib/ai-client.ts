@@ -40,6 +40,18 @@ export type ChatFilters = {
   document_types?: Array<"pdf" | "markdown" | "transcript">;
 };
 
+export type ChatLearningContext = {
+  course_id?: string | null;
+  course_title?: string | null;
+  course_slug?: string | null;
+  lesson_id?: string | null;
+  lesson_title?: string | null;
+  lesson_slug?: string | null;
+  lesson_summary?: string | null;
+  playback_seconds?: number | null;
+  page_path?: string | null;
+};
+
 export type RAGChatResponse = {
   answer: string;
   citations: Citation[];
@@ -136,13 +148,20 @@ export const aiClient = {
       body: JSON.stringify(context),
     });
   },
-  queryChat(token: string, question: string, conversationId?: string | null, filters?: ChatFilters) {
+  queryChat(
+    token: string,
+    question: string,
+    conversationId?: string | null,
+    filters?: ChatFilters,
+    learningContext?: ChatLearningContext | null,
+  ) {
     return request<RAGChatResponse>("/chat/query", token, {
       method: "POST",
       body: JSON.stringify({
         question,
         conversation_id: conversationId ?? null,
         filters: filters ?? {},
+        learning_context: learningContext ?? null,
       }),
     });
   },
