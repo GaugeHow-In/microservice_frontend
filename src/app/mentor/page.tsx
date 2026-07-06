@@ -5,6 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
+import { MentorCitations } from "@/components/shared/mentor-citations";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -71,6 +72,7 @@ function MentorPageContent() {
         role: "assistant",
         content: turn.answer,
         confidence: turn.confidence,
+        citations: turn.citations,
         retrieved_chunks: turn.retrieved_chunks,
         processing_time_ms: Math.round(turn.processing_time * 1000),
         created_at: now,
@@ -123,7 +125,14 @@ function MentorPageContent() {
           <Card className="flex min-h-[38rem] flex-col overflow-hidden">
             <div className="flex-1 space-y-4 overflow-y-auto p-5">
               {messages.length === 0 && <div className="mx-auto mt-20 max-w-md text-center"><Bot className="mx-auto size-10 text-orange-600" /><h2 className="mt-4 text-xl font-semibold text-slate-950">What are you working on?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Give me your goal or ask about the lesson you are studying.</p></div>}
-              {messages.map((message) => <div key={message.id} className={`max-w-2xl rounded-2xl p-4 text-sm leading-6 ${message.role === "user" ? "ml-auto bg-slate-950 text-white" : "bg-slate-100 text-slate-700"}`}>{message.content}</div>)}
+              {messages.map((message) => (
+                <div key={message.id} className={`max-w-2xl rounded-2xl p-4 text-sm leading-6 ${message.role === "user" ? "ml-auto bg-slate-950 text-white" : "bg-slate-100 text-slate-700"}`}>
+                  {message.content}
+                  {message.role === "assistant" && (
+                    <MentorCitations citations={message.citations} retrievedChunks={message.retrieved_chunks} />
+                  )}
+                </div>
+              ))}
               {busy && <LoaderCircle className="size-6 animate-spin text-orange-600" />}
               {error && <p className="text-sm text-red-600">{error}</p>}
             </div>

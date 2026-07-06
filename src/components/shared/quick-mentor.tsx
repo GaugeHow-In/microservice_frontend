@@ -6,6 +6,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { Button } from "@/components/ui/button";
 import { aiClient, type AIMessage } from "@/lib/ai-client";
+import { MentorCitations } from "@/components/shared/mentor-citations";
 
 export function QuickMentor() {
   const { accessToken } = useAuth();
@@ -57,6 +58,7 @@ export function QuickMentor() {
         role: "assistant",
         content: turn.answer,
         confidence: turn.confidence,
+        citations: turn.citations,
         retrieved_chunks: turn.retrieved_chunks,
         created_at: new Date().toISOString(),
       };
@@ -88,7 +90,14 @@ export function QuickMentor() {
                   : "Ask about what you are studying on this page."}
               </p>
             )}
-            {messages.map((message) => <div key={message.id} className={`max-w-[88%] rounded-xl p-3 leading-5 ${message.role === "user" ? "ml-auto bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}>{message.content}</div>)}
+            {messages.map((message) => (
+              <div key={message.id} className={`max-w-[88%] rounded-xl p-3 leading-5 ${message.role === "user" ? "ml-auto bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}>
+                {message.content}
+                {message.role === "assistant" && (
+                  <MentorCitations citations={message.citations} retrievedChunks={message.retrieved_chunks} />
+                )}
+              </div>
+            ))}
             {busy && <LoaderCircle className="size-5 animate-spin text-orange-600" />}
             {error && <p className="text-red-600">{error}</p>}
           </div>

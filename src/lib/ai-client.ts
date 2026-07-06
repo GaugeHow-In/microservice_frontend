@@ -7,6 +7,7 @@ export type AIMessage = {
   content: string;
   disposition?: "answered" | "refused" | "crisis_support";
   confidence?: number | null;
+  citations?: Citation[];
   retrieved_chunks?: RetrievedChunk[];
   processing_time_ms?: number | null;
   created_at: string;
