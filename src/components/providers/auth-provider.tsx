@@ -115,8 +115,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       applyPayload(payload);
     },
     async register(input) {
-      const payload = await authClient.register(input);
-      applyPayload(payload);
+      await authClient.register(input);
     },
     async verifyEmail(input) {
       await authClient.verifyEmail(input);

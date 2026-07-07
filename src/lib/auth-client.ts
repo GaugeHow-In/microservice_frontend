@@ -184,7 +184,7 @@ export function clearStoredCsrfToken(): void {
 
 export const authClient = {
   register(input: { displayName: string; email: string; password: string }) {
-    return apiRequest<AuthPayload>("/auth/register", {
+    return apiRequest<{ message: string }>("/auth/register", {
       method: "POST",
       body: {
         display_name: input.displayName,
