@@ -3,7 +3,19 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Clock3, Download, FileText, MessageCircle, Play, Sparkles, ThumbsUp } from "lucide-react";
+import {
+  Clock3,
+  Download,
+  FileText,
+  Maximize2,
+  MessageCircle,
+  Pause,
+  Play,
+  Sparkles,
+  ThumbsUp,
+  Volume2,
+  VolumeX,
+} from "lucide-react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -55,9 +67,16 @@ type PlayerJsPlayer = {
   pause: () => void;
   play: () => void;
   destroy?: () => void;
+  getMuted?: (callback: (value: boolean) => void) => void;
+  getPaused?: (callback: (value: boolean) => void) => void;
   getCurrentTime?: (callback: (value: number) => void) => void;
   getDuration?: (callback: (value: number) => void) => void;
+  getVolume?: (callback: (value: number) => void) => void;
+  mute?: () => void;
   setCurrentTime?: (value: number) => void;
+  setVolume?: (value: number) => void;
+  supports?: (kind: "method" | "event", methodOrEventName: string) => boolean;
+  unmute?: () => void;
 };
 
 type YouTubePlayerEvent = {
@@ -71,7 +90,12 @@ type YouTubePlayer = {
   seekTo: (seconds: number, allowSeekAhead: boolean) => void;
   getCurrentTime: () => number;
   getDuration: () => number;
+  getVolume: () => number;
+  isMuted: () => boolean;
+  mute: () => void;
+  setVolume: (volume: number) => void;
   destroy: () => void;
+  unMute: () => void;
 };
 
 declare global {
@@ -218,6 +242,10 @@ function completionWindowSeconds(durationSeconds: number): number {
   return Math.min(10, Math.max(1, Math.ceil(durationSeconds * 0.1)));
 }
 
+function clampPlaybackValue(value: number, min: number, max: number): number {
+  return Math.min(max, Math.max(min, value));
+}
+
 function buildBunnyEmbedUrl(videoUrl: string, lessonId: string): string {
   const [baseUrl, queryString] = videoUrl.split("?");
   const embedBase = baseUrl.includes("/embed/")
@@ -226,6 +254,7 @@ function buildBunnyEmbedUrl(videoUrl: string, lessonId: string): string {
   const params = new URLSearchParams(queryString ?? "");
   params.set("preload", "true");
   params.set("responsive", "true");
+  params.set("compactControls", "true");
   params.set("gh", lessonId);
   return `${embedBase}?${params.toString()}`;
 }
@@ -249,8 +278,12 @@ function resolveYouTubeVideoId(assetIdOrUrl: string): string {
 function buildYouTubeEmbedUrl(assetIdOrUrl: string, lessonId: string): string {
   const videoId = resolveYouTubeVideoId(assetIdOrUrl);
   const params = new URLSearchParams({
+    color: "white",
+    controls: "0",
+    disablekb: "1",
     enablejsapi: "1",
-    modestbranding: "1",
+    fs: "0",
+    iv_load_policy: "3",
     playsinline: "1",
     rel: "0",
     gh: lessonId,
@@ -371,6 +404,108 @@ function SimulationPanel({
   );
 }
 
+function LessonPlayerControls({
+  available,
+  ready,
+  playing,
+  currentSeconds,
+  durationSeconds,
+  volume,
+  muted,
+  onTogglePlayback,
+  onSeek,
+  onVolumeChange,
+  onToggleMute,
+  onFullscreen,
+}: {
+  available: boolean;
+  ready: boolean;
+  playing: boolean;
+  currentSeconds: number;
+  durationSeconds: number;
+  volume: number;
+  muted: boolean;
+  onTogglePlayback: () => void;
+  onSeek: (seconds: number) => void;
+  onVolumeChange: (volume: number) => void;
+  onToggleMute: () => void;
+  onFullscreen: () => void;
+}) {
+  const canControl = available && ready;
+  const timelineMax = Math.max(0, Math.floor(durationSeconds));
+  const timelineValue = clampPlaybackValue(Math.floor(currentSeconds), 0, timelineMax || 0);
+  const timeLabel = `${formatSeconds(timelineValue)} / ${formatSeconds(timelineMax)}`;
+
+  return (
+    <div className="border-t border-white/10 bg-slate-900 px-4 py-3 text-white sm:px-5">
+      <div className="flex flex-col gap-3">
+        <input
+          aria-label="Seek lesson video"
+          className="h-2 w-full accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
+          disabled={!canControl || timelineMax <= 0}
+          max={timelineMax}
+          min={0}
+          onChange={(event) => onSeek(Number(event.target.value))}
+          step={1}
+          type="range"
+          value={timelineValue}
+        />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            aria-label={playing ? "Pause lesson video" : "Play lesson video"}
+            className="h-10 w-10 rounded-full bg-white text-slate-950 hover:bg-orange-100"
+            disabled={!canControl}
+            onClick={onTogglePlayback}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            {playing ? <Pause /> : <Play />}
+          </Button>
+          <span className="min-w-28 text-sm font-medium tabular-nums text-slate-200">
+            {timeLabel}
+          </span>
+          <div className="ml-auto flex items-center gap-2">
+            <Button
+              aria-label={muted ? "Unmute lesson video" : "Mute lesson video"}
+              className="h-9 w-9 text-slate-100 hover:bg-white/10"
+              disabled={!canControl}
+              onClick={onToggleMute}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
+            </Button>
+            <input
+              aria-label="Lesson video volume"
+              className="h-2 w-20 accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-28"
+              disabled={!canControl}
+              max={100}
+              min={0}
+              onChange={(event) => onVolumeChange(Number(event.target.value))}
+              step={1}
+              type="range"
+              value={muted ? 0 : volume}
+            />
+            <Button
+              aria-label="Fullscreen lesson player"
+              className="h-9 w-9 text-slate-100 hover:bg-white/10"
+              disabled={!available}
+              onClick={onFullscreen}
+              size="icon"
+              type="button"
+              variant="ghost"
+            >
+              <Maximize2 />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function VideoLearningPageContent({ params }: Props) {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const { setContext: setLearningContext } = useLearningContext();
@@ -378,6 +513,7 @@ function VideoLearningPageContent({ params }: Props) {
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement | null>(null);
   const iframeRef = useRef<HTMLIFrameElement | null>(null);
+  const playerShellRef = useRef<HTMLDivElement | null>(null);
   const bunnyPlayerRef = useRef<{ player: PlayerJsPlayer; iframe: HTMLIFrameElement } | null>(null);
   const youtubePlayerRef = useRef<{ player: YouTubePlayer; iframe: HTMLIFrameElement } | null>(null);
   const inactivityTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -414,6 +550,12 @@ function VideoLearningPageContent({ params }: Props) {
   const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isDiscussionLoading, setIsDiscussionLoading] = useState(false);
   const [hasRequestedTranscript, setHasRequestedTranscript] = useState(false);
+  const [playerReady, setPlayerReady] = useState(false);
+  const [playerPlaying, setPlayerPlaying] = useState(false);
+  const [playbackPositionSeconds, setPlaybackPositionSeconds] = useState(0);
+  const [playbackDurationSeconds, setPlaybackDurationSeconds] = useState(0);
+  const [playerVolume, setPlayerVolume] = useState(80);
+  const [playerMuted, setPlayerMuted] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -446,6 +588,7 @@ function VideoLearningPageContent({ params }: Props) {
   }, [lesson?.id, lesson?.video_provider, lesson?.video_provider_asset_id, lesson?.video_url]);
 
   const iframeEmbedUrl = bunnyEmbedUrl ?? youtubeEmbedUrl;
+  const hasCustomPlayerControls = Boolean(iframeEmbedUrl);
 
   const allLessons = useMemo(() => course?.modules.flatMap((module) => module.lessons) ?? [], [course]);
   const currentLessonIndex = useMemo(
@@ -462,6 +605,16 @@ function VideoLearningPageContent({ params }: Props) {
     [activeCheckpointId, lesson?.questions],
   );
   const activeCheckpointState = activeCheckpoint ? questionStates[activeCheckpoint.id] : undefined;
+
+  useEffect(() => {
+    const startingPosition =
+      lesson?.progress?.last_position_seconds ?? lesson?.progress?.watched_seconds ?? 0;
+    setPlayerReady(false);
+    setPlayerPlaying(false);
+    setPlaybackPositionSeconds(startingPosition);
+    setPlaybackDurationSeconds(lesson?.duration_seconds ?? 0);
+    setPlayerMuted(false);
+  }, [lesson?.duration_seconds, lesson?.id, lesson?.progress?.last_position_seconds, lesson?.progress?.watched_seconds]);
 
   const applyProgressLocally = useStableEvent((progress: LessonProgress) => {
     setLesson((current) => (current ? { ...current, progress } : current));
@@ -513,6 +666,7 @@ function VideoLearningPageContent({ params }: Props) {
       runPlayerCommand(() => youtubePlayerRef.current?.player.pauseVideo());
     }
     videoRef.current?.pause();
+    setPlayerPlaying(false);
   });
 
   const resumePlayback = useStableEvent(() => {
@@ -523,6 +677,7 @@ function VideoLearningPageContent({ params }: Props) {
       runPlayerCommand(() => youtubePlayerRef.current?.player.playVideo());
     }
     void videoRef.current?.play().catch(() => undefined);
+    setPlayerPlaying(true);
   });
 
   const flushProgress = useStableEvent(
@@ -598,6 +753,8 @@ function VideoLearningPageContent({ params }: Props) {
     if (lessonDuration <= 0) return;
 
     const normalizedSecond = Math.max(0, Math.min(Math.floor(seconds), lessonDuration));
+    setPlaybackDurationSeconds(lessonDuration);
+    setPlaybackPositionSeconds(normalizedSecond);
     progressDraftRef.current.watchedSeconds = Math.max(
       progressDraftRef.current.watchedSeconds,
       normalizedSecond,
@@ -627,6 +784,97 @@ function VideoLearningPageContent({ params }: Props) {
     ) {
       void flushProgress({ forceComplete: true });
     }
+  });
+
+  const togglePlayback = useStableEvent(() => {
+    if (playerPlaying) {
+      pausePlayback();
+      return;
+    }
+    resumePlayback();
+  });
+
+  const seekPlayback = useStableEvent((seconds: number) => {
+    const duration = playbackDurationSeconds || lesson?.duration_seconds || 0;
+    const nextSecond = duration > 0 ? clampPlaybackValue(seconds, 0, duration) : Math.max(0, seconds);
+    setPlaybackPositionSeconds(nextSecond);
+
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => bunnyPlayerRef.current?.player.setCurrentTime?.(nextSecond));
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => youtubePlayerRef.current?.player.seekTo(nextSecond, true));
+    }
+    if (videoRef.current) {
+      videoRef.current.currentTime = nextSecond;
+    }
+    handlePlaybackSample(nextSecond, duration);
+  });
+
+  const changePlayerVolume = useStableEvent((volume: number) => {
+    const nextVolume = Math.round(clampPlaybackValue(volume, 0, 100));
+    setPlayerVolume(nextVolume);
+    setPlayerMuted(nextVolume === 0);
+
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => bunnyPlayerRef.current?.player.setVolume?.(nextVolume));
+      if (nextVolume === 0) {
+        runPlayerCommand(() => bunnyPlayerRef.current?.player.mute?.());
+      } else {
+        runPlayerCommand(() => bunnyPlayerRef.current?.player.unmute?.());
+      }
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => youtubePlayerRef.current?.player.setVolume(nextVolume));
+      if (nextVolume === 0) {
+        runPlayerCommand(() => youtubePlayerRef.current?.player.mute());
+      } else {
+        runPlayerCommand(() => youtubePlayerRef.current?.player.unMute());
+      }
+    }
+    if (videoRef.current) {
+      videoRef.current.volume = nextVolume / 100;
+      videoRef.current.muted = nextVolume === 0;
+    }
+  });
+
+  const togglePlayerMute = useStableEvent(() => {
+    const nextMuted = !playerMuted;
+    setPlayerMuted(nextMuted);
+
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => {
+        if (nextMuted) {
+          bunnyPlayerRef.current?.player.mute?.();
+        } else {
+          bunnyPlayerRef.current?.player.unmute?.();
+        }
+      });
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => {
+        if (nextMuted) {
+          youtubePlayerRef.current?.player.mute();
+        } else {
+          youtubePlayerRef.current?.player.unMute();
+        }
+      });
+    }
+    if (videoRef.current) {
+      videoRef.current.muted = nextMuted;
+    }
+  });
+
+  const requestPlayerFullscreen = useStableEvent(() => {
+    const element = playerShellRef.current;
+    if (!element) return;
+
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => undefined);
+      return;
+    }
+
+    void element.requestFullscreen().catch(() => undefined);
   });
 
   useEffect(() => {
@@ -808,10 +1056,16 @@ function VideoLearningPageContent({ params }: Props) {
 
     const onReady = () => {
       if (cancelled || !iframeElement.isConnected) return;
+      setPlayerReady(true);
       const startAt = lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? 0;
       if (startAt > 0) {
         runPlayerCommand(() => player?.setCurrentTime?.(startAt));
+        setPlaybackPositionSeconds(startAt);
       }
+      runPlayerCommand(() => player?.getDuration?.((value) => setPlaybackDurationSeconds(value)));
+      runPlayerCommand(() => player?.getVolume?.((value) => setPlayerVolume(value)));
+      runPlayerCommand(() => player?.getMuted?.((value) => setPlayerMuted(value)));
+      runPlayerCommand(() => player?.getPaused?.((value) => setPlayerPlaying(!value)));
     };
     const onTimeUpdate = (data?: PlayerJsEventData) => {
       if (cancelled || !iframeElement.isConnected) return;
@@ -819,14 +1073,20 @@ function VideoLearningPageContent({ params }: Props) {
     };
     const onPause = () => {
       if (cancelled || !iframeElement.isConnected) return;
+      setPlayerPlaying(false);
       scheduleIdleSync();
     };
     const onPlay = () => {
       if (cancelled || !iframeElement.isConnected) return;
+      setPlayerPlaying(true);
       scheduleIdleSync();
     };
     const onEnded = () => {
       if (cancelled || !iframeElement.isConnected) return;
+      setPlayerPlaying(false);
+      runPlayerCommand(() =>
+        player?.getDuration?.((value) => setPlaybackPositionSeconds(value || lesson.duration_seconds || 0)),
+      );
       void flushProgress({ forceComplete: true });
     };
 
@@ -892,26 +1152,35 @@ function VideoLearningPageContent({ params }: Props) {
         player = new window.YT.Player(iframeElement, {
           events: {
             onReady: (event) => {
+              setPlayerReady(true);
+              setPlaybackDurationSeconds(event.target.getDuration() || lesson.duration_seconds || 0);
+              setPlayerVolume(event.target.getVolume());
+              setPlayerMuted(event.target.isMuted());
               const startAt =
                 lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? 0;
               if (startAt > 0) {
                 event.target.seekTo(startAt, true);
+                setPlaybackPositionSeconds(startAt);
               }
             },
             onStateChange: (event) => {
               if (cancelled || !iframeElement.isConnected) return;
               if (event.data === window.YT?.PlayerState.PLAYING) {
+                setPlayerPlaying(true);
                 scheduleIdleSync();
                 startProgressTimer();
               }
               if (event.data === window.YT?.PlayerState.PAUSED) {
+                setPlayerPlaying(false);
                 sampleProgress();
                 clearProgressTimer();
                 scheduleIdleSync();
               }
               if (event.data === window.YT?.PlayerState.ENDED) {
+                setPlayerPlaying(false);
                 sampleProgress();
                 clearProgressTimer();
+                setPlaybackPositionSeconds(player?.getDuration() || lesson.duration_seconds || 0);
                 void flushProgress({ forceComplete: true });
               }
             },
@@ -1231,7 +1500,10 @@ function VideoLearningPageContent({ params }: Props) {
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-sm shadow-slate-950/10">
+          <div
+            ref={playerShellRef}
+            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-sm shadow-slate-950/10"
+          >
             <div className="aspect-video p-4 text-white sm:p-5">
               {iframeEmbedUrl ? (
                 <iframe
@@ -1296,6 +1568,23 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               )}
             </div>
+
+            {iframeEmbedUrl ? (
+              <LessonPlayerControls
+                available={hasCustomPlayerControls}
+                currentSeconds={playbackPositionSeconds}
+                durationSeconds={playbackDurationSeconds}
+                muted={playerMuted}
+                onFullscreen={requestPlayerFullscreen}
+                onSeek={seekPlayback}
+                onToggleMute={togglePlayerMute}
+                onTogglePlayback={togglePlayback}
+                onVolumeChange={changePlayerVolume}
+                playing={playerPlaying}
+                ready={playerReady}
+                volume={playerVolume}
+              />
+            ) : null}
 
             {activeCheckpoint && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-950/78 p-4">
