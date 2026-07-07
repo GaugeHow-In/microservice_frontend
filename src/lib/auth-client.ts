@@ -223,7 +223,7 @@ export const authClient = {
     });
   },
   verifyEmail(input: { email: string; code: string }) {
-    return apiRequest<{ message: string }>("/auth/verify-email", {
+    return apiRequest<AuthPayload>("/auth/verify-email", {
       method: "POST",
       body: input,
     });

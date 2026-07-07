@@ -118,7 +118,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authClient.register(input);
     },
     async verifyEmail(input) {
-      await authClient.verifyEmail(input);
+      const payload = await authClient.verifyEmail(input);
+      applyPayload(payload);
     },
     async resendVerification(email) {
       await authClient.resendVerification(email);

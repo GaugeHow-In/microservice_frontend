@@ -266,8 +266,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
 
       if (mode === "verify") {
         await verifyEmail({ email, code });
-        setMessage("Email verified. You can log in now.");
-        router.push("/login");
+        router.push("/dashboard");
       }
 
       if (mode === "reset") {
