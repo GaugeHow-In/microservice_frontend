@@ -5,18 +5,29 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "rea
 import { usePathname, useSearchParams } from "next/navigation";
 import {
   BookOpen,
+  Bold,
   CheckCircle2,
   ChevronRight,
   Clock3,
+  Code2,
   Download,
+  Eye,
   ExternalLink,
   FileText,
+  Heading,
+  Italic,
   Link2,
+  List,
+  ListOrdered,
+  Loader2,
   Lock,
   Maximize2,
   MessageCircle,
   Pause,
   Play,
+  Quote,
+  RotateCcw,
+  RotateCw,
   Sparkles,
   ThumbsUp,
   Volume2,
@@ -67,6 +78,33 @@ type QuestionAttemptState = {
   result: QuestionResultState | null;
   error: string | null;
 };
+
+type MarkdownEditorAction =
+  | "heading"
+  | "bold"
+  | "italic"
+  | "unordered-list"
+  | "ordered-list"
+  | "quote"
+  | "code"
+  | "link";
+
+type MarkdownToolbarAction = {
+  action: MarkdownEditorAction;
+  label: string;
+  Icon: React.ComponentType<{ className?: string }>;
+};
+
+const markdownToolbarActions: MarkdownToolbarAction[] = [
+  { action: "heading", label: "Heading", Icon: Heading },
+  { action: "bold", label: "Bold", Icon: Bold },
+  { action: "italic", label: "Italic", Icon: Italic },
+  { action: "unordered-list", label: "Bulleted list", Icon: List },
+  { action: "ordered-list", label: "Numbered list", Icon: ListOrdered },
+  { action: "quote", label: "Quote", Icon: Quote },
+  { action: "code", label: "Code", Icon: Code2 },
+  { action: "link", label: "Link", Icon: Link2 },
+];
 
 type PlayerJsPlayer = {
   on: (event: string, callback: (data?: PlayerJsEventData) => void) => void;
@@ -280,73 +318,211 @@ function runPlayerCommand(command: () => void): void {
   }
 }
 
-// ── Simple inline-markdown renderer (no external deps) ──────────────────────
+// ── Markdown renderer/editor for lesson notes (no external deps) ────────────
 
-function renderInline(text: string): React.ReactNode {
-  const parts = text.split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
-  return parts.map((part, i) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={i} className="font-semibold text-slate-900">{part.slice(2, -2)}</strong>;
+function normalizeMarkdown(content: string): string {
+  return content.replace(/\r\n?/g, "\n");
+}
+
+function sanitizeMarkdownHref(href: string): string {
+  const trimmed = href.trim();
+  if (/^(https?:|mailto:|tel:|#|\/)/i.test(trimmed)) return trimmed;
+  return "#";
+}
+
+function splitMarkdownBlocks(content: string): string[] {
+  const blocks: string[] = [];
+  const lines = normalizeMarkdown(content).split("\n");
+  let buffer: string[] = [];
+  let inFence = false;
+
+  const flush = () => {
+    if (!buffer.length) return;
+    blocks.push(buffer.join("\n"));
+    buffer = [];
+  };
+
+  for (const line of lines) {
+    if (/^\s*```/.test(line)) {
+      buffer.push(line);
+      inFence = !inFence;
+      continue;
     }
-    if (part.startsWith("*") && part.endsWith("*") && part.length > 2) {
-      return <em key={i}>{part.slice(1, -1)}</em>;
+    if (!inFence && line.trim() === "") {
+      flush();
+      continue;
     }
-    if (part.startsWith("`") && part.endsWith("`")) {
-      return (
-        <code key={i} className="rounded bg-slate-100 px-1 py-0.5 font-mono text-xs text-orange-700">
-          {part.slice(1, -1)}
-        </code>
+    buffer.push(line);
+  }
+
+  flush();
+  return blocks;
+}
+
+function renderInline(text: string): React.ReactNode[] {
+  const tokenPattern = /(!\[[^\]]*]\([^)]+\)|`[^`]+`|\[[^\]]+]\([^)]+\)|\*\*[\s\S]+?\*\*|__[\s\S]+?__|~~[\s\S]+?~~|\*[^*\n]+\*|_[^_\n]+_)/g;
+  const nodes: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = tokenPattern.exec(text)) !== null) {
+    if (match.index > lastIndex) nodes.push(text.slice(lastIndex, match.index));
+    const token = match[0];
+    const key = `${match.index}-${token}`;
+
+    if (token.startsWith("![") && token.includes("](")) {
+      nodes.push(token);
+    } else if (token.startsWith("`") && token.endsWith("`")) {
+      nodes.push(
+        <code key={key} className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-orange-700">
+          {token.slice(1, -1)}
+        </code>,
       );
+    } else if (token.startsWith("[") && token.includes("](") && token.endsWith(")")) {
+      const labelEnd = token.indexOf("](");
+      const label = token.slice(1, labelEnd);
+      const href = sanitizeMarkdownHref(token.slice(labelEnd + 2, -1));
+      nodes.push(
+        <a key={key} href={href} target={href.startsWith("http") ? "_blank" : undefined} rel="noreferrer" className="font-medium text-orange-700 underline underline-offset-4">
+          {label}
+        </a>,
+      );
+    } else if ((token.startsWith("**") && token.endsWith("**")) || (token.startsWith("__") && token.endsWith("__"))) {
+      nodes.push(<strong key={key} className="font-semibold text-slate-900">{token.slice(2, -2)}</strong>);
+    } else if (token.startsWith("~~") && token.endsWith("~~")) {
+      nodes.push(<del key={key} className="text-slate-500">{token.slice(2, -2)}</del>);
+    } else if ((token.startsWith("*") && token.endsWith("*")) || (token.startsWith("_") && token.endsWith("_"))) {
+      nodes.push(<em key={key}>{token.slice(1, -1)}</em>);
     }
-    return part;
+
+    lastIndex = match.index + token.length;
+  }
+
+  if (lastIndex < text.length) nodes.push(text.slice(lastIndex));
+  return nodes;
+}
+
+function renderInlineWithBreaks(text: string): React.ReactNode[] {
+  return normalizeMarkdown(text).split("\n").flatMap((line, index) => {
+    const content = renderInline(line);
+    return index === 0 ? content : [<br key={`br-${index}`} />, ...content];
   });
 }
 
-function SimpleMarkdown({ content }: { content: string }) {
-  const blocks = content.split(/\n{2,}/);
+function parseMarkdownTable(lines: string[]) {
+  const separator = lines[1]?.trim() ?? "";
+  if (lines.length < 2 || !lines[0]?.includes("|") || !/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)+\|?$/.test(separator)) {
+    return null;
+  }
+  return lines.map((line) =>
+    line
+      .trim()
+      .replace(/^\|/, "")
+      .replace(/\|$/, "")
+      .split("|")
+      .map((cell) => cell.trim()),
+  );
+}
+
+function SimpleMarkdown({ content, compact = false }: { content: string; compact?: boolean }) {
+  const blocks = splitMarkdownBlocks(content);
   return (
-    <div className="space-y-4">
+    <div className={compact ? "space-y-3" : "space-y-4"}>
       {blocks.map((block, bi) => {
         const trimmed = block.trim();
         if (!trimmed) return null;
 
-        if (trimmed.startsWith("#### ")) {
-          return <h4 key={bi} className="text-sm font-semibold text-slate-900">{trimmed.slice(5)}</h4>;
-        }
-        if (trimmed.startsWith("### ")) {
-          return <h3 key={bi} className="text-base font-semibold text-slate-900">{trimmed.slice(4)}</h3>;
-        }
-        if (trimmed.startsWith("## ")) {
+        if (/^```/.test(trimmed)) {
+          const lines = trimmed.split("\n");
+          const language = lines[0]?.replace(/^```/, "").trim();
+          const code = lines.slice(1, lines.at(-1)?.trim().startsWith("```") ? -1 : undefined).join("\n");
           return (
-            <h2 key={bi} className="border-b border-slate-200 pb-2 text-lg font-semibold text-slate-950">
-              {trimmed.slice(3)}
-            </h2>
+            <pre key={bi} className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-950 p-4 text-xs leading-6 text-slate-100">
+              <code>{language ? `// ${language}\n${code}` : code}</code>
+            </pre>
           );
         }
-        if (trimmed.startsWith("# ")) {
+
+        const headingMatch = /^(#{1,6})\s+(.+)$/.exec(trimmed);
+        if (headingMatch && !trimmed.includes("\n")) {
+          const level = headingMatch[1].length;
+          const text = headingMatch[2];
+          if (level <= 2) {
+            return (
+              <h2 key={bi} className="border-b border-slate-200 pb-2 text-lg font-semibold text-slate-950">
+                {renderInline(text)}
+              </h2>
+            );
+          }
           return (
-            <h2 key={bi} className="border-b border-slate-200 pb-2 text-lg font-semibold text-slate-950">
-              {trimmed.slice(2)}
-            </h2>
+            <h3 key={bi} className="text-base font-semibold text-slate-900">
+              {renderInline(text)}
+            </h3>
           );
         }
-        if (trimmed === "---" || trimmed === "***") {
+
+        if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
           return <hr key={bi} className="border-slate-200" />;
         }
 
         const lines = trimmed.split("\n");
-        const isListBlock = lines.every((l) => /^[-*+] /.test(l.trim()) || /^\d+\. /.test(l.trim()));
+        const table = parseMarkdownTable(lines);
+        if (table) {
+          const [head, , ...rows] = table;
+          return (
+            <div key={bi} className="overflow-x-auto rounded-lg border border-slate-200">
+              <table className="w-full min-w-96 border-collapse text-left text-sm">
+                <thead className="bg-slate-50 text-slate-900">
+                  <tr>
+                    {head.map((cell, index) => (
+                      <th key={index} className="border-b border-slate-200 px-3 py-2 font-semibold">{renderInline(cell)}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {rows.map((row, rowIndex) => (
+                    <tr key={rowIndex} className="border-t border-slate-100">
+                      {row.map((cell, cellIndex) => (
+                        <td key={cellIndex} className="px-3 py-2 text-slate-700">{renderInline(cell)}</td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        }
+
+        if (lines.every((line) => /^>\s?/.test(line.trim()))) {
+          const quoteContent = lines.map((line) => line.trim().replace(/^>\s?/, "")).join("\n");
+          return (
+            <blockquote key={bi} className="border-l-4 border-orange-300 bg-orange-50/60 py-2 pl-4 pr-3 text-sm text-slate-700">
+              <SimpleMarkdown content={quoteContent} compact />
+            </blockquote>
+          );
+        }
+
+        const isListBlock = lines.every((l) => /^[-*+]\s+/.test(l.trim()) || /^\d+\.\s+/.test(l.trim()) || /^[-*+]\s+\[[ xX]]\s+/.test(l.trim()));
 
         if (isListBlock) {
-          const isOrdered = /^\d+\. /.test(lines[0]?.trim() ?? "");
+          const isOrdered = /^\d+\.\s+/.test(lines[0]?.trim() ?? "");
           const Tag = isOrdered ? "ol" : "ul";
           return (
             <Tag key={bi} className={`space-y-1.5 pl-5 ${isOrdered ? "list-decimal" : "list-disc"}`}>
               {lines.map((l, li) => {
-                const text = l.trim().replace(/^[-*+] /, "").replace(/^\d+\. /, "");
+                const rawText = l.trim().replace(/^[-*+]\s+/, "").replace(/^\d+\.\s+/, "");
+                const task = /^\[[ xX]]\s+/.exec(rawText);
+                const text = rawText.replace(/^\[[ xX]]\s+/, "");
                 return (
                   <li key={li} className="text-sm leading-6 text-slate-700">
-                    {renderInline(text)}
+                    {task ? (
+                      <span className="flex items-start gap-2">
+                        <input type="checkbox" checked={task[0].toLowerCase().includes("x")} readOnly className="mt-1 accent-orange-500" />
+                        <span>{renderInline(text)}</span>
+                      </span>
+                    ) : (
+                      renderInline(text)
+                    )}
                   </li>
                 );
               })}
@@ -356,10 +532,138 @@ function SimpleMarkdown({ content }: { content: string }) {
 
         return (
           <p key={bi} className="text-sm leading-7 text-slate-700">
-            {renderInline(trimmed)}
+            {renderInlineWithBreaks(trimmed)}
           </p>
         );
       })}
+    </div>
+  );
+}
+
+function MarkdownNoteEditor({
+  value,
+  onChange,
+  onSave,
+  isSaving,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  onSave: () => void;
+  isSaving: boolean;
+}) {
+  const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [isPreviewing, setIsPreviewing] = useState(false);
+
+  const commitValue = (nextValue: string, selectionStart?: number, selectionEnd?: number) => {
+    onChange(nextValue);
+    window.requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      textarea.focus();
+      if (selectionStart !== undefined && selectionEnd !== undefined) {
+        textarea.setSelectionRange(selectionStart, selectionEnd);
+      }
+    });
+  };
+
+  const replaceSelection = (prefix: string, suffix: string, fallback: string) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? value.length;
+    const selected = value.slice(start, end) || fallback;
+    const nextValue = `${value.slice(0, start)}${prefix}${selected}${suffix}${value.slice(end)}`;
+    const nextStart = start + prefix.length;
+    commitValue(nextValue, nextStart, nextStart + selected.length);
+  };
+
+  const prefixSelectedLines = (prefix: string, ordered = false) => {
+    const textarea = textareaRef.current;
+    const start = textarea?.selectionStart ?? value.length;
+    const end = textarea?.selectionEnd ?? value.length;
+    const lineStart = value.lastIndexOf("\n", Math.max(0, start - 1)) + 1;
+    const nextLineBreak = value.indexOf("\n", end);
+    const lineEnd = nextLineBreak === -1 ? value.length : nextLineBreak;
+    const selectedBlock = value.slice(lineStart, lineEnd) || "List item";
+    const nextBlock = selectedBlock
+      .split("\n")
+      .map((line, index) => {
+        const cleaned = line.replace(/^(\s*)(#{1,6}\s+|[-*+]\s+|\d+\.\s+|>\s?)/, "$1");
+        return `${ordered ? `${index + 1}. ` : prefix}${cleaned}`;
+      })
+      .join("\n");
+    commitValue(`${value.slice(0, lineStart)}${nextBlock}${value.slice(lineEnd)}`, lineStart, lineStart + nextBlock.length);
+  };
+
+  const applyAction = (action: MarkdownEditorAction) => {
+    setIsPreviewing(false);
+    if (action === "bold") replaceSelection("**", "**", "bold text");
+    if (action === "italic") replaceSelection("*", "*", "italic text");
+    if (action === "heading") prefixSelectedLines("# ");
+    if (action === "unordered-list") prefixSelectedLines("- ");
+    if (action === "ordered-list") prefixSelectedLines("1. ", true);
+    if (action === "quote") prefixSelectedLines("> ");
+    if (action === "link") replaceSelection("[", "](https://example.com)", "link text");
+    if (action === "code") {
+      const textarea = textareaRef.current;
+      const start = textarea?.selectionStart ?? value.length;
+      const end = textarea?.selectionEnd ?? value.length;
+      const selected = value.slice(start, end);
+      if (selected.includes("\n")) {
+        replaceSelection("```\n", "\n```", selected);
+      } else {
+        replaceSelection("`", "`", selected || "code");
+      }
+    }
+  };
+
+  return (
+    <div className="overflow-hidden rounded-lg border border-[color:var(--border)] bg-white/80">
+      <div className="flex min-h-11 flex-wrap items-center gap-1 border-b border-[color:var(--border)] bg-slate-50/80 px-2 py-1.5">
+        {markdownToolbarActions.map(({ action, label, Icon }) => (
+          <button
+            key={action}
+            type="button"
+            title={label}
+            aria-label={label}
+            onClick={() => applyAction(action)}
+            className="inline-flex size-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-white hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-orange-200"
+          >
+            <Icon className="size-4" />
+          </button>
+        ))}
+        <span className="mx-1 h-5 w-px bg-slate-200" aria-hidden="true" />
+        <button
+          type="button"
+          title="Preview"
+          aria-label="Preview"
+          aria-pressed={isPreviewing}
+          onClick={() => setIsPreviewing((current) => !current)}
+          className={`inline-flex size-8 items-center justify-center rounded-md transition focus:outline-none focus:ring-2 focus:ring-orange-200 ${
+            isPreviewing ? "bg-white text-orange-700" : "text-slate-600 hover:bg-white hover:text-slate-950"
+          }`}
+        >
+          <Eye className="size-4" />
+        </button>
+      </div>
+      {isPreviewing ? (
+        <div className="min-h-36 bg-white px-4 py-3">
+          {value.trim() ? <SimpleMarkdown content={value} /> : <p className="text-sm text-slate-500">Nothing to preview yet.</p>}
+        </div>
+      ) : (
+        <Textarea
+          ref={textareaRef}
+          placeholder="Type here... (Markdown is enabled)"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          className="min-h-36 resize-y rounded-none border-0 bg-white px-4 py-3 font-mono text-sm leading-6 shadow-none focus-visible:ring-0"
+        />
+      )}
+      <div className="flex items-center justify-between border-t border-[color:var(--border)] bg-white px-3 py-2">
+        <span className="text-xs text-slate-500">Markdown enabled</span>
+        <Button onClick={onSave} disabled={isSaving || !value.trim()} size="sm">
+          {isSaving ? "Saving..." : "Save note"}
+        </Button>
+      </div>
     </div>
   );
 }
@@ -543,6 +847,7 @@ function LessonPlayerControls({
   durationSeconds,
   volume,
   muted,
+  checkpoints,
   onTogglePlayback,
   onSeek,
   onVolumeChange,
@@ -556,6 +861,7 @@ function LessonPlayerControls({
   durationSeconds: number;
   volume: number;
   muted: boolean;
+  checkpoints: { id: string; timestamp_seconds: number }[];
   onTogglePlayback: () => void;
   onSeek: (seconds: number) => void;
   onVolumeChange: (volume: number) => void;
@@ -565,22 +871,40 @@ function LessonPlayerControls({
   const canControl = available && ready;
   const timelineMax = Math.max(0, Math.floor(durationSeconds));
   const timelineValue = clampPlaybackValue(Math.floor(currentSeconds), 0, timelineMax || 0);
+  const progressPercent = timelineMax > 0 ? (timelineValue / timelineMax) * 100 : 0;
 
   return (
     <div className="border-t border-white/10 bg-slate-900 px-4 py-3 text-white sm:px-5">
       <div className="flex flex-col gap-3">
-        <input
-          aria-label="Seek lesson video"
-          className="h-2 w-full accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50"
-          disabled={!canControl || timelineMax <= 0}
-          max={timelineMax}
-          min={0}
-          onChange={(e) => onSeek(Number(e.target.value))}
-          step={1}
-          type="range"
-          value={timelineValue}
-        />
-        <div className="flex flex-wrap items-center gap-3">
+        <div className="relative flex h-3.5 items-center">
+          <div className="pointer-events-none absolute inset-x-0 h-1.5 overflow-hidden rounded-full bg-white/15">
+            <div
+              className="h-full rounded-full bg-orange-500 transition-[width] duration-150"
+              style={{ width: `${progressPercent}%` }}
+            />
+          </div>
+          {timelineMax > 0
+            ? checkpoints.map((checkpoint) => (
+                <span
+                  key={checkpoint.id}
+                  className="pointer-events-none absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 ring-1 ring-slate-900"
+                  style={{ left: `${clampPlaybackValue((checkpoint.timestamp_seconds / timelineMax) * 100, 0, 100)}%` }}
+                />
+              ))
+            : null}
+          <input
+            aria-label="Seek lesson video"
+            className="gh-player-range relative h-3.5 w-full disabled:cursor-not-allowed disabled:opacity-50"
+            disabled={!canControl || timelineMax <= 0}
+            max={timelineMax}
+            min={0}
+            onChange={(e) => onSeek(Number(e.target.value))}
+            step={1}
+            type="range"
+            value={timelineValue}
+          />
+        </div>
+        <div className="flex flex-wrap items-center gap-1.5">
           <Button
             aria-label={playing ? "Pause" : "Play"}
             className="h-10 w-10 rounded-full bg-white text-slate-950 hover:bg-orange-100"
@@ -590,7 +914,29 @@ function LessonPlayerControls({
             type="button"
             variant="ghost"
           >
-            {playing ? <Pause /> : <Play />}
+            {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
+          </Button>
+          <Button
+            aria-label="Rewind 10 seconds"
+            className="h-9 w-9 text-slate-100 hover:bg-white/10"
+            disabled={!canControl}
+            onClick={() => onSeek(clampPlaybackValue(currentSeconds - 10, 0, timelineMax))}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <RotateCcw className="size-4" />
+          </Button>
+          <Button
+            aria-label="Forward 10 seconds"
+            className="h-9 w-9 text-slate-100 hover:bg-white/10"
+            disabled={!canControl}
+            onClick={() => onSeek(clampPlaybackValue(currentSeconds + 10, 0, timelineMax))}
+            size="icon"
+            type="button"
+            variant="ghost"
+          >
+            <RotateCw className="size-4" />
           </Button>
           <span className="min-w-28 text-sm font-medium tabular-nums text-slate-200">
             {formatSeconds(timelineValue)} / {formatSeconds(timelineMax)}
@@ -607,17 +953,25 @@ function LessonPlayerControls({
             >
               {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
             </Button>
-            <input
-              aria-label="Volume"
-              className="h-2 w-20 accent-orange-500 disabled:cursor-not-allowed disabled:opacity-50 sm:w-28"
-              disabled={!canControl}
-              max={100}
-              min={0}
-              onChange={(e) => onVolumeChange(Number(e.target.value))}
-              step={1}
-              type="range"
-              value={muted ? 0 : volume}
-            />
+            <div className="relative flex h-3.5 w-20 items-center sm:w-28">
+              <div className="pointer-events-none absolute inset-x-0 h-1 overflow-hidden rounded-full bg-white/15">
+                <div
+                  className="h-full rounded-full bg-orange-500"
+                  style={{ width: `${muted ? 0 : volume}%` }}
+                />
+              </div>
+              <input
+                aria-label="Volume"
+                className="gh-player-range relative h-3.5 w-full disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={!canControl}
+                max={100}
+                min={0}
+                onChange={(e) => onVolumeChange(Number(e.target.value))}
+                step={1}
+                type="range"
+                value={muted ? 0 : volume}
+              />
+            </div>
             <Button
               aria-label="Fullscreen"
               className="h-9 w-9 text-slate-100 hover:bg-white/10"
@@ -1359,7 +1713,7 @@ function VideoLearningPageContent({ params }: Props) {
             ref={playerShellRef}
             className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-slate-950"
           >
-            <div className="aspect-video p-4 text-white sm:p-5">
+            <div className="relative aspect-video p-4 text-white sm:p-5">
               {iframeEmbedUrl ? (
                 <iframe
                   key={iframeEmbedUrl}
@@ -1389,28 +1743,56 @@ function VideoLearningPageContent({ params }: Props) {
                   <source src={lesson.video_url} />
                 </video>
               ) : (
-                <div className="flex h-full flex-col justify-between rounded-lg border border-white/10 bg-white/5 p-5">
+                <div className="flex h-full flex-col justify-between rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-5">
                   <div className="flex items-center justify-between">
                     <Badge variant="dark">Lesson player</Badge>
                     <Badge variant="orange">{lesson.video_provider ?? "Video pending"}</Badge>
                   </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{lesson.title}</h2>
-                    <p className="mt-2 text-slate-300">{course.title}</p>
-                    <p className="mt-4 text-sm leading-6 text-slate-400">
-                      Add the lesson video URL or Bunny player URL to enable playback here.
-                    </p>
+                  <div className="flex flex-col items-start gap-4">
+                    <span className="flex size-14 items-center justify-center rounded-full bg-white/10 text-orange-400">
+                      <Play className="ml-0.5 size-6 fill-current" />
+                    </span>
+                    <div>
+                      <h2 className="text-2xl font-bold">{lesson.title}</h2>
+                      <p className="mt-2 text-slate-300">{course.title}</p>
+                      <p className="mt-4 max-w-md text-sm leading-6 text-slate-400">
+                        Add the lesson video URL or Bunny player URL to enable playback here.
+                      </p>
+                    </div>
                   </div>
                   <div className="rounded-lg bg-black/20 px-3 py-2 text-xs text-slate-300">
                     Provider asset: {lesson.video_provider_asset_id ?? "not configured"}
                   </div>
                 </div>
               )}
+
+              {hasCustomPlayerControls && !playerReady ? (
+                <div className="absolute inset-4 flex items-center justify-center rounded-lg bg-slate-950/50 sm:inset-5">
+                  <Loader2 className="size-8 animate-spin text-white/80" />
+                </div>
+              ) : null}
+
+              {hasCustomPlayerControls && playerReady && !playerPlaying ? (
+                <button
+                  type="button"
+                  aria-label="Play lesson video"
+                  onClick={togglePlayback}
+                  className="group absolute inset-4 flex items-center justify-center rounded-lg bg-slate-950/20 transition-colors hover:bg-slate-950/35 sm:inset-5"
+                >
+                  <span className="flex size-16 items-center justify-center rounded-full bg-white/95 text-slate-950 shadow-xl transition-transform group-hover:scale-110">
+                    <Play className="ml-1 size-7 fill-current" />
+                  </span>
+                </button>
+              ) : null}
             </div>
 
             {iframeEmbedUrl ? (
               <LessonPlayerControls
                 available={hasCustomPlayerControls}
+                checkpoints={lesson.questions.map((question) => ({
+                  id: question.id,
+                  timestamp_seconds: question.timestamp_seconds,
+                }))}
                 currentSeconds={playbackPositionSeconds}
                 durationSeconds={playbackDurationSeconds}
                 muted={playerMuted}
@@ -1679,30 +2061,25 @@ function VideoLearningPageContent({ params }: Props) {
           <section className="mt-10 border-t border-[color:var(--border)] pt-10">
             <h2 className="text-2xl font-extrabold text-slate-950">Your notes</h2>
             <div className="mt-5 space-y-4">
-              <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
-                <Textarea
-                  placeholder="Save a key point at the current timestamp…"
-                  value={noteBody}
-                  onChange={(e) => setNoteBody(e.target.value)}
-                  className="min-h-24 border-0 bg-transparent"
-                />
-                <div className="flex justify-end">
-                  <Button onClick={() => void handleCreateNote()} disabled={submitting === "note" || !noteBody.trim()}>
-                    {submitting === "note" ? "Saving…" : "Save note"}
-                  </Button>
-                </div>
-              </div>
+              <MarkdownNoteEditor
+                value={noteBody}
+                onChange={setNoteBody}
+                onSave={() => void handleCreateNote()}
+                isSaving={submitting === "note"}
+              />
               {lesson.notes.length > 0 ? (
                 <div className="space-y-3">
                   {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
+                    <div key={note.id} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                       <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
-                      <p className="mt-2 text-sm leading-6 text-slate-700">{note.body}</p>
+                      <div className="mt-3">
+                        <SimpleMarkdown content={note.body} />
+                      </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-slate-500">No notes yet — add one while watching.</p>
+                <p className="text-sm text-slate-500">No notes yet - add one while watching.</p>
               )}
             </div>
           </section>

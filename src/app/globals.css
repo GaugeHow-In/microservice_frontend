@@ -890,6 +890,60 @@ html.dark .premium-bg::after {
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.24);
 }
 
+.gh-player-range {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.gh-player-range::-webkit-slider-runnable-track {
+  background: transparent;
+}
+
+.gh-player-range::-moz-range-track {
+  background: transparent;
+  border: none;
+}
+
+.gh-player-range::-webkit-slider-thumb {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.55);
+  transition: transform 120ms ease;
+  margin-top: -5.5px;
+}
+
+.gh-player-range::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+.gh-player-range::-moz-range-thumb {
+  width: 13px;
+  height: 13px;
+  border: none;
+  border-radius: 999px;
+  background: #ffffff;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.55);
+  transition: transform 120ms ease;
+}
+
+.gh-player-range::-moz-range-thumb:hover {
+  transform: scale(1.2);
+}
+
+.gh-player-range:disabled::-webkit-slider-thumb {
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.4);
+}
+
+.gh-player-range:disabled::-moz-range-thumb {
+  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.4);
+}
+
 .ui-tabs-list {
   display: inline-flex;
   border-radius: var(--radius-token-md);
