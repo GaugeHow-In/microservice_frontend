@@ -4,7 +4,6 @@ import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import {
-  BookOpen,
   Bold,
   CheckCircle2,
   ChevronRight,
@@ -13,7 +12,6 @@ import {
   Download,
   Eye,
   ExternalLink,
-  FileText,
   Heading,
   Italic,
   Link2,
@@ -22,7 +20,6 @@ import {
   Loader2,
   Lock,
   Maximize2,
-  MessageCircle,
   Pause,
   Play,
   Quote,
@@ -1028,16 +1025,14 @@ function VideoLearningPageContent({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [questionStates, setQuestionStates] = useState<Record<string, QuestionAttemptState>>({});
-  const [artifacts, setArtifacts] = useState<Partial<Record<"lesson_notes" | "flashcards", LessonAIArtifact>>>({});
+  const [artifacts, setArtifacts] = useState<Partial<Record<"flashcards", LessonAIArtifact>>>({});
   const [discussionBody, setDiscussionBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
   const [noteBody, setNoteBody] = useState("");
   const [submitting, setSubmitting] = useState<string | null>(null);
   const [activeCheckpointId, setActiveCheckpointId] = useState<string | null>(null);
-  const [isTranscriptLoading, setIsTranscriptLoading] = useState(false);
   const [isDiscussionLoading, setIsDiscussionLoading] = useState(false);
-  const [hasRequestedTranscript, setHasRequestedTranscript] = useState(false);
   const [playerReady, setPlayerReady] = useState(false);
   const [playerPlaying, setPlayerPlaying] = useState(false);
   const [playbackPositionSeconds, setPlaybackPositionSeconds] = useState(0);
@@ -1344,8 +1339,6 @@ function VideoLearningPageContent({ params }: Props) {
   useEffect(() => {
     if (!lesson) return;
     activeLessonSlugRef.current = lesson.slug;
-    setHasRequestedTranscript(Boolean(lesson.transcript));
-    setIsTranscriptLoading(false);
     const watchedSeconds = lesson.progress?.watched_seconds ?? 0;
     const lastPositionSeconds = lesson.progress?.last_position_seconds ?? watchedSeconds;
     progressDraftRef.current = { watchedSeconds, timeSpentSeconds: lesson.progress?.time_spent_seconds ?? watchedSeconds, lastPositionSeconds };
@@ -1555,7 +1548,7 @@ function VideoLearningPageContent({ params }: Props) {
     link.click();
   }
 
-  async function handleArtifact(type: "lesson_notes" | "flashcards") {
+  async function handleArtifact(type: "flashcards") {
     if (!courseSlug || !lesson || !accessToken) return;
     setSubmitting(type);
     try {
@@ -1565,22 +1558,6 @@ function VideoLearningPageContent({ params }: Props) {
       setError(cause instanceof Error ? cause.message : "Unable to generate artifact.");
     } finally {
       setSubmitting(null);
-    }
-  }
-
-  async function handleLoadTranscript() {
-    if (!courseSlug || !lesson || isTranscriptLoading) return;
-    setIsTranscriptLoading(true);
-    setHasRequestedTranscript(true);
-    try {
-      const payload = await learningClient.getLessonDetail(courseSlug, lesson.slug, { token: accessToken, includeTranscript: true });
-      setLesson((current) =>
-        current && current.id === payload.id ? { ...current, transcript: payload.transcript } : current,
-      );
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to load transcript.");
-    } finally {
-      setIsTranscriptLoading(false);
     }
   }
 
@@ -1706,6 +1683,30 @@ function VideoLearningPageContent({ params }: Props) {
                 {lesson.summary ?? course.short_description}
               </p>
             ) : null}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void handleLessonLike()}
+                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
+                  lesson.liked_by_me
+                    ? "border-orange-200 bg-orange-50 text-orange-700"
+                    : "border-[color:var(--border)] bg-white/70 text-slate-600 hover:border-orange-200 hover:text-orange-700"
+                }`}
+                aria-pressed={lesson.liked_by_me}
+              >
+                <ThumbsUp className="size-3.5" />
+                <span>{lesson.like_count > 0 ? lesson.like_count : "Like"}</span>
+              </button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void handleArtifact("flashcards")}
+                disabled={submitting === "flashcards"}
+              >
+                <Sparkles className="size-4" />
+                {submitting === "flashcards" ? "Generating..." : "AI flashcards"}
+              </Button>
+            </div>
           </div>
 
           {/* Video player */}
@@ -1872,41 +1873,6 @@ function VideoLearningPageContent({ params }: Props) {
             )}
           </div>
 
-          {/* ── Lesson content (content_markdown) ─── */}
-          {lesson.content_markdown ? (
-            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <div className="flex items-center gap-2">
-                <BookOpen className="size-5 text-orange-500" />
-                <h2 className="text-2xl font-extrabold text-slate-950">Lesson notes</h2>
-              </div>
-              <div className="mt-5">
-                <SimpleMarkdown content={lesson.content_markdown} />
-              </div>
-            </section>
-          ) : null}
-
-          {/* Study tools */}
-          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-            <h2 className="text-2xl font-extrabold text-slate-950">Study tools</h2>
-            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Button variant={lesson.liked_by_me ? "default" : "secondary"} onClick={() => void handleLessonLike()}>
-                <ThumbsUp className="size-4" />
-                {lesson.like_count > 0 ? lesson.like_count : "Like"}
-              </Button>
-              <Button variant="secondary" onClick={() => void handleArtifact("lesson_notes")}>
-                <FileText className="size-4" />
-                {submitting === "lesson_notes" ? "Generating…" : "AI notes"}
-              </Button>
-              <Button variant="secondary" onClick={() => void handleArtifact("flashcards")}>
-                <Sparkles className="size-4" />
-                {submitting === "flashcards" ? "Generating…" : "AI cards"}
-              </Button>
-              <Button asChild variant="secondary">
-                <Link href={`/courses/${course.slug}`}>Overview</Link>
-              </Button>
-            </div>
-          </section>
-
           {/* ── Flashcard section ─── */}
           {lesson.flashcard_markdown ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
@@ -1964,25 +1930,17 @@ function VideoLearningPageContent({ params }: Props) {
             </section>
           ) : null}
 
-          {/* ── AI-generated study aids (on-demand artifacts) ─── */}
-          {(artifacts.lesson_notes || artifacts.flashcards) ? (
+          {/* ── AI-generated flashcards ─── */}
+          {artifacts.flashcards ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <h2 className="text-2xl font-extrabold text-slate-950">AI study aids</h2>
-              <div className="mt-5 grid gap-4 lg:grid-cols-2">
-                {artifacts.lesson_notes && (
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
-                    <p className="mb-3 text-sm font-semibold text-slate-950">Generated notes</p>
-                    <SimpleMarkdown content={artifacts.lesson_notes.content_markdown} />
-                  </div>
-                )}
-                {artifacts.flashcards && (
-                  <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
-                    <p className="mb-3 text-sm font-semibold text-slate-950">Generated flashcards</p>
-                    <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                      {artifacts.flashcards.content_markdown}
-                    </pre>
-                  </div>
-                )}
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-5 text-orange-500" />
+                <h2 className="text-2xl font-extrabold text-slate-950">AI flashcards</h2>
+              </div>
+              <div className="mt-5 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
+                <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
+                  {artifacts.flashcards.content_markdown}
+                </pre>
               </div>
             </section>
           ) : null}
@@ -2057,93 +2015,42 @@ function VideoLearningPageContent({ params }: Props) {
             </section>
           ) : null}
 
-          {/* Your notes */}
-          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-            <h2 className="text-2xl font-extrabold text-slate-950">Your notes</h2>
-            <div className="mt-5 space-y-4">
-              <MarkdownNoteEditor
-                value={noteBody}
-                onChange={setNoteBody}
-                onSave={() => void handleCreateNote()}
-                isSaving={submitting === "note"}
-              />
-              {lesson.notes.length > 0 ? (
-                <div className="space-y-3">
-                  {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
-                      <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
-                      <div className="mt-3">
-                        <SimpleMarkdown content={note.body} />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">No notes yet - add one while watching.</p>
-              )}
-            </div>
-          </section>
-
-          {/* Transcript */}
-          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-            <h2 className="text-2xl font-extrabold text-slate-950">Transcript</h2>
-            <div className="mt-5">
-              {lesson.transcript ? (
-                <div className="space-y-4">
-                  {lesson.transcript.segments?.length ? (
-                    <div className="space-y-2">
-                      {lesson.transcript.segments.map((segment, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => seekPlayback(segment.start)}
-                          className="group flex w-full items-start gap-3 rounded-xl border border-[color:var(--border)] px-3 py-2 text-left transition-colors hover:border-orange-200 hover:bg-orange-50"
-                        >
-                          <span className="shrink-0 font-mono text-xs font-semibold text-orange-500">
-                            {formatSeconds(Math.floor(segment.start))}
-                          </span>
-                          <span className="text-sm text-slate-700">{segment.text}</span>
-                        </button>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 text-sm leading-7 text-slate-600 backdrop-blur">
-                      {lesson.transcript.transcript_text}
-                    </p>
-                  )}
-                </div>
-              ) : !hasRequestedTranscript ? (
-                <div className="flex flex-col items-start gap-3">
-                  <p className="text-sm text-slate-500">Transcript is loaded on demand to keep lesson startup fast.</p>
-                  <Button variant="secondary" onClick={() => void handleLoadTranscript()} disabled={isTranscriptLoading}>
-                    <FileText className="size-4" />
-                    {isTranscriptLoading ? "Loading…" : "Load transcript"}
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">Transcript is not available yet.</p>
-              )}
-            </div>
-          </section>
+          {/* FAQs */}
+          {course.faqs.length > 0 ? (
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <h2 className="text-2xl font-extrabold text-slate-950">FAQs</h2>
+              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur">
+                {course.faqs.map((faq, i) => (
+                  <details key={`${faq.question}-${i}`} className="group px-4 py-3">
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
+                      <span>{faq.question}</span>
+                      <ChevronRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                    </summary>
+                    <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
+                  </details>
+                ))}
+              </div>
+            </section>
+          ) : null}
 
           {/* Discussion */}
           <section className="mt-10 border-t border-[color:var(--border)] pt-10">
             <h2 className="text-2xl font-extrabold text-slate-950">Discussion</h2>
-            <div className="mt-5 space-y-4">
-              <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
+            <div className="mt-5 space-y-3">
+              <div className="space-y-2 rounded-lg border border-[color:var(--border)] bg-white/70 p-3 backdrop-blur">
                 <Textarea
                   placeholder="Ask a question or share a thought…"
                   value={discussionBody}
                   onChange={(e) => setDiscussionBody(e.target.value)}
-                  className="min-h-24 border-0 bg-transparent"
+                  className="min-h-20 border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
                 />
                 <div className="flex justify-end">
                   <Button
                     variant="secondary"
+                    size="sm"
                     onClick={() => void handleCreateDiscussion()}
                     disabled={submitting === "discussion" || !discussionBody.trim()}
                   >
-                    <MessageCircle className="size-4" />
                     {submitting === "discussion" ? "Posting…" : "Comment"}
                   </Button>
                 </div>
@@ -2151,22 +2058,22 @@ function VideoLearningPageContent({ params }: Props) {
 
               {isDiscussionLoading ? (
                 <div className="space-y-3">
-                  <Skeleton className="h-24 rounded-2xl" />
-                  <Skeleton className="h-20 rounded-2xl" />
+                  <Skeleton className="h-16 rounded-lg" />
+                  <Skeleton className="h-14 rounded-lg" />
                 </div>
               ) : lesson.discussions.length > 0 ? (
                 lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
+                  <div key={thread.id} className="rounded-lg border border-[color:var(--border)] bg-white/65 px-3 py-3 backdrop-blur">
                     {thread.title ? (
-                      <p className="mb-1 text-xs font-semibold uppercase text-orange-500">{thread.title}</p>
+                      <p className="mb-1 text-[11px] font-semibold uppercase text-orange-500">{thread.title}</p>
                     ) : null}
-                    <p className="text-sm font-semibold text-slate-950">{thread.user_display_name}</p>
+                    <p className="text-xs font-semibold text-slate-950">{thread.user_display_name}</p>
                     <p className="mt-1 text-sm leading-6 text-slate-700">{thread.body}</p>
                     {thread.comments.length > 0 ? (
-                      <div className="mt-4 space-y-2">
+                      <div className="mt-3 space-y-2 border-l border-[color:var(--border)] pl-3">
                         {thread.comments.map((comment) => (
-                          <div key={comment.id} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-3 py-2">
-                            <p className="text-sm font-medium text-slate-950">
+                          <div key={comment.id} className="rounded-md bg-[color:var(--surface-primary)] px-3 py-2">
+                            <p className="text-xs font-medium text-slate-950">
                               {comment.user_display_name}
                               {comment.is_instructor_response ? (
                                 <span className="ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700">Instructor</span>
@@ -2175,19 +2082,21 @@ function VideoLearningPageContent({ params }: Props) {
                                 <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Solution</span>
                               ) : null}
                             </p>
-                            <p className="mt-1 text-sm text-slate-600">{comment.body}</p>
+                            <p className="mt-1 text-sm leading-5 text-slate-600">{comment.body}</p>
                           </div>
                         ))}
                       </div>
                     ) : null}
-                    <div className="mt-4 flex gap-2">
+                    <div className="mt-3 flex gap-2">
                       <Input
                         placeholder="Reply…"
                         value={replyDrafts[thread.id] ?? ""}
                         onChange={(e) => setReplyDrafts((s) => ({ ...s, [thread.id]: e.target.value }))}
+                        className="h-9"
                       />
                       <Button
                         variant="secondary"
+                        size="sm"
                         onClick={() => void handleReply(thread)}
                         disabled={submitting === `reply:${thread.id}`}
                       >
@@ -2205,6 +2114,33 @@ function VideoLearningPageContent({ params }: Props) {
 
         {/* ── Sidebar ── */}
         <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
+          {/* Your notes */}
+          <div className="border-t border-[color:var(--border)] pt-5">
+            <h2 className="text-lg font-extrabold text-slate-950">Your notes</h2>
+            <div className="mt-4 space-y-3">
+              <MarkdownNoteEditor
+                value={noteBody}
+                onChange={setNoteBody}
+                onSave={() => void handleCreateNote()}
+                isSaving={submitting === "note"}
+              />
+              {lesson.notes.length > 0 ? (
+                <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                  {lesson.notes.map((note) => (
+                    <div key={note.id} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-3 backdrop-blur">
+                      <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
+                      <div className="mt-2">
+                        <SimpleMarkdown content={note.body} compact />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No notes yet - add one while watching.</p>
+              )}
+            </div>
+          </div>
+
           {/* Module-grouped lesson list */}
           <div className="border-t border-[color:var(--border)] pt-5">
             <h2 className="text-lg font-extrabold text-slate-950">Course content</h2>
@@ -2295,20 +2231,6 @@ function VideoLearningPageContent({ params }: Props) {
             </div>
           </div>
 
-          {/* Course FAQs (if any) */}
-          {course.faqs.length > 0 ? (
-            <div className="border-t border-[color:var(--border)] pt-5">
-              <h2 className="text-lg font-extrabold text-slate-950">FAQs</h2>
-              <div className="mt-4 space-y-4">
-                {course.faqs.map((faq, i) => (
-                  <div key={i} className="space-y-1">
-                    <p className="text-sm font-semibold text-slate-950">{faq.question}</p>
-                    <p className="text-sm leading-6 text-slate-600">{faq.answer}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : null}
         </aside>
       </div>
     </AppShell>
