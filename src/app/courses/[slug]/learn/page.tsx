@@ -7,7 +7,6 @@ import {
   Bold,
   CheckCircle2,
   ChevronRight,
-  Clock3,
   Code2,
   Download,
   Eye,
@@ -987,18 +986,6 @@ function LessonPlayerControls({
   );
 }
 
-function lessonTypeBadgeLabel(type: string): string {
-  const map: Record<string, string> = {
-    video: "Video",
-    article: "Article",
-    quiz: "Quiz",
-    live: "Live session",
-    case_study: "Case study",
-    resource: "Resource",
-  };
-  return map[type] ?? type;
-}
-
 // ── Main page component ───────────────────────────────────────────────────────
 
 function VideoLearningPageContent({ params }: Props) {
@@ -1666,47 +1653,12 @@ function VideoLearningPageContent({ params }: Props) {
                 </>
               ) : null}
             </div>
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <Badge variant="orange">{buildAccessLabel(course.access)}</Badge>
-              <Badge variant="default">{lessonTypeBadgeLabel(lesson.lesson_type)}</Badge>
-              {lesson.progress?.status === "completed" ? <Badge variant="green">Completed</Badge> : null}
-              {lesson.duration_seconds ? (
-                <Badge variant="default">
-                  <Clock3 className="size-3.5" />
-                  {formatSeconds(lesson.duration_seconds)}
-                </Badge>
-              ) : null}
-            </div>
             <h1 className="mt-4 text-3xl font-extrabold text-slate-950 sm:text-4xl">{lesson.title}</h1>
             {(lesson.summary ?? course.short_description) ? (
               <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
                 {lesson.summary ?? course.short_description}
               </p>
             ) : null}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <button
-                type="button"
-                onClick={() => void handleLessonLike()}
-                className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
-                  lesson.liked_by_me
-                    ? "border-orange-200 bg-orange-50 text-orange-700"
-                    : "border-[color:var(--border)] bg-white/70 text-slate-600 hover:border-orange-200 hover:text-orange-700"
-                }`}
-                aria-pressed={lesson.liked_by_me}
-              >
-                <ThumbsUp className="size-3.5" />
-                <span>{lesson.like_count > 0 ? lesson.like_count : "Like"}</span>
-              </button>
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => void handleArtifact("flashcards")}
-                disabled={submitting === "flashcards"}
-              >
-                <Sparkles className="size-4" />
-                {submitting === "flashcards" ? "Generating..." : "AI flashcards"}
-              </Button>
-            </div>
           </div>
 
           {/* Video player */}
@@ -1871,6 +1823,31 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               </div>
             )}
+          </div>
+
+          <div className="mt-4 flex items-center justify-between gap-3">
+            <button
+              type="button"
+              onClick={() => void handleLessonLike()}
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
+                lesson.liked_by_me
+                  ? "border-orange-200 bg-orange-50 text-orange-700"
+                  : "border-[color:var(--border)] bg-white/70 text-slate-600 hover:border-orange-200 hover:text-orange-700"
+              }`}
+              aria-pressed={lesson.liked_by_me}
+            >
+              <ThumbsUp className="size-3.5" />
+              <span>{lesson.like_count > 0 ? lesson.like_count : "Like"}</span>
+            </button>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => void handleArtifact("flashcards")}
+              disabled={submitting === "flashcards"}
+            >
+              <Sparkles className="size-4" />
+              {submitting === "flashcards" ? "Generating..." : "AI flashcards"}
+            </Button>
           </div>
 
           {/* ── Flashcard section ─── */}
