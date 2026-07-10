@@ -27,7 +27,7 @@ import { useLearningContext } from "@/components/providers/learning-context-prov
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -404,7 +404,7 @@ function FlashcardDisplay({
 
   if (!pairs.length) {
     return (
-      <div className="rounded-xl border border-slate-200 bg-slate-950 p-5 text-white">
+      <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white">
         <p className="text-xs font-semibold uppercase text-orange-300">GaugeHow flashcard</p>
         <h3 className="mt-3 text-xl font-semibold">{lessonTitle}</h3>
         <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-200">{markdown}</p>
@@ -426,7 +426,7 @@ function FlashcardDisplay({
             key={i}
             type="button"
             onClick={() => setFlipped((s) => ({ ...s, [i]: !s[i] }))}
-            className="group relative min-h-36 overflow-hidden rounded-xl border border-slate-200 bg-white text-left shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md"
+            className="group relative min-h-36 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] text-left backdrop-blur transition-colors hover:border-orange-200"
           >
             {flipped[i] ? (
               <div className="flex h-full min-h-36 flex-col justify-between bg-slate-950 p-4">
@@ -461,8 +461,8 @@ function ResourceItem({ resource }: { resource: LessonResource }) {
   );
 
   const inner = (
-    <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm transition-all hover:-translate-y-0.5 hover:border-orange-200 hover:shadow-md">
-      <div className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-orange-50">{icon}</div>
+    <div className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur transition-colors hover:border-orange-200">
+      <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50">{icon}</div>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-slate-950">{resource.title}</p>
         {resource.description ? (
@@ -501,10 +501,10 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
   }).join(" ");
 
   return (
-    <Card>
-      <CardHeader><CardTitle>{config.title || "Graph simulation"}</CardTitle></CardHeader>
-      <CardContent className="space-y-4">
-        <div className="rounded-xl border border-slate-200 bg-white p-3">
+    <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+      <h2 className="text-2xl font-extrabold text-slate-950">{config.title || "Graph simulation"}</h2>
+      <div className="mt-5 space-y-4">
+        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-3 backdrop-blur">
           <svg viewBox="0 0 600 320" className="h-72 w-full">
             <line x1="40" y1="160" x2="560" y2="160" stroke="#cbd5e1" />
             <line x1="40" y1="36" x2="40" y2="284" stroke="#cbd5e1" />
@@ -528,8 +528,8 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
             );
           })}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+    </section>
   );
 }
 
@@ -1271,7 +1271,7 @@ function VideoLearningPageContent({ params }: Props) {
   if (loading || !course || !lesson) {
     return (
       <AppShell>
-        <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+        <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start">
           <section className="space-y-5">
             <Card>
               <CardContent className="space-y-5 p-6">
@@ -1313,18 +1313,29 @@ function VideoLearningPageContent({ params }: Props) {
 
   return (
     <AppShell>
-      <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
+      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start">
         {/* ── Main content column ── */}
-        <section className="space-y-5">
+        <section className="space-y-0">
           {error && (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {error}
             </div>
           )}
 
           {/* Header */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm shadow-slate-950/[0.03]">
-            <div className="flex flex-wrap items-center gap-2">
+          <div className="pb-6">
+            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-orange-600">
+              <Link href={`/courses/${course.slug}`} className="hover:text-orange-700">
+                {course.title}
+              </Link>
+              {currentLessonIndex > 0 ? (
+                <>
+                  <span className="text-slate-400">/</span>
+                  <span className="text-slate-500">Lesson {currentLessonIndex} of {allLessons.length}</span>
+                </>
+              ) : null}
+            </div>
+            <div className="mt-4 flex flex-wrap items-center gap-2">
               <Badge variant="orange">{buildAccessLabel(course.access)}</Badge>
               <Badge variant="default">{lessonTypeBadgeLabel(lesson.lesson_type)}</Badge>
               {lesson.progress?.status === "completed" ? <Badge variant="green">Completed</Badge> : null}
@@ -1335,24 +1346,18 @@ function VideoLearningPageContent({ params }: Props) {
                 </Badge>
               ) : null}
             </div>
-            <div className="mt-4 space-y-2">
-              <p className="text-sm font-medium text-slate-500">
-                {course.title}
-                {currentLessonIndex > 0 ? ` · Lesson ${currentLessonIndex} of ${allLessons.length}` : ""}
+            <h1 className="mt-4 text-3xl font-extrabold text-slate-950 sm:text-4xl">{lesson.title}</h1>
+            {(lesson.summary ?? course.short_description) ? (
+              <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
+                {lesson.summary ?? course.short_description}
               </p>
-              <h1 className="text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl">{lesson.title}</h1>
-              {(lesson.summary ?? course.short_description) ? (
-                <p className="max-w-3xl text-sm leading-6 text-slate-600">
-                  {lesson.summary ?? course.short_description}
-                </p>
-              ) : null}
-            </div>
+            ) : null}
           </div>
 
           {/* Video player */}
           <div
             ref={playerShellRef}
-            className="relative overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-sm shadow-slate-950/10"
+            className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-slate-950"
           >
             <div className="aspect-video p-4 text-white sm:p-5">
               {iframeEmbedUrl ? (
@@ -1487,25 +1492,21 @@ function VideoLearningPageContent({ params }: Props) {
 
           {/* ── Lesson content (content_markdown) ─── */}
           {lesson.content_markdown ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <BookOpen className="size-4 text-orange-500" />
-                  <CardTitle>Lesson notes</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 pb-6 pt-0">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <div className="flex items-center gap-2">
+                <BookOpen className="size-5 text-orange-500" />
+                <h2 className="text-2xl font-extrabold text-slate-950">Lesson notes</h2>
+              </div>
+              <div className="mt-5">
                 <SimpleMarkdown content={lesson.content_markdown} />
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* Study tools */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Study tools</CardTitle>
-            </CardHeader>
-            <CardContent className="grid grid-cols-2 gap-3 p-5 pt-0 sm:grid-cols-4">
+          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+            <h2 className="text-2xl font-extrabold text-slate-950">Study tools</h2>
+            <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
               <Button variant={lesson.liked_by_me ? "default" : "secondary"} onClick={() => void handleLessonLike()}>
                 <ThumbsUp className="size-4" />
                 {lesson.like_count > 0 ? lesson.like_count : "Like"}
@@ -1521,43 +1522,39 @@ function VideoLearningPageContent({ params }: Props) {
               <Button asChild variant="secondary">
                 <Link href={`/courses/${course.slug}`}>Overview</Link>
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           {/* ── Flashcard section ─── */}
           {lesson.flashcard_markdown ? (
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Sparkles className="size-4 text-orange-500" />
-                  <CardTitle>Flashcards</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="px-6 pb-6 pt-0">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <div className="flex items-center gap-2">
+                <Sparkles className="size-5 text-orange-500" />
+                <h2 className="text-2xl font-extrabold text-slate-950">Flashcards</h2>
+              </div>
+              <div className="mt-5">
                 <FlashcardDisplay
                   markdown={lesson.flashcard_markdown}
                   lessonTitle={lesson.title}
                   onDownload={downloadFlashcardPng}
                 />
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* ── Resources ─── */}
           {lesson.resources.length > 0 ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <div className="flex items-center gap-2">
-                  <Download className="size-4 text-orange-500" />
-                  <CardTitle>Resources</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="grid gap-3 px-6 pb-6 pt-0 sm:grid-cols-2">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <div className="flex items-center gap-2">
+                <Download className="size-5 text-orange-500" />
+                <h2 className="text-2xl font-extrabold text-slate-950">Resources</h2>
+              </div>
+              <div className="mt-5 grid gap-3 sm:grid-cols-2">
                 {lesson.resources.map((resource) => (
                   <ResourceItem key={resource.id} resource={resource} />
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* Simulation panel */}
@@ -1565,9 +1562,9 @@ function VideoLearningPageContent({ params }: Props) {
 
           {/* Jupyter notebook */}
           {lesson.has_jupyter_notebook ? (
-            <Card>
-              <CardHeader><CardTitle>Notebook</CardTitle></CardHeader>
-              <CardContent className="space-y-3">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <h2 className="text-2xl font-extrabold text-slate-950">Notebook</h2>
+              <div className="mt-5 space-y-3">
                 {lesson.jupyter_config.instructions ? (
                   <p className="text-sm leading-6 text-slate-600">{lesson.jupyter_config.instructions}</p>
                 ) : null}
@@ -1576,51 +1573,49 @@ function VideoLearningPageContent({ params }: Props) {
                     src={lesson.jupyter_config.embedUrl}
                     title={`${lesson.title} notebook`}
                     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-                    className="h-[520px] w-full rounded-lg border border-slate-200"
+                    className="h-[520px] w-full rounded-2xl border border-[color:var(--border)]"
                   />
                 ) : (
                   <p className="text-sm text-slate-500">Notebook embed is not configured yet.</p>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* ── AI-generated study aids (on-demand artifacts) ─── */}
           {(artifacts.lesson_notes || artifacts.flashcards) ? (
-            <Card>
-              <CardHeader><CardTitle>AI study aids</CardTitle></CardHeader>
-              <CardContent className="grid gap-4 lg:grid-cols-2">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <h2 className="text-2xl font-extrabold text-slate-950">AI study aids</h2>
+              <div className="mt-5 grid gap-4 lg:grid-cols-2">
                 {artifacts.lesson_notes && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                     <p className="mb-3 text-sm font-semibold text-slate-950">Generated notes</p>
                     <SimpleMarkdown content={artifacts.lesson_notes.content_markdown} />
                   </div>
                 )}
                 {artifacts.flashcards && (
-                  <div className="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                     <p className="mb-3 text-sm font-semibold text-slate-950">Generated flashcards</p>
                     <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
                       {artifacts.flashcards.content_markdown}
                     </pre>
                   </div>
                 )}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* ── Lesson checks (quiz questions) ─── */}
           {lesson.questions.length > 0 ? (
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle>Lesson checks</CardTitle>
-                <p className="text-sm text-slate-500">{lesson.questions.length} question{lesson.questions.length !== 1 ? "s" : ""}</p>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+              <h2 className="text-2xl font-extrabold text-slate-950">Lesson checks</h2>
+              <p className="mt-2 text-sm text-slate-500">{lesson.questions.length} question{lesson.questions.length !== 1 ? "s" : ""}</p>
+              <div className="mt-5 space-y-4">
                 {lesson.questions.map((question) => {
                   const questionState = questionStates[question.id];
                   const result = questionState?.result;
                   return (
-                    <div key={question.id} className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+                    <div key={question.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-semibold text-slate-950">{question.prompt}</p>
                         <Badge variant="blue" className="shrink-0">{formatSeconds(question.timestamp_seconds)}</Badge>
@@ -1676,20 +1671,20 @@ function VideoLearningPageContent({ params }: Props) {
                     </div>
                   );
                 })}
-              </CardContent>
-            </Card>
+              </div>
+            </section>
           ) : null}
 
           {/* Your notes */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle>Your notes</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+            <h2 className="text-2xl font-extrabold text-slate-950">Your notes</h2>
+            <div className="mt-5 space-y-4">
+              <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                 <Textarea
                   placeholder="Save a key point at the current timestamp…"
                   value={noteBody}
                   onChange={(e) => setNoteBody(e.target.value)}
-                  className="min-h-24 border-0 bg-white"
+                  className="min-h-24 border-0 bg-transparent"
                 />
                 <div className="flex justify-end">
                   <Button onClick={() => void handleCreateNote()} disabled={submitting === "note" || !noteBody.trim()}>
@@ -1700,7 +1695,7 @@ function VideoLearningPageContent({ params }: Props) {
               {lesson.notes.length > 0 ? (
                 <div className="space-y-3">
                   {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-xl border border-slate-200 bg-white p-4">
+                    <div key={note.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                       <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
                       <p className="mt-2 text-sm leading-6 text-slate-700">{note.body}</p>
                     </div>
@@ -1709,13 +1704,13 @@ function VideoLearningPageContent({ params }: Props) {
               ) : (
                 <p className="text-sm text-slate-500">No notes yet — add one while watching.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           {/* Transcript */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle>Transcript</CardTitle></CardHeader>
-            <CardContent>
+          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+            <h2 className="text-2xl font-extrabold text-slate-950">Transcript</h2>
+            <div className="mt-5">
               {lesson.transcript ? (
                 <div className="space-y-4">
                   {lesson.transcript.segments?.length ? (
@@ -1725,7 +1720,7 @@ function VideoLearningPageContent({ params }: Props) {
                           key={i}
                           type="button"
                           onClick={() => seekPlayback(segment.start)}
-                          className="group flex w-full items-start gap-3 rounded-lg border border-slate-200 px-3 py-2 text-left transition-colors hover:border-orange-200 hover:bg-orange-50"
+                          className="group flex w-full items-start gap-3 rounded-xl border border-[color:var(--border)] px-3 py-2 text-left transition-colors hover:border-orange-200 hover:bg-orange-50"
                         >
                           <span className="shrink-0 font-mono text-xs font-semibold text-orange-500">
                             {formatSeconds(Math.floor(segment.start))}
@@ -1735,7 +1730,7 @@ function VideoLearningPageContent({ params }: Props) {
                       ))}
                     </div>
                   ) : (
-                    <p className="rounded-lg bg-slate-50 p-4 text-sm leading-7 text-slate-600">
+                    <p className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 text-sm leading-7 text-slate-600 backdrop-blur">
                       {lesson.transcript.transcript_text}
                     </p>
                   )}
@@ -1751,21 +1746,19 @@ function VideoLearningPageContent({ params }: Props) {
               ) : (
                 <p className="text-sm text-slate-500">Transcript is not available yet.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
 
           {/* Discussion */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Discussion</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-3 rounded-2xl border border-slate-200 bg-slate-50 p-4">
+          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
+            <h2 className="text-2xl font-extrabold text-slate-950">Discussion</h2>
+            <div className="mt-5 space-y-4">
+              <div className="space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                 <Textarea
                   placeholder="Ask a question or share a thought…"
                   value={discussionBody}
                   onChange={(e) => setDiscussionBody(e.target.value)}
-                  className="min-h-24 border-0 bg-white"
+                  className="min-h-24 border-0 bg-transparent"
                 />
                 <div className="flex justify-end">
                   <Button
@@ -1786,7 +1779,7 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               ) : lesson.discussions.length > 0 ? (
                 lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div key={thread.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
                     {thread.title ? (
                       <p className="mb-1 text-xs font-semibold uppercase text-orange-500">{thread.title}</p>
                     ) : null}
@@ -1795,7 +1788,7 @@ function VideoLearningPageContent({ params }: Props) {
                     {thread.comments.length > 0 ? (
                       <div className="mt-4 space-y-2">
                         {thread.comments.map((comment) => (
-                          <div key={comment.id} className="rounded-xl bg-slate-50 px-3 py-2">
+                          <div key={comment.id} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-3 py-2">
                             <p className="text-sm font-medium text-slate-950">
                               {comment.user_display_name}
                               {comment.is_instructor_response ? (
@@ -1829,24 +1822,22 @@ function VideoLearningPageContent({ params }: Props) {
               ) : (
                 <p className="text-sm text-slate-500">No comments yet. Start the discussion!</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         </section>
 
         {/* ── Sidebar ── */}
-        <aside className="space-y-5">
+        <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
           {/* Module-grouped lesson list */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle>Course content</CardTitle>
-              <p className="text-sm text-slate-500">{completedLessonsCount} / {allLessons.length} lessons done</p>
-            </CardHeader>
-            <CardContent className="space-y-4 p-4 pt-0">
+          <div className="border-t border-[color:var(--border)] pt-5">
+            <h2 className="text-lg font-extrabold text-slate-950">Course content</h2>
+            <p className="mt-1 text-sm text-slate-500">{completedLessonsCount} / {allLessons.length} lessons done</p>
+            <div className="mt-5 space-y-5">
               {course.modules.map((module) => (
                 <div key={module.id}>
-                  <div className="mb-2 flex items-center gap-2 px-1">
-                    <ChevronRight className="size-3.5 shrink-0 text-slate-400" />
-                    <p className="text-xs font-semibold uppercase text-slate-500">{module.title}</p>
+                  <div className="mb-2 flex items-center gap-2">
+                    <ChevronRight className="size-3.5 shrink-0 text-orange-500" />
+                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{module.title}</p>
                   </div>
                   <div className="space-y-1.5">
                     {module.lessons.map((item) => {
@@ -1855,19 +1846,17 @@ function VideoLearningPageContent({ params }: Props) {
                       return (
                         <div
                           key={item.id}
-                          className={`rounded-xl border p-3 transition-colors ${
+                          className={`rounded-xl border p-3 backdrop-blur transition-colors ${
                             isActive
                               ? "border-orange-300 bg-orange-50"
-                              : isDone
-                              ? "border-slate-200 bg-slate-50"
-                              : "border-slate-200 bg-white"
+                              : "border-[color:var(--border)] bg-[color:var(--surface-glass)]"
                           }`}
                         >
                           <div className="flex items-center gap-3">
                             {item.accessible ? (
                               <Link
                                 href={`/courses/${course.slug}/learn?lesson=${item.slug}`}
-                                className={`flex size-8 shrink-0 items-center justify-center rounded-lg transition-colors ${
+                                className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors ${
                                   isActive
                                     ? "bg-orange-500 text-white"
                                     : isDone
@@ -1878,7 +1867,7 @@ function VideoLearningPageContent({ params }: Props) {
                                 {isDone ? <CheckCircle2 className="size-4" /> : <Play className="size-3.5" />}
                               </Link>
                             ) : (
-                              <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-400">
+                              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400">
                                 <Lock className="size-3.5" />
                               </div>
                             )}
@@ -1902,16 +1891,16 @@ function VideoLearningPageContent({ params }: Props) {
                   </div>
                 </div>
               ))}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Progress card */}
-          <Card>
-            <CardHeader className="pb-3"><CardTitle>Your progress</CardTitle></CardHeader>
-            <CardContent className="space-y-4">
-              <div className="rounded-2xl bg-slate-50 p-4">
+          <div className="border-t border-[color:var(--border)] pt-5">
+            <h2 className="text-lg font-extrabold text-slate-950">Your progress</h2>
+            <div className="mt-4 space-y-4">
+              <div>
                 <p className="text-sm font-medium text-slate-500">Course completion</p>
-                <p className="mt-1 text-3xl font-semibold tracking-tight text-slate-950">
+                <p className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950">
                   {Math.round(course.access?.progress_percent ?? 0)}%
                 </p>
                 <p className="mt-1 text-sm text-slate-600">
@@ -1919,29 +1908,29 @@ function VideoLearningPageContent({ params }: Props) {
                 </p>
               </div>
               <Progress value={course.access?.progress_percent ?? 0} />
-              <div className="rounded-2xl border border-slate-200 px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl border border-[color:var(--border)] px-4 py-3">
                 <p className="text-xs font-semibold uppercase text-slate-500">Access</p>
-                <p className="mt-2 text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
+                <p className="text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
               </div>
               <Button asChild className="w-full" variant="secondary">
                 <Link href={`/courses/${course.slug}`}>Course overview</Link>
               </Button>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
           {/* Course FAQs (if any) */}
           {course.faqs.length > 0 ? (
-            <Card>
-              <CardHeader className="pb-3"><CardTitle>FAQs</CardTitle></CardHeader>
-              <CardContent className="space-y-4 pb-5">
+            <div className="border-t border-[color:var(--border)] pt-5">
+              <h2 className="text-lg font-extrabold text-slate-950">FAQs</h2>
+              <div className="mt-4 space-y-4">
                 {course.faqs.map((faq, i) => (
                   <div key={i} className="space-y-1">
                     <p className="text-sm font-semibold text-slate-950">{faq.question}</p>
                     <p className="text-sm leading-6 text-slate-600">{faq.answer}</p>
                   </div>
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ) : null}
         </aside>
       </div>
