@@ -355,7 +355,7 @@ export default function LibraryDetailPage({ params }: Props) {
         body: annotationBody,
         color:
           annotationType === "highlight"
-            ? "#f59e0b"
+            ? "#fcbc6c"
             : annotationType === "bookmark"
               ? "#0f766e"
               : "#334155",

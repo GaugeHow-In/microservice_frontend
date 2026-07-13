@@ -186,7 +186,7 @@ export default function DashboardPage() {
                 href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
                 className="group relative min-h-[13rem] overflow-hidden lg:min-h-[15rem]"
               >
-                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#020617]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
+                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#241a10]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
                   <Play className="size-4" />
                   Continue Learning
                 </div>
@@ -202,7 +202,7 @@ export default function DashboardPage() {
                 ) : (
                   <div className="industrial-hero-media absolute inset-0" />
                 )}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/88 via-[#020617]/36 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#241a10]/88 via-[#241a10]/36 to-transparent" />
                 <div className="absolute inset-0 surface-grid opacity-20" />
                 <div className="relative z-10 flex h-full min-h-[13rem] items-center p-5 lg:min-h-[15rem]">
                   <span className="flex size-14 items-center justify-center rounded-full border border-orange-300/40 bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
@@ -276,8 +276,8 @@ export default function DashboardPage() {
                             className="object-cover transition duration-500 group-hover:scale-105"
                           />
                         ) : null}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#020617]/80 via-transparent to-transparent" />
-                        <span className="absolute right-3 top-3 rounded bg-[#020617]/80 px-2 py-1 text-[10px] font-bold text-orange-300 backdrop-blur">
+                        <div className="absolute inset-0 bg-gradient-to-t from-[#241a10]/80 via-transparent to-transparent" />
+                        <span className="absolute right-3 top-3 rounded bg-[#241a10]/80 px-2 py-1 text-[10px] font-bold text-orange-300 backdrop-blur">
                           {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
                         </span>
                       </div>

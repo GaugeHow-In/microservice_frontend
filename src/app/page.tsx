@@ -120,7 +120,7 @@ export default async function Home() {
 
   return (
     <main className="light-system min-h-screen overflow-hidden text-slate-950">
-      <header className="sticky top-0 z-50 border-b border-black/5 bg-[#fcf9f8]/70 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-black/5 bg-[#fbf8f4]/70 backdrop-blur-xl">
         <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
           <BrandLogo />
           <nav className="hidden items-center gap-8 text-sm font-semibold text-slate-600 md:flex">
@@ -224,7 +224,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="border-y border-black/5 bg-[#f6f3f2] py-14">
+      <section className="border-y border-black/5 bg-[#f6efe6] py-14">
         <div className="mx-auto grid max-w-7xl grid-cols-2 gap-6 px-4 text-center sm:px-6 md:grid-cols-4 lg:px-8">
           {stats.map(([value, label]) => (
             <div key={label}>
@@ -283,7 +283,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="border-t border-black/5 bg-[#0f172a] py-16 text-white">
+      <section className="border-t border-black/5 bg-[#2e2117] py-16 text-white">
         <div className="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 md:grid-cols-[0.85fr_1.15fr] lg:px-8">
           <div>
             <Badge variant="orange">Engineering Cockpit</Badge>

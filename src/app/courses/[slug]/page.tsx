@@ -296,7 +296,7 @@ export default function CourseDetailPage({ params }: Props) {
         name: user?.display_name ?? undefined,
       },
       theme: {
-        color: "#f97316",
+        color: "#fcbc6c",
       },
       handler: (response) => {
         void paymentClient

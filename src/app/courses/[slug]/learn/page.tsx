@@ -806,9 +806,9 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
       <div className="mt-5 space-y-4">
         <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-3 backdrop-blur">
           <svg viewBox="0 0 600 320" className="h-72 w-full">
-            <line x1="40" y1="160" x2="560" y2="160" stroke="#cbd5e1" />
-            <line x1="40" y1="36" x2="40" y2="284" stroke="#cbd5e1" />
-            <path d={path} fill="none" stroke="#f97316" strokeWidth="4" />
+            <line x1="40" y1="160" x2="560" y2="160" stroke="#d8c7b0" />
+            <line x1="40" y1="36" x2="40" y2="284" stroke="#d8c7b0" />
+            <path d={path} fill="none" stroke="#fcbc6c" strokeWidth="4" />
             <text x="300" y="306" textAnchor="middle" className="fill-slate-500 text-xs">{config.xLabel || "Input"}</text>
             <text x="18" y="160" textAnchor="middle" transform="rotate(-90 18 160)" className="fill-slate-500 text-xs">{config.yLabel || "Output"}</text>
           </svg>
@@ -1512,11 +1512,11 @@ function VideoLearningPageContent({ params }: Props) {
     canvas.height = 675;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
-    ctx.fillStyle = "#0f172a";
+    ctx.fillStyle = "#241a10";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#f97316";
+    ctx.fillStyle = "#fcbc6c";
     ctx.fillRect(0, 0, canvas.width, 12);
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = "#f7f3ee";
     ctx.font = "700 44px sans-serif";
     ctx.fillText(lesson.title, 64, 92);
     ctx.font = "400 30px sans-serif";

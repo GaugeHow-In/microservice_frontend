@@ -18,27 +18,27 @@ function drawDefaultTemplate(
   height: number,
 ) {
   const gradient = context.createLinearGradient(0, 0, width, height);
-  gradient.addColorStop(0, "#fff7ed");
-  gradient.addColorStop(0.52, "#ffffff");
-  gradient.addColorStop(1, "#f8fafc");
+  gradient.addColorStop(0, "#fff6ea");
+  gradient.addColorStop(0.52, "#fffbf6");
+  gradient.addColorStop(1, "#fbefdd");
   context.fillStyle = gradient;
   context.fillRect(0, 0, width, height);
 
-  context.strokeStyle = "#ea580c";
+  context.strokeStyle = "#b87830";
   context.lineWidth = 12;
   context.strokeRect(38, 38, width - 76, height - 76);
-  context.strokeStyle = "#fed7aa";
+  context.strokeStyle = "#fcd9a9";
   context.lineWidth = 3;
   context.strokeRect(58, 58, width - 116, height - 116);
 
   context.textAlign = "center";
-  context.fillStyle = "#c2410c";
+  context.fillStyle = "#b87830";
   context.font = "700 32px sans-serif";
   context.fillText("GAUGEHOW", width / 2, 150);
-  context.fillStyle = "#0f172a";
+  context.fillStyle = "#2b2118";
   context.font = "700 76px serif";
   context.fillText("Certificate of Completion", width / 2, 280);
-  context.fillStyle = "#64748b";
+  context.fillStyle = "#6b5847";
   context.font = "28px sans-serif";
   context.fillText("This certificate is proudly presented to", width / 2, 395);
   context.fillText("for successfully completing", width / 2, 575);

@@ -304,44 +304,44 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   };
 
   return (
-    <main className="dark-system min-h-screen overflow-hidden bg-[#020617] text-[#dce1fb]">
+    <main className="dark-system min-h-screen overflow-hidden bg-[#241a10] text-[#f0e9df]">
       <div className="grid min-h-screen lg:grid-cols-[minmax(0,1.08fr)_minmax(28rem,0.92fr)]">
-        <section className="relative hidden overflow-hidden border-r border-white/10 bg-[#070d1f] p-10 text-[#f8fafc] lg:flex lg:flex-col lg:justify-between">
+        <section className="relative hidden overflow-hidden border-r border-white/10 bg-[#2e2117] p-10 text-[#f7f3ee] lg:flex lg:flex-col lg:justify-between">
           <div className="industrial-hero-media absolute inset-0 opacity-80" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#020617]/40 to-[#020617]/90" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#241a10]/40 to-[#241a10]/90" />
           <div className="absolute inset-0 surface-grid opacity-20" />
           <div className="relative z-10">
             <BrandLogo />
           </div>
           <div className="relative z-10 max-w-2xl">
-            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#f59e0b]/25 bg-[#f59e0b]/10 px-3 py-1 text-sm font-semibold text-[#ffb77d] shadow-sm">
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-[#fcbc6c]/25 bg-[#fcbc6c]/10 px-3 py-1 text-sm font-semibold text-[#fcd9a9] shadow-sm">
               <ShieldCheck className="size-4" />
               ISO 9001 Certified Learning
             </div>
-            <h1 className="max-w-xl text-5xl font-extrabold leading-tight text-[#ffb77d]">
+            <h1 className="max-w-xl text-5xl font-extrabold leading-tight text-[#fcd9a9]">
               Master the mechanics of tomorrow.
             </h1>
-            <p className="mt-5 max-w-xl text-lg leading-8 text-[#dbc2b0]/80">
+            <p className="mt-5 max-w-xl text-lg leading-8 text-[#cbc0b3]/80">
               Join thousands of engineering students accelerating their careers with expert-led
               courses, verified certificates, and an AI study cockpit.
             </p>
 
             <div className="glass-card mt-8 max-w-xl rounded-xl p-4">
-              <div className="rounded-xl border border-white/5 bg-[#151b2d]/70 p-4">
+              <div className="rounded-xl border border-white/5 bg-[#453320]/70 p-4">
                 <div className="flex items-center gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-[#d97706] text-[#2f1500]">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-[#e8a855] text-[#2b2118]">
                     <Sparkles className="size-5" />
                   </div>
                   <div>
-                    <p className="text-sm font-bold text-[#f8fafc]">Ask GaugeHow Mentor</p>
-                    <p className="text-xs text-[#94a3b8]">Explain, calculate, verify, and plan your next module.</p>
+                    <p className="text-sm font-bold text-[#f7f3ee]">Ask GaugeHow Mentor</p>
+                    <p className="text-xs text-[#ad9e8f]">Explain, calculate, verify, and plan your next module.</p>
                   </div>
                 </div>
                 <div className="mt-4 flex flex-wrap gap-2">
                   {["Calculate gear ratios", "Explain stress-strain", "Verify FEA mesh"].map((item) => (
                     <span
                       key={item}
-                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-[#dce1fb]"
+                      className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-[#f0e9df]"
                     >
                       {item}
                     </span>
@@ -359,8 +359,8 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
               const Icon = item.icon;
               return (
                 <div key={item.label} className="glass-card rounded-xl p-4">
-                  <Icon className="size-5 text-[#ffb77d]" />
-                  <p className="mt-3 text-sm font-semibold text-[#f8fafc]">{item.label}</p>
+                  <Icon className="size-5 text-[#fcd9a9]" />
+                  <p className="mt-3 text-sm font-semibold text-[#f7f3ee]">{item.label}</p>
                 </div>
               );
             })}
@@ -377,24 +377,24 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                 </Link>
               </Button>
             </div>
-            <Card className="glass-card overflow-hidden rounded-xl border-white/10 bg-[#0f172a]/80 shadow-[0_0_44px_rgba(217,119,7,0.12)]">
+            <Card className="glass-card overflow-hidden rounded-xl border-white/10 bg-[#4a3826]/80 shadow-[0_0_44px_rgba(232,168,85,0.12)]">
               <CardContent className="space-y-6 p-6 sm:p-8">
-                <div className="rounded-xl border border-white/5 bg-[#151b2d] p-4">
+                <div className="rounded-xl border border-white/5 bg-[#453320] p-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-[#d97706] text-[#2f1500]">
+                    <div className="flex size-10 items-center justify-center rounded-lg bg-[#e8a855] text-[#2b2118]">
                       <BookOpen className="size-5" />
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-[#f8fafc]">GaugeHow workspace</p>
-                      <p className="text-xs text-[#94a3b8]">Courses, tests, mentor, and notes in one place.</p>
+                      <p className="text-sm font-bold text-[#f7f3ee]">GaugeHow workspace</p>
+                      <p className="text-xs text-[#ad9e8f]">Courses, tests, mentor, and notes in one place.</p>
                     </div>
                   </div>
                 </div>
                 <div>
-                  <h1 className="text-3xl font-bold tracking-normal text-[#f8fafc]">
+                  <h1 className="text-3xl font-bold tracking-normal text-[#f7f3ee]">
                     {data.title}
                   </h1>
-                  <p className="mt-2 text-sm leading-6 text-[#94a3b8]">{data.subtitle}</p>
+                  <p className="mt-2 text-sm leading-6 text-[#ad9e8f]">{data.subtitle}</p>
                 </div>
                 <div className="space-y-4">
                   {mode !== "verify" && mode !== "reset" && (
