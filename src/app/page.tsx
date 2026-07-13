@@ -132,7 +132,7 @@ export default async function Home() {
             <Link href="/verify-certificate">Verify</Link>
           </nav>
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-lg border border-slate-300 bg-white px-3 py-2 lg:flex">
+            <div className="hidden items-center gap-2 rounded-lg bg-[color:var(--surface-secondary)] px-3 py-2 lg:flex">
               <Search className="size-4 text-slate-500" />
               <span className="text-sm text-slate-500">Search courses...</span>
             </div>
@@ -209,7 +209,7 @@ export default async function Home() {
                 </div>
               </div>
             </div>
-            <div className="absolute -bottom-6 -left-3 rounded-xl border border-black/5 bg-white p-4 shadow-xl sm:-left-6">
+            <div className="absolute -bottom-6 -left-3 rounded-xl bg-white p-4 shadow-lg sm:-left-6">
               <div className="flex items-center gap-3">
                 <span className="flex size-12 items-center justify-center rounded-lg bg-orange-100 text-orange-700">
                   <Trophy className="size-6" />
@@ -248,16 +248,16 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((course, index) => (
-            <article key={course.slug} className="glass-card group flex flex-col overflow-hidden rounded-xl bg-white">
-              <div className="course-visual relative aspect-video overflow-hidden">
+            <article key={course.slug} className="group flex flex-col">
+              <div className="course-visual relative aspect-video overflow-hidden rounded-xl">
                 <div className="absolute inset-0 surface-grid opacity-40" />
                 <div className="absolute left-4 top-4 rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">
                   {index === 0 ? "Bestseller" : course.categories?.[0]?.name ?? "Course"}
                 </div>
               </div>
-              <div className="flex flex-1 flex-col p-5">
+              <div className="flex flex-1 flex-col pt-4">
                 <div className="mb-2 flex items-center gap-2 text-xs text-slate-500">
                   <BookOpen className="size-4" />
                   {course.lesson_count} lessons
@@ -268,7 +268,7 @@ export default async function Home() {
                 <p className="mt-2 line-clamp-2 text-sm leading-6 text-slate-600">
                   {course.short_description ?? "Professional engineering course with guided lessons and practical tasks."}
                 </p>
-                <div className="mt-auto flex items-center justify-between border-t border-black/5 pt-4">
+                <div className="mt-auto flex items-center justify-between pt-4">
                   <span className="flex items-center gap-1 font-bold text-slate-950">
                     <Star className="size-4 fill-orange-500 text-orange-500" />
                     {course.average_rating.toFixed(1)}
@@ -300,7 +300,7 @@ export default async function Home() {
               { icon: Users, label: "Mentor support" },
               { icon: ShieldCheck, label: "Certificates" },
             ].map(({ icon: Icon, label }) => (
-              <div key={label} className="rounded-xl border border-white/10 bg-white/5 p-5">
+              <div key={label} className="rounded-xl bg-white/5 p-5">
                 <Icon className="size-6 text-orange-300" />
                 <p className="mt-4 font-bold">{label}</p>
               </div>

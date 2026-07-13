@@ -391,11 +391,9 @@ export default function LibraryDetailPage({ params }: Props) {
   if (error || !document) {
     return (
       <AppShell>
-        <Card>
-          <CardContent className="p-5 text-sm font-medium text-rose-600">
-            {error ?? "Library document was not found."}
-          </CardContent>
-        </Card>
+        <p className="text-sm font-medium text-rose-600">
+          {error ?? "Library document was not found."}
+        </p>
       </AppShell>
     );
   }
@@ -424,7 +422,7 @@ export default function LibraryDetailPage({ params }: Props) {
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section
             ref={readerRef}
-            className="min-h-[620px] overflow-hidden rounded-2xl border border-slate-200 bg-slate-950 shadow-[var(--shadow-md)]"
+            className="min-h-[620px] overflow-hidden rounded-2xl bg-slate-950"
           >
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3 text-white">
               <div className="flex flex-wrap items-center gap-2">
@@ -511,7 +509,7 @@ export default function LibraryDetailPage({ params }: Props) {
                   </div>
                 )}
                 {readerError ? (
-                  <div className="m-auto max-w-md rounded-xl bg-white p-5 text-sm font-semibold text-rose-600">
+                  <div className="m-auto max-w-md rounded-xl bg-[color:var(--surface-primary)] p-5 text-sm font-semibold text-rose-600">
                     {readerError}
                   </div>
                 ) : (
@@ -608,7 +606,7 @@ export default function LibraryDetailPage({ params }: Props) {
                     pageAnnotations.map((annotation) => (
                       <div
                         key={annotation.id}
-                        className="rounded-lg border border-slate-200 bg-white p-3 text-sm"
+                        className="rounded-lg bg-[color:var(--surface-secondary)] p-3 text-sm"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <Badge>{annotation.annotation_type}</Badge>
@@ -625,7 +623,7 @@ export default function LibraryDetailPage({ params }: Props) {
                       </div>
                     ))
                   ) : (
-                    <p className="rounded-lg bg-slate-50 p-3 text-sm text-slate-500">
+                    <p className="rounded-lg bg-[color:var(--surface-secondary)] p-3 text-sm text-slate-500">
                       No annotations on this page.
                     </p>
                   )}

@@ -97,7 +97,7 @@ function publicProfileUrl(handle: string) {
 function ProfileSkeleton() {
   return (
     <div className="space-y-8">
-      <div className="rounded-2xl border border-slate-200 bg-white/80 p-6 shadow-[var(--shadow-sm)]">
+      <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-6">
         <div className="flex flex-col gap-5 md:flex-row md:items-center">
           <Skeleton className="size-24 rounded-full" />
           <div className="flex-1 space-y-3">
@@ -118,7 +118,7 @@ function ProfileSkeleton() {
 
 function EmptyState({ title }: { title: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white/55 p-5 text-sm text-slate-500">
+    <div className="rounded-lg bg-[color:var(--surface-secondary)] p-5 text-sm text-slate-500">
       {title}
     </div>
   );
@@ -126,7 +126,7 @@ function EmptyState({ title }: { title: string }) {
 
 function CourseCard({ course }: { course: PublicProfileCourse }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white/80 p-4 shadow-[var(--shadow-sm)]">
+    <article className="rounded-lg bg-[color:var(--surface-secondary)] p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link
@@ -162,7 +162,7 @@ function CourseCard({ course }: { course: PublicProfileCourse }) {
 
 function CertificateCard({ certificate }: { certificate: PublicProfileCertificate }) {
   return (
-    <article className="rounded-lg border border-slate-200 bg-white/80 p-4 shadow-[var(--shadow-sm)]">
+    <article className="rounded-lg bg-[color:var(--surface-secondary)] p-4">
       <div className="flex items-start gap-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500">
           <Award className="size-5" />
@@ -215,7 +215,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
 
   return (
     <div className="space-y-8">
-      <section className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-[var(--shadow-md)] md:p-6">
+      <section className="rounded-2xl bg-[color:var(--surface-secondary)] p-5 md:p-6">
         <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
           <div className="flex flex-col gap-5 md:flex-row md:items-center">
             {selectedAvatar ? (
@@ -288,7 +288,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
         {statCards.map(({ key, label, icon: Icon }) => (
           <div
             key={key}
-            className="rounded-lg border border-slate-200 bg-white/80 p-4 shadow-[var(--shadow-sm)]"
+            className="rounded-lg bg-[color:var(--surface-secondary)] p-4"
           >
             <Icon className="size-5 text-orange-500" />
             <p className="mt-3 type-h3 text-slate-950">{formatNumber(profile.stats[key])}</p>
@@ -307,7 +307,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                 : `${formatNumber(profile.gamification.level.points_to_next_level)} points to ${profile.gamification.level.next_level_name}.`}
             </p>
           </div>
-          <div className="rounded-lg border border-slate-200 bg-white/80 p-5 shadow-[var(--shadow-sm)]">
+          <div className="rounded-lg bg-[color:var(--surface-secondary)] p-5">
             <div className="flex items-center justify-between gap-3">
               <div>
                 <p className="type-caption font-semibold uppercase text-slate-500">Current level</p>
@@ -335,7 +335,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
               {profile.gamification.earned_badges.map((badge) => (
                 <article
                   key={badge.code}
-                  className="rounded-lg border border-slate-200 bg-white/80 p-4 shadow-[var(--shadow-sm)]"
+                  className="rounded-lg bg-[color:var(--surface-secondary)] p-4"
                 >
                   <div className="flex items-start gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500">
@@ -473,7 +473,7 @@ export default function PublicProfilePage({ params }: Props) {
           {loading ? (
             <ProfileSkeleton />
           ) : error ? (
-            <section className="rounded-2xl border border-rose-200 bg-rose-50 p-6 text-rose-700">
+            <section className="rounded-2xl bg-rose-50 p-6 text-rose-700">
               <h1 className="type-h3 text-rose-700">{pageTitle}</h1>
               <p className="mt-2">{error}</p>
             </section>

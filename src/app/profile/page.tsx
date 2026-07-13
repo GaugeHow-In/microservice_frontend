@@ -283,7 +283,7 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <section className="rounded-2xl border border-slate-200 bg-white/85 p-5 shadow-[var(--shadow-md)] md:p-6">
+        <section className="rounded-2xl bg-[color:var(--surface-secondary)] p-5 md:p-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
               <ProfileAvatar avatarKey={avatarKey} displayName={displayName} className="size-24" />
@@ -342,7 +342,7 @@ export default function ProfilePage() {
         </section>
 
         {message && (
-          <div className="rounded-lg border border-orange-200 bg-orange-50 px-4 py-3 type-small font-semibold text-orange-700">
+          <div className="rounded-lg bg-orange-50 px-4 py-3 type-small font-semibold text-orange-700">
             {message}
           </div>
         )}
@@ -363,10 +363,10 @@ export default function ProfilePage() {
                         key={avatar.key}
                         type="button"
                         className={cn(
-                          "rounded-lg border p-2 text-center transition",
+                          "rounded-lg p-2 text-center transition",
                           selected
-                            ? "border-orange-400 bg-orange-50 shadow-[var(--shadow-sm)]"
-                            : "border-slate-200 bg-white hover:border-orange-200",
+                            ? "bg-orange-100"
+                            : "bg-[color:var(--surface-secondary)] hover:bg-orange-50",
                         )}
                         onClick={() =>
                           setForm((current) => ({ ...current, avatar_key: avatar.key }))
@@ -582,7 +582,7 @@ export default function ProfilePage() {
               {badges.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {badges.map((badge) => (
-                    <div key={badge.code} className="rounded-lg border border-slate-200 p-4">
+                    <div key={badge.code} className="rounded-lg bg-[color:var(--surface-primary)] p-4">
                       <div className="flex items-start gap-3">
                         <Award className="size-5 shrink-0 text-orange-500" />
                         <div>
@@ -605,10 +605,10 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle>Courses</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="divide-y divide-[color:var(--border)]">
               {courses.length ? (
                 courses.map((course) => (
-                  <div key={course.id} className="rounded-lg border border-slate-200 p-4">
+                  <div key={course.id} className="py-4 first:pt-0">
                     <div className="flex flex-wrap items-start justify-between gap-3">
                       <div className="min-w-0 flex-1">
                         <Link
@@ -640,13 +640,10 @@ export default function ProfilePage() {
             <CardHeader>
               <CardTitle>Certificates</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="divide-y divide-[color:var(--border)]">
               {certificates.length ? (
                 certificates.map((certificate) => (
-                  <div
-                    key={certificate.certificate_number}
-                    className="rounded-lg border border-slate-200 p-4"
-                  >
+                  <div key={certificate.certificate_number} className="py-4 first:pt-0">
                     <p className="font-semibold text-slate-950">{certificate.course_title}</p>
                     <p className="mt-1 text-xs text-slate-500">
                       {certificate.certificate_number} issued{" "}

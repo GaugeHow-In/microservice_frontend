@@ -34,7 +34,6 @@ import { useLearningContext } from "@/components/providers/learning-context-prov
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -433,7 +432,7 @@ function SimpleMarkdown({ content, compact = false }: { content: string; compact
           const language = lines[0]?.replace(/^```/, "").trim();
           const code = lines.slice(1, lines.at(-1)?.trim().startsWith("```") ? -1 : undefined).join("\n");
           return (
-            <pre key={bi} className="overflow-x-auto rounded-lg border border-slate-200 bg-slate-950 p-4 text-xs leading-6 text-slate-100">
+            <pre key={bi} className="overflow-x-auto rounded-lg bg-slate-950 p-4 text-xs leading-6 text-slate-100">
               <code>{language ? `// ${language}\n${code}` : code}</code>
             </pre>
           );
@@ -613,8 +612,8 @@ function MarkdownNoteEditor({
   };
 
   return (
-    <div className="overflow-hidden rounded-lg border border-[color:var(--border)] bg-white/80">
-      <div className="flex min-h-11 flex-wrap items-center gap-1 border-b border-[color:var(--border)] bg-slate-50/80 px-2 py-1.5">
+    <div className="overflow-hidden rounded-lg bg-[color:var(--surface-secondary)]">
+      <div className="flex min-h-11 flex-wrap items-center gap-1 px-2 py-1.5">
         {markdownToolbarActions.map(({ action, label, Icon }) => (
           <button
             key={action}
@@ -622,7 +621,7 @@ function MarkdownNoteEditor({
             title={label}
             aria-label={label}
             onClick={() => applyAction(action)}
-            className="inline-flex size-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-white hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-orange-200"
+            className="inline-flex size-8 items-center justify-center rounded-md text-slate-600 transition hover:bg-[color:var(--surface-primary)] hover:text-slate-950 focus:outline-none focus:ring-2 focus:ring-orange-200"
           >
             <Icon className="size-4" />
           </button>
@@ -635,14 +634,14 @@ function MarkdownNoteEditor({
           aria-pressed={isPreviewing}
           onClick={() => setIsPreviewing((current) => !current)}
           className={`inline-flex size-8 items-center justify-center rounded-md transition focus:outline-none focus:ring-2 focus:ring-orange-200 ${
-            isPreviewing ? "bg-white text-orange-700" : "text-slate-600 hover:bg-white hover:text-slate-950"
+            isPreviewing ? "bg-[color:var(--surface-primary)] text-orange-700" : "text-slate-600 hover:bg-[color:var(--surface-primary)] hover:text-slate-950"
           }`}
         >
           <Eye className="size-4" />
         </button>
       </div>
       {isPreviewing ? (
-        <div className="min-h-36 bg-white px-4 py-3">
+        <div className="min-h-36 bg-[color:var(--surface-primary)] px-4 py-3">
           {value.trim() ? <SimpleMarkdown content={value} /> : <p className="text-sm text-slate-500">Nothing to preview yet.</p>}
         </div>
       ) : (
@@ -651,10 +650,10 @@ function MarkdownNoteEditor({
           placeholder="Type here... (Markdown is enabled)"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-h-36 resize-y rounded-none border-0 bg-white px-4 py-3 font-mono text-sm leading-6 shadow-none focus-visible:ring-0"
+          className="min-h-36 resize-y rounded-none border-0 bg-[color:var(--surface-primary)] px-4 py-3 font-mono text-sm leading-6 shadow-none focus-visible:ring-0"
         />
       )}
-      <div className="flex items-center justify-between border-t border-[color:var(--border)] bg-white px-3 py-2">
+      <div className="flex items-center justify-between px-3 py-2">
         <span className="text-xs text-slate-500">Markdown enabled</span>
         <Button onClick={onSave} disabled={isSaving || !value.trim()} size="sm">
           {isSaving ? "Saving..." : "Save note"}
@@ -704,7 +703,7 @@ function FlashcardDisplay({
 
   if (!pairs.length) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-slate-950 p-5 text-white">
+      <div className="rounded-2xl bg-slate-950 p-5 text-white">
         <p className="text-xs font-semibold uppercase text-orange-300">GaugeHow flashcard</p>
         <h3 className="mt-3 text-xl font-semibold">{lessonTitle}</h3>
         <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-200">{markdown}</p>
@@ -726,7 +725,7 @@ function FlashcardDisplay({
             key={i}
             type="button"
             onClick={() => setFlipped((s) => ({ ...s, [i]: !s[i] }))}
-            className="group relative min-h-36 overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] text-left backdrop-blur transition-colors hover:border-orange-200"
+            className="group relative min-h-36 overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)] text-left transition-colors hover:bg-orange-100"
           >
             {flipped[i] ? (
               <div className="flex h-full min-h-36 flex-col justify-between bg-slate-950 p-4">
@@ -761,7 +760,7 @@ function ResourceItem({ resource }: { resource: LessonResource }) {
   );
 
   const inner = (
-    <div className="flex items-center gap-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur transition-colors hover:border-orange-200">
+    <div className="flex items-center gap-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4 transition-colors hover:bg-orange-100">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50">{icon}</div>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-slate-950">{resource.title}</p>
@@ -804,7 +803,7 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
     <section className="mt-10 border-t border-[color:var(--border)] pt-10">
       <h2 className="text-2xl font-extrabold text-slate-950">{config.title || "Graph simulation"}</h2>
       <div className="mt-5 space-y-4">
-        <div className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-3 backdrop-blur">
+        <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-3">
           <svg viewBox="0 0 600 320" className="h-72 w-full">
             <line x1="40" y1="160" x2="560" y2="160" stroke="#d8c7b0" />
             <line x1="40" y1="36" x2="40" y2="284" stroke="#d8c7b0" />
@@ -1590,37 +1589,23 @@ function VideoLearningPageContent({ params }: Props) {
     return (
       <AppShell>
         <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start">
-          <section className="space-y-5">
-            <Card>
-              <CardContent className="space-y-5 p-6">
-                <div className="flex gap-2">
-                  <Skeleton className="h-6 w-28 rounded-full" />
-                  <Skeleton className="h-6 w-24 rounded-full" />
-                </div>
-                <div className="space-y-3">
-                  <Skeleton className="h-5 w-2/5 rounded-md" />
-                  <Skeleton className="h-10 w-3/4 rounded-lg" />
-                  <Skeleton className="h-4 w-full rounded-md" />
-                  <Skeleton className="h-4 w-2/3 rounded-md" />
-                </div>
-              </CardContent>
-            </Card>
-            <Card><CardContent className="p-4"><Skeleton className="aspect-video rounded-xl" /></CardContent></Card>
-            <Card>
-              <CardContent className="space-y-4 p-5">
-                <Skeleton className="h-6 w-40 rounded-md" />
-                <Skeleton className="h-4 w-full rounded-md" />
-                <Skeleton className="h-4 w-5/6 rounded-md" />
-                <Skeleton className="h-4 w-4/6 rounded-md" />
-              </CardContent>
-            </Card>
+          <section className="space-y-6">
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-2/5 rounded-md" />
+              <Skeleton className="h-10 w-3/4 rounded-lg" />
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-2/3 rounded-md" />
+            </div>
+            <Skeleton className="aspect-video rounded-3xl" />
+            <div className="space-y-4 pt-4">
+              <Skeleton className="h-6 w-40 rounded-md" />
+              <Skeleton className="h-4 w-full rounded-md" />
+              <Skeleton className="h-4 w-5/6 rounded-md" />
+              <Skeleton className="h-4 w-4/6 rounded-md" />
+            </div>
           </section>
-          <aside className="space-y-5">
-            <Card>
-              <CardContent className="space-y-3 p-5">
-                {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
-              </CardContent>
-            </Card>
+          <aside className="space-y-3">
+            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
           </aside>
         </div>
       </AppShell>
@@ -1635,7 +1620,7 @@ function VideoLearningPageContent({ params }: Props) {
         {/* ── Main content column ── */}
         <section className="space-y-0">
           {error && (
-            <div className="mb-6 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="mb-6 rounded-2xl bg-rose-50 px-4 py-3 text-sm text-rose-700">
               {error}
             </div>
           )}
@@ -1664,7 +1649,7 @@ function VideoLearningPageContent({ params }: Props) {
           {/* Video player */}
           <div
             ref={playerShellRef}
-            className="relative overflow-hidden rounded-3xl border border-[color:var(--border)] bg-slate-950"
+            className="relative overflow-hidden rounded-3xl bg-slate-950"
           >
             <div className="relative aspect-video p-4 text-white sm:p-5">
               {iframeEmbedUrl ? (
@@ -1763,7 +1748,7 @@ function VideoLearningPageContent({ params }: Props) {
             {/* Checkpoint overlay */}
             {activeCheckpoint && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-950/78 p-4">
-                <div className="w-full max-w-xl rounded-2xl border border-white/10 bg-slate-950/95 p-5 shadow-2xl">
+                <div className="w-full max-w-xl rounded-2xl bg-slate-950/95 p-5 shadow-2xl">
                   <div className="flex items-center justify-between gap-3">
                     <Badge variant="orange">Checkpoint at {formatSeconds(activeCheckpoint.timestamp_seconds)}</Badge>
                     <Badge variant="dark">
@@ -1829,10 +1814,10 @@ function VideoLearningPageContent({ params }: Props) {
             <button
               type="button"
               onClick={() => void handleLessonLike()}
-              className={`inline-flex h-8 items-center gap-1.5 rounded-full border px-3 text-xs font-semibold transition-colors ${
+              className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors ${
                 lesson.liked_by_me
-                  ? "border-orange-200 bg-orange-50 text-orange-700"
-                  : "border-[color:var(--border)] bg-white/70 text-slate-600 hover:border-orange-200 hover:text-orange-700"
+                  ? "bg-orange-50 text-orange-700"
+                  : "bg-[color:var(--surface-secondary)] text-slate-600 hover:text-orange-700"
               }`}
               aria-pressed={lesson.liked_by_me}
             >
@@ -1898,7 +1883,7 @@ function VideoLearningPageContent({ params }: Props) {
                     src={lesson.jupyter_config.embedUrl}
                     title={`${lesson.title} notebook`}
                     sandbox="allow-forms allow-modals allow-popups allow-presentation allow-same-origin allow-scripts"
-                    className="h-[520px] w-full rounded-2xl border border-[color:var(--border)]"
+                    className="h-[520px] w-full rounded-2xl"
                   />
                 ) : (
                   <p className="text-sm text-slate-500">Notebook embed is not configured yet.</p>
@@ -1914,7 +1899,7 @@ function VideoLearningPageContent({ params }: Props) {
                 <Sparkles className="size-5 text-orange-500" />
                 <h2 className="text-2xl font-extrabold text-slate-950">AI flashcards</h2>
               </div>
-              <div className="mt-5 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4 backdrop-blur">
+              <div className="mt-5 rounded-lg bg-[color:var(--surface-secondary)] p-4">
                 <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
                   {artifacts.flashcards.content_markdown}
                 </pre>
@@ -1932,7 +1917,7 @@ function VideoLearningPageContent({ params }: Props) {
                   const questionState = questionStates[question.id];
                   const result = questionState?.result;
                   return (
-                    <div key={question.id} className="rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-5 backdrop-blur">
+                    <div key={question.id} className="rounded-2xl bg-[color:var(--surface-secondary)] p-5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-semibold text-slate-950">{question.prompt}</p>
                         <Badge variant="blue" className="shrink-0">{formatSeconds(question.timestamp_seconds)}</Badge>
@@ -1996,7 +1981,7 @@ function VideoLearningPageContent({ params }: Props) {
           {course.faqs.length > 0 ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">FAQs</h2>
-              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur">
+              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg bg-[color:var(--surface-secondary)]">
                 {course.faqs.map((faq, i) => (
                   <details key={`${faq.question}-${i}`} className="group px-4 py-3">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
@@ -2014,7 +1999,7 @@ function VideoLearningPageContent({ params }: Props) {
           <section className="mt-10 border-t border-[color:var(--border)] pt-10">
             <h2 className="text-2xl font-extrabold text-slate-950">Discussion</h2>
             <div className="mt-5 space-y-3">
-              <div className="space-y-2 rounded-lg border border-[color:var(--border)] bg-white/70 p-3 backdrop-blur">
+              <div className="space-y-2 rounded-lg bg-[color:var(--surface-secondary)] p-3">
                 <Textarea
                   placeholder="Ask a question or share a thought…"
                   value={discussionBody}
@@ -2040,7 +2025,7 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               ) : lesson.discussions.length > 0 ? (
                 lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-lg border border-[color:var(--border)] bg-white/65 px-3 py-3 backdrop-blur">
+                  <div key={thread.id} className="rounded-lg bg-[color:var(--surface-secondary)] px-3 py-3">
                     {thread.title ? (
                       <p className="mb-1 text-[11px] font-semibold uppercase text-orange-500">{thread.title}</p>
                     ) : null}
@@ -2104,7 +2089,7 @@ function VideoLearningPageContent({ params }: Props) {
               {lesson.notes.length > 0 ? (
                 <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
                   {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-3 backdrop-blur">
+                    <div key={note.id} className="rounded-lg bg-[color:var(--surface-secondary)] p-3">
                       <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
                       <div className="mt-2">
                         <SimpleMarkdown content={note.body} compact />
@@ -2136,10 +2121,10 @@ function VideoLearningPageContent({ params }: Props) {
                       return (
                         <div
                           key={item.id}
-                          className={`rounded-xl border p-3 backdrop-blur transition-colors ${
+                          className={`rounded-xl p-3 transition-colors ${
                             isActive
-                              ? "border-orange-300 bg-orange-50"
-                              : "border-[color:var(--border)] bg-[color:var(--surface-glass)]"
+                              ? "bg-orange-50"
+                              : "bg-[color:var(--surface-secondary)]"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -2198,7 +2183,7 @@ function VideoLearningPageContent({ params }: Props) {
                 </p>
               </div>
               <Progress value={course.access?.progress_percent ?? 0} />
-              <div className="flex items-center justify-between rounded-xl border border-[color:var(--border)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl bg-[color:var(--surface-secondary)] px-4 py-3">
                 <p className="text-xs font-semibold uppercase text-slate-500">Access</p>
                 <p className="text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
               </div>

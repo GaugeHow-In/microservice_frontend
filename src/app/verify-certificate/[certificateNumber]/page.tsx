@@ -51,7 +51,7 @@ export default function CertificateVerificationResultPage() {
         </div>
         <div className="mt-8">
           {error ? (
-            <div className="rounded-xl border border-rose-200 bg-rose-50 p-5 text-rose-700">
+            <div className="rounded-xl bg-rose-50 p-5 text-rose-700">
               {error}
             </div>
           ) : certificate ? (

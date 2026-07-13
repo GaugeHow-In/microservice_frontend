@@ -327,7 +327,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
             </p>
 
             <div className="glass-card mt-8 max-w-xl rounded-xl p-4">
-              <div className="rounded-xl border border-white/5 bg-[#453320]/70 p-4">
+              <div className="rounded-xl bg-[#453320]/70 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-[#e8a855] text-[#2b2118]">
                     <Sparkles className="size-5" />
@@ -377,9 +377,9 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                 </Link>
               </Button>
             </div>
-            <Card className="glass-card overflow-hidden rounded-xl border-white/10 bg-[#4a3826]/80 shadow-[0_0_44px_rgba(232,168,85,0.12)]">
+            <Card className="glass-card overflow-hidden rounded-xl bg-[#4a3826]/80 shadow-[0_0_44px_rgba(232,168,85,0.12)]">
               <CardContent className="space-y-6 p-6 sm:p-8">
-                <div className="rounded-xl border border-white/5 bg-[#453320] p-4">
+                <div className="rounded-xl bg-[#453320] p-4">
                   <div className="flex items-center gap-3">
                     <div className="flex size-10 items-center justify-center rounded-lg bg-[#e8a855] text-[#2b2118]">
                       <BookOpen className="size-5" />
@@ -443,7 +443,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                         </button>
                       </div>
                       {mode === "signup" ? (
-                        <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                        <div className="space-y-3 rounded-lg bg-slate-50 p-4">
                           <div className="flex items-center justify-between text-sm">
                             <span className="font-medium text-slate-700">Password strength</span>
                             <span className="font-semibold text-slate-900">{passwordStrength.label}</span>
@@ -506,7 +506,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                           {fieldErrors.email ? <p className="text-sm text-rose-600">{fieldErrors.email}</p> : null}
                         </div>
                       ) : (
-                        <div className="rounded-lg border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-600">
+                        <div className="rounded-lg bg-slate-50 px-4 py-3 text-sm text-slate-600">
                           Resetting password for <span className="font-semibold text-slate-950">{email}</span>
                         </div>
                       )}
@@ -544,7 +544,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                           {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
                         </button>
                       </div>
-                      <div className="space-y-3 rounded-lg border border-slate-200 bg-slate-50 p-4">
+                      <div className="space-y-3 rounded-lg bg-slate-50 p-4">
                         <div className="flex items-center justify-between text-sm">
                           <span className="font-medium text-slate-700">Password strength</span>
                           <span className="font-semibold text-slate-900">{passwordStrength.label}</span>

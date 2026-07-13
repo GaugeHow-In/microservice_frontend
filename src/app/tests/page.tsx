@@ -95,7 +95,7 @@ export default function TestsPage() {
           }
         />
 
-        <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 shadow-[var(--shadow-sm)] md:grid-cols-[1fr_auto]">
+        <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input

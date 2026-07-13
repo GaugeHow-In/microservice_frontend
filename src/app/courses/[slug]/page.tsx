@@ -21,7 +21,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -341,35 +340,27 @@ export default function CourseDetailPage({ params }: Props) {
   if (!slug || loading) {
     return (
       <AppShell>
-        <div className="grid gap-6">
-          <Card>
-            <CardContent className="space-y-5 p-5">
-              <div className="space-y-3">
-                <Skeleton className="h-6 w-28 rounded-full" />
-                <Skeleton className="h-12 w-3/4 rounded-lg" />
-                <Skeleton className="h-5 w-full rounded-md" />
-                <Skeleton className="h-5 w-2/3 rounded-md" />
-              </div>
-            </CardContent>
-          </Card>
+        <div className="grid gap-10">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-28 rounded-full" />
+            <Skeleton className="h-12 w-3/4 rounded-lg" />
+            <Skeleton className="h-5 w-full rounded-md" />
+            <Skeleton className="h-5 w-2/3 rounded-md" />
+          </div>
           <div className="grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-            <Card>
-              <CardContent className="space-y-5 p-5">
-                <Skeleton className="aspect-video rounded-xl" />
-                <div className="grid gap-3 sm:grid-cols-4">
-                  {Array.from({ length: 4 }).map((_, index) => (
-                    <Skeleton key={index} className="h-20 rounded-xl" />
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-            <Card>
-              <CardContent className="space-y-3 p-5">
+            <div className="space-y-5">
+              <Skeleton className="aspect-video rounded-xl" />
+              <div className="grid gap-3 sm:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, index) => (
                   <Skeleton key={index} className="h-20 rounded-xl" />
                 ))}
-              </CardContent>
-            </Card>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {Array.from({ length: 4 }).map((_, index) => (
+                <Skeleton key={index} className="h-20 rounded-xl" />
+              ))}
+            </div>
           </div>
         </div>
       </AppShell>
@@ -379,11 +370,9 @@ export default function CourseDetailPage({ params }: Props) {
   if (!course) {
     return (
       <AppShell>
-        <Card>
-          <CardContent className="p-5 text-sm text-rose-600">
-            {error ?? "Course not found."}
-          </CardContent>
-        </Card>
+        <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-5 text-sm text-rose-600">
+          {error ?? "Course not found."}
+        </div>
       </AppShell>
     );
   }
@@ -452,9 +441,9 @@ export default function CourseDetailPage({ params }: Props) {
     <AppShell>
       <div className="space-y-0">
         {error && (
-          <Card>
-            <CardContent className="p-4 text-sm text-rose-600">{error}</CardContent>
-          </Card>
+          <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-4 text-sm text-rose-600">
+            {error}
+          </div>
         )}
 
         <section className="relative overflow-hidden py-4">
@@ -529,7 +518,7 @@ export default function CourseDetailPage({ params }: Props) {
             </div>
 
             <aside className="lg:sticky lg:top-24">
-              <div className="overflow-hidden rounded-3xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
+              <div className="overflow-hidden rounded-3xl bg-[color:var(--surface-secondary)]">
                 <div className="course-visual relative aspect-video overflow-hidden">
                   {course.thumbnail_url ? (
                     <Image
@@ -602,7 +591,7 @@ export default function CourseDetailPage({ params }: Props) {
           </div>
         </section>
 
-        <nav className="sticky top-16 z-20 mt-8 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-3 py-2 backdrop-blur-xl">
+        <nav className="sticky top-16 z-20 mt-8 rounded-full bg-[color:var(--surface-secondary)] px-3 py-2 backdrop-blur-xl">
           <div className="flex gap-1 overflow-x-auto text-sm font-bold text-slate-600">
             {["About", "Outcomes", "Modules", "Instructor", "Reviews", "FAQ"].map((item) => (
               <a
@@ -675,7 +664,7 @@ export default function CourseDetailPage({ params }: Props) {
               {course.modules.map((module, index) => (
                 <details
                   key={module.id}
-                  className="group rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur"
+                  className="group rounded-2xl bg-[color:var(--surface-secondary)]"
                 >
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
                     <div>
@@ -688,7 +677,7 @@ export default function CourseDetailPage({ params }: Props) {
                         {module.duration_minutes ? ` · ${formatMinutes(module.duration_minutes)}` : ""}
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-3 py-2 text-xs font-bold text-slate-600">
+                    <div className="flex shrink-0 items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-3 py-2 text-xs font-bold text-slate-600">
                       Module details
                       <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
                     </div>
@@ -701,7 +690,7 @@ export default function CourseDetailPage({ params }: Props) {
                       {module.lessons.map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center justify-between gap-3 rounded-lg border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-3 py-3"
+                          className="flex items-center justify-between gap-3 rounded-lg bg-[color:var(--surface-primary)] px-3 py-3"
                         >
                         <div>
                           <p className="font-medium text-slate-950">{lesson.title}</p>
@@ -773,7 +762,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
 
               {canReview && (
-                <div className="mt-6 space-y-3 rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4">
+                <div className="mt-6 space-y-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4">
                   <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
                     <label className="text-sm font-semibold text-slate-700">Your rating</label>
                     <Input
@@ -823,7 +812,7 @@ export default function CourseDetailPage({ params }: Props) {
                   course.faqs.map((faq, index) => (
                     <details
                       key={index}
-                      className="group rounded-xl border border-[color:var(--border)]"
+                      className="group rounded-xl bg-[color:var(--surface-secondary)]"
                     >
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
                       <p className="font-semibold text-slate-950">{faq.question}</p>

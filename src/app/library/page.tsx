@@ -8,7 +8,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -100,7 +99,7 @@ export default function LibraryPage() {
           }
         />
 
-        <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 shadow-[var(--shadow-sm)] md:grid-cols-[1fr_auto]">
+        <div className="reveal-delay-1 reveal-up grid gap-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4 md:grid-cols-[1fr_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
@@ -130,40 +129,36 @@ export default function LibraryPage() {
         </div>
 
         {error ? (
-          <Card>
-            <CardContent className="p-5 text-sm font-medium text-rose-600">{error}</CardContent>
-          </Card>
+          <p className="text-sm font-medium text-rose-600">{error}</p>
         ) : isLoading ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="space-y-4 p-5">
-                  <Skeleton className="h-36 rounded-xl" />
-                  <Skeleton className="h-6 w-4/5 rounded-md" />
-                  <Skeleton className="h-4 w-full rounded-md" />
-                  <Skeleton className="h-10 rounded-lg" />
-                </CardContent>
-              </Card>
+              <div key={index} className="space-y-4">
+                <Skeleton className="h-40 rounded-xl" />
+                <Skeleton className="h-6 w-4/5 rounded-md" />
+                <Skeleton className="h-4 w-full rounded-md" />
+                <Skeleton className="h-10 rounded-lg" />
+              </div>
             ))}
           </div>
         ) : documents.length ? (
-          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
             {documents.map((document) => (
-              <Card key={document.slug} className="overflow-hidden">
+              <div key={document.slug}>
                 {document.thumbnail_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
                     src={document.thumbnail_url}
                     alt=""
-                    className="h-40 w-full object-cover"
+                    className="h-40 w-full rounded-xl object-cover"
                     draggable={false}
                   />
                 ) : (
-                  <div className="flex h-40 items-center justify-center bg-slate-100 text-slate-500">
+                  <div className="flex h-40 items-center justify-center rounded-xl bg-[color:var(--surface-secondary)] text-slate-500">
                     <BookOpen className="size-12" />
                   </div>
                 )}
-                <CardContent className="space-y-4 p-5">
+                <div className="space-y-4 pt-4">
                   <div className="flex flex-wrap gap-2">
                     <Badge variant={document.access?.has_access ? "green" : "orange"}>
                       {accessLabel(document)}
@@ -197,16 +192,14 @@ export default function LibraryPage() {
                       </Link>
                     </Button>
                   </div>
-                </CardContent>
-              </Card>
+                </div>
+              </div>
             ))}
           </div>
         ) : (
-          <Card>
-            <CardContent className="p-5 text-sm text-slate-600">
-              No library documents match the current search or category filter.
-            </CardContent>
-          </Card>
+          <p className="text-sm text-slate-600">
+            No library documents match the current search or category filter.
+          </p>
         )}
       </div>
     </AppShell>

@@ -71,46 +71,46 @@ export default function PaymentHistoryPage() {
           </Card>
         )}
 
-        <Card>
-          <CardContent className="space-y-3 p-5">
-            {loading ? (
-              Array.from({ length: 4 }).map((_, index) => (
-                <Skeleton key={index} className="h-20 rounded-xl" />
-              ))
-            ) : payments.length ? (
-              payments.map((payment) => (
-                <div
-                  key={payment.id}
-                  className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div className="flex gap-3">
-                    <div className="flex size-10 items-center justify-center rounded-lg bg-slate-950 text-white">
-                      <CreditCard className="size-5" />
-                    </div>
-                    <div>
-                      <p className="font-semibold text-slate-950">
-                        {payment.course_title ?? "Course payment"}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {payment.gateway} · {payment.gateway_payment_id ?? payment.gateway_order_id ?? payment.id}
-                      </p>
-                    </div>
+        <div className="divide-y divide-[color:var(--border)]">
+          {loading ? (
+            Array.from({ length: 4 }).map((_, index) => (
+              <div key={index} className="py-4">
+                <Skeleton className="h-14 rounded-xl" />
+              </div>
+            ))
+          ) : payments.length ? (
+            payments.map((payment) => (
+              <div
+                key={payment.id}
+                className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex gap-3">
+                  <div className="flex size-10 items-center justify-center rounded-lg bg-[color:var(--surface-secondary)] text-slate-950">
+                    <CreditCard className="size-5" />
                   </div>
-                  <div className="sm:text-right">
-                    <p className="font-bold text-slate-950">
-                      {formatMinor(payment.display_amount_minor, payment.display_currency_code)}
+                  <div>
+                    <p className="font-semibold text-slate-950">
+                      {payment.course_title ?? "Course payment"}
                     </p>
-                    <Badge variant={payment.status === "succeeded" ? "green" : "default"}>
-                      {payment.status.replace("_", " ")}
-                    </Badge>
+                    <p className="mt-1 text-sm text-slate-500">
+                      {payment.gateway} · {payment.gateway_payment_id ?? payment.gateway_order_id ?? payment.id}
+                    </p>
                   </div>
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-slate-500">No payment history yet.</p>
-            )}
-          </CardContent>
-        </Card>
+                <div className="sm:text-right">
+                  <p className="font-bold text-slate-950">
+                    {formatMinor(payment.display_amount_minor, payment.display_currency_code)}
+                  </p>
+                  <Badge variant={payment.status === "succeeded" ? "green" : "default"}>
+                    {payment.status.replace("_", " ")}
+                  </Badge>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="py-4 text-sm text-slate-500">No payment history yet.</p>
+          )}
+        </div>
       </div>
     </AppShell>
   );

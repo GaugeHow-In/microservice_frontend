@@ -367,72 +367,70 @@ function RoadmapEditor({
         </CardContent>
       </Card>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-[color:var(--border)]">
         {selected.plan.steps.map((step, index) => (
-          <Card key={step.id}>
-            <CardContent className="pt-5">
-              <div className="flex items-start gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-700">
-                  {index + 1}
+          <div key={step.id} className="py-5 first:pt-0">
+            <div className="flex items-start gap-3">
+              <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-700">
+                {index + 1}
+              </div>
+              <div className="min-w-0 flex-1 space-y-3">
+                <div className="flex gap-2">
+                  <Input
+                    value={step.title}
+                    onChange={(event) =>
+                      setPlan({
+                        ...selected.plan,
+                        steps: selected.plan.steps.map((item) =>
+                          item.id === step.id ? { ...item, title: event.target.value } : item,
+                        ),
+                      })
+                    }
+                  />
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    aria-label="Delete step"
+                    onClick={() =>
+                      setPlan({
+                        ...selected.plan,
+                        steps: selected.plan.steps.filter((item) => item.id !== step.id),
+                      })
+                    }
+                  >
+                    <Trash2 />
+                  </Button>
                 </div>
-                <div className="min-w-0 flex-1 space-y-3">
-                  <div className="flex gap-2">
-                    <Input
-                      value={step.title}
+                <p className="text-sm text-slate-600">{step.description}</p>
+                <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                  <Badge>{step.kind}</Badge>
+                  <span>Week {step.week_start}</span>
+                  <span>{step.duration_weeks} week(s)</span>
+                  <label>
+                    Hours/week{" "}
+                    <input
+                      className="w-14 rounded bg-[color:var(--surface-primary)] px-1"
+                      type="number"
+                      min="0"
+                      max="80"
+                      step="0.5"
+                      value={step.weekly_hours}
                       onChange={(event) =>
                         setPlan({
                           ...selected.plan,
                           steps: selected.plan.steps.map((item) =>
-                            item.id === step.id ? { ...item, title: event.target.value } : item,
+                            item.id === step.id
+                              ? { ...item, weekly_hours: Number(event.target.value) }
+                              : item,
                           ),
                         })
                       }
                     />
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      aria-label="Delete step"
-                      onClick={() =>
-                        setPlan({
-                          ...selected.plan,
-                          steps: selected.plan.steps.filter((item) => item.id !== step.id),
-                        })
-                      }
-                    >
-                      <Trash2 />
-                    </Button>
-                  </div>
-                  <p className="text-sm text-slate-600">{step.description}</p>
-                  <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                    <Badge>{step.kind}</Badge>
-                    <span>Week {step.week_start}</span>
-                    <span>{step.duration_weeks} week(s)</span>
-                    <label>
-                      Hours/week{" "}
-                      <input
-                        className="w-14 rounded border px-1"
-                        type="number"
-                        min="0"
-                        max="80"
-                        step="0.5"
-                        value={step.weekly_hours}
-                        onChange={(event) =>
-                          setPlan({
-                            ...selected.plan,
-                            steps: selected.plan.steps.map((item) =>
-                              item.id === step.id
-                                ? { ...item, weekly_hours: Number(event.target.value) }
-                                : item,
-                            ),
-                          })
-                        }
-                      />
-                    </label>
-                  </div>
+                  </label>
                 </div>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         ))}
       </div>
 
@@ -526,65 +524,63 @@ function SavedRoadmapView({
         </CardContent>
       </Card>
 
-      <div className="space-y-3">
+      <div className="divide-y divide-[color:var(--border)]">
         {selected.plan.steps.map((step, index) => {
           const percent = Math.round(stepProgress(step));
           const isCourseSynced = step.progress_source === "course";
           return (
-            <Card key={step.id}>
-              <CardContent className="pt-5">
-                <div className="flex items-start gap-3">
-                  <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-700">
-                    {index + 1}
-                  </div>
-                  <div className="min-w-0 flex-1 space-y-3">
-                    <div className="flex flex-wrap items-start justify-between gap-3">
-                      <div>
-                        <h3 className="font-semibold text-slate-950">{step.title}</h3>
-                        <p className="mt-1 text-sm text-slate-600">{step.description}</p>
-                      </div>
-                      {!isCourseSynced && !step.completed && (
-                        <Button
-                          size="sm"
-                          disabled={busy}
-                          onClick={() => onMarkStep(step.id, true)}
-                        >
-                          <CheckCircle2 />
-                          Mark as done
-                        </Button>
-                      )}
-                      {!isCourseSynced && step.completed && (
-                        <Badge className="gap-1">
-                          <CheckCircle2 className="size-3.5" />
-                          Done
-                        </Badge>
-                      )}
-                    </div>
-                    <div className="flex flex-wrap gap-2 text-xs text-slate-500">
-                      <Badge>{step.kind}</Badge>
-                      <span>Week {step.week_start}</span>
-                      <span>{step.duration_weeks} week(s)</span>
-                      <span>{step.weekly_hours} hr/week</span>
-                      {step.course_slug && <span>Course: {step.course_slug}</span>}
-                    </div>
+            <div key={step.id} className="py-5 first:pt-0">
+              <div className="flex items-start gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50 text-sm font-bold text-orange-700">
+                  {index + 1}
+                </div>
+                <div className="min-w-0 flex-1 space-y-3">
+                  <div className="flex flex-wrap items-start justify-between gap-3">
                     <div>
-                      <div className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-500">
-                        <span>{progressLabel(step)}</span>
-                        <span>{percent}%</span>
-                      </div>
-                      <Progress value={percent} />
+                      <h3 className="font-semibold text-slate-950">{step.title}</h3>
+                      <p className="mt-1 text-sm text-slate-600">{step.description}</p>
                     </div>
-                    {!!step.important_points.length && (
-                      <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
-                        {step.important_points.map((point) => (
-                          <li key={point}>{point}</li>
-                        ))}
-                      </ul>
+                    {!isCourseSynced && !step.completed && (
+                      <Button
+                        size="sm"
+                        disabled={busy}
+                        onClick={() => onMarkStep(step.id, true)}
+                      >
+                        <CheckCircle2 />
+                        Mark as done
+                      </Button>
+                    )}
+                    {!isCourseSynced && step.completed && (
+                      <Badge className="gap-1">
+                        <CheckCircle2 className="size-3.5" />
+                        Done
+                      </Badge>
                     )}
                   </div>
+                  <div className="flex flex-wrap gap-2 text-xs text-slate-500">
+                    <Badge>{step.kind}</Badge>
+                    <span>Week {step.week_start}</span>
+                    <span>{step.duration_weeks} week(s)</span>
+                    <span>{step.weekly_hours} hr/week</span>
+                    {step.course_slug && <span>Course: {step.course_slug}</span>}
+                  </div>
+                  <div>
+                    <div className="mb-1 flex items-center justify-between text-xs font-semibold text-slate-500">
+                      <span>{progressLabel(step)}</span>
+                      <span>{percent}%</span>
+                    </div>
+                    <Progress value={percent} />
+                  </div>
+                  {!!step.important_points.length && (
+                    <ul className="list-disc space-y-1 pl-5 text-sm text-slate-600">
+                      {step.important_points.map((point) => (
+                        <li key={point}>{point}</li>
+                      ))}
+                    </ul>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           );
         })}
       </div>

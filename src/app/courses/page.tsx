@@ -8,7 +8,6 @@ import { AppShell } from "@/components/layout/app-shell";
 import { CourseCard } from "@/components/shared/course-card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -109,7 +108,7 @@ export default function CoursesPage() {
               <div className="relative min-w-0 flex-1">
                 <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
                 <Input
-                  className="min-h-[3.5rem] rounded-full border-[color:var(--border-strong)] bg-[color:var(--surface-glass)] pl-12 backdrop-blur"
+                  className="min-h-[3.5rem] rounded-full bg-[color:var(--surface-secondary)] pl-12"
                   placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -124,7 +123,7 @@ export default function CoursesPage() {
         </section>
 
         <section className="space-y-8">
-          <div className="sticky top-16 z-20 -mx-4 border-y border-[color:var(--border)] bg-[color:var(--surface-chrome)] px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+          <div className="sticky top-16 z-20 -mx-4 bg-[color:var(--surface-chrome)] px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
             <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
               <button
                 type="button"
@@ -132,7 +131,7 @@ export default function CoursesPage() {
                 className={
                   activeCategory === "all"
                     ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                    : "shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                    : "shrink-0 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
                 }
               >
                 All courses
@@ -145,7 +144,7 @@ export default function CoursesPage() {
                   className={
                     activeCategory === category.slug
                       ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                      : "shrink-0 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                      : "shrink-0 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
                   }
                 >
                   {category.name}
@@ -167,14 +166,14 @@ export default function CoursesPage() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/courses/progress"
-                  className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-3 py-1 text-xs font-bold text-orange-600 transition hover:text-orange-700"
+                  className="rounded-full bg-[color:var(--surface-secondary)] px-3 py-1 text-xs font-bold text-orange-600 transition hover:text-orange-700"
                 >
                   Progress report
                 </Link>
                 {["Beginner", "Intermediate", "Advanced"].map((level) => (
                   <span
                     key={level}
-                    className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-elevated)] px-3 py-1 text-xs font-bold text-slate-600"
+                    className="rounded-full bg-[color:var(--surface-elevated)] px-3 py-1 text-xs font-bold text-slate-600"
                   >
                     {level}
                   </span>
@@ -183,24 +182,20 @@ export default function CoursesPage() {
             </div>
 
             {error ? (
-              <Card>
-                <CardContent className="p-5 text-sm font-medium text-rose-600">{error}</CardContent>
-              </Card>
+              <p className="p-5 text-sm font-medium text-rose-600">{error}</p>
             ) : isLoading ? (
-              <div className="space-y-4">
+              <div className="divide-y divide-[color:var(--border)]">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <Card key={index} className="overflow-hidden">
-                    <CardContent className="grid gap-5 p-5 md:grid-cols-[15rem_1fr]">
-                      <Skeleton className="h-44 rounded-lg" />
-                      <div className="space-y-4">
-                        <Skeleton className="h-5 w-24 rounded" />
-                        <Skeleton className="h-8 w-4/5 rounded" />
-                        <Skeleton className="h-4 w-full rounded" />
-                        <Skeleton className="h-4 w-2/3 rounded" />
-                        <Skeleton className="h-11 w-36 rounded-lg" />
-                      </div>
-                    </CardContent>
-                  </Card>
+                  <div key={index} className="grid gap-5 py-7 md:grid-cols-[17rem_minmax(0,1fr)]">
+                    <Skeleton className="h-48 rounded-2xl" />
+                    <div className="space-y-4 py-1">
+                      <Skeleton className="h-5 w-24 rounded" />
+                      <Skeleton className="h-8 w-4/5 rounded" />
+                      <Skeleton className="h-4 w-full rounded" />
+                      <Skeleton className="h-4 w-2/3 rounded" />
+                      <Skeleton className="h-11 w-36 rounded-lg" />
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : courses.length ? (
@@ -210,11 +205,9 @@ export default function CoursesPage() {
                 ))}
               </div>
             ) : (
-              <Card>
-                <CardContent className="p-5 text-sm text-slate-600">
-                  No courses match the current search or category filter.
-                </CardContent>
-              </Card>
+              <p className="p-5 text-sm text-slate-600">
+                No courses match the current search or category filter.
+              </p>
             )}
           </section>
         </section>

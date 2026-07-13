@@ -507,16 +507,11 @@ p {
 .panel-depth {
   position: relative;
   transform: translate3d(0, 0, 0);
-  transition:
-    transform var(--motion-duration-md) var(--motion-ease-standard),
-    box-shadow var(--motion-duration-md) var(--motion-ease-standard),
-    border-color var(--motion-duration-md) var(--motion-ease-standard);
+  transition: background-color var(--motion-duration-md) var(--motion-ease-standard);
 }
 
 .panel-depth:hover {
-  transform: translate3d(0, -3px, 0);
-  border-color: var(--border-strong);
-  box-shadow: var(--shadow-lg);
+  background: color-mix(in srgb, var(--surface-secondary) 82%, var(--primary) 18%);
 }
 
 .soft-float {
@@ -667,19 +662,14 @@ p {
 
 .surface-primary {
   background: var(--surface-primary);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
 }
 
 .surface-secondary {
   background: var(--surface-secondary);
-  border: 1px solid var(--border);
 }
 
 .surface-elevated {
   background: var(--surface-elevated);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-md);
 }
 
 .surface-glass {
@@ -818,19 +808,12 @@ p {
 
 .ui-card {
   border-radius: var(--radius-token-md);
-  border: 1px solid var(--border);
-  background: var(--surface-elevated);
-  box-shadow: var(--shadow-sm);
-  transition:
-    transform var(--motion-duration-md) var(--motion-ease-standard),
-    border-color var(--motion-duration-md) var(--motion-ease-standard),
-    box-shadow var(--motion-duration-md) var(--motion-ease-standard);
+  background: var(--surface-secondary);
+  transition: background-color var(--motion-duration-md) var(--motion-ease-standard);
 }
 
 .ui-card:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--border-strong) 82%, white 18%);
-  box-shadow: var(--shadow-md);
+  background: color-mix(in srgb, var(--surface-secondary) 82%, var(--primary) 18%);
 }
 
 .ui-field {
