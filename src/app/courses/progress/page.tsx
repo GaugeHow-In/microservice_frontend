@@ -124,7 +124,7 @@ export default function CourseProgressPage() {
               </div>
             ) : courses.length ? (
               courses.map((course) => (
-                <div key={course.slug} className="rounded-lg bg-[color:var(--surface-secondary)] p-4">
+                <div key={course.slug} className="rounded-lg surface-secondary p-4">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h2 className="font-bold text-slate-950">{course.title}</h2>

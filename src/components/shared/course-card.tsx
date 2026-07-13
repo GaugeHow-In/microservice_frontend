@@ -18,7 +18,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
   return (
     <article className="browse-card group grid gap-5 p-5 md:grid-cols-[17rem_minmax(0,1fr)]">
-      <div className="relative min-h-48 overflow-hidden rounded-xl bg-[color:var(--surface-secondary)]">
+      <div className="relative min-h-48 overflow-hidden rounded-xl surface-secondary">
         {course.thumbnail_url ? (
           <Image
             src={course.thumbnail_url}

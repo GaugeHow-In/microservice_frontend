@@ -152,7 +152,7 @@ export default function TestsPage() {
                       {test.description ?? "Timed GaugeHow assessment."}
                     </p>
                   </div>
-                  <div className="grid grid-cols-3 gap-3 rounded-xl bg-[color:var(--surface-secondary)] p-3 text-sm">
+                  <div className="grid grid-cols-3 gap-3 rounded-xl surface-secondary p-3 text-sm">
                     <div>
                       <p className="text-xs font-semibold text-slate-500">Time</p>
                       <p className="mt-1 font-bold text-slate-950">{formatDuration(test.duration_seconds)}</p>

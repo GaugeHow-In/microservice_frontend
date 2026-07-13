@@ -85,7 +85,7 @@ export default function PaymentHistoryPage() {
                 className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="flex gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg bg-[color:var(--surface-secondary)] text-slate-950">
+                  <div className="flex size-10 items-center justify-center rounded-lg surface-secondary text-slate-950">
                     <CreditCard className="size-5" />
                   </div>
                   <div>

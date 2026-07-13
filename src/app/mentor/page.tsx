@@ -6,6 +6,7 @@ import { FormEvent, Suspense, useCallback, useEffect, useRef, useState } from "r
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { MentorCitations } from "@/components/shared/mentor-citations";
+import { MentorMarkdown } from "@/components/shared/mentor-markdown";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -127,7 +128,7 @@ function MentorPageContent() {
               {messages.length === 0 && <div className="mx-auto mt-20 max-w-md text-center"><Bot className="mx-auto size-10 text-orange-600" /><h2 className="mt-4 text-xl font-semibold text-slate-950">What are you working on?</h2><p className="mt-2 text-sm leading-6 text-slate-500">Give me your goal or ask about the lesson you are studying.</p></div>}
               {messages.map((message) => (
                 <div key={message.id} className={`max-w-2xl rounded-2xl p-4 text-sm leading-6 ${message.role === "user" ? "ml-auto bg-slate-950 text-white" : "bg-slate-100 text-slate-700"}`}>
-                  {message.content}
+                  {message.role === "assistant" ? <MentorMarkdown content={message.content} /> : message.content}
                   {message.role === "assistant" && (
                     <MentorCitations citations={message.citations} retrievedChunks={message.retrieved_chunks} />
                   )}

@@ -612,7 +612,7 @@ function MarkdownNoteEditor({
   };
 
   return (
-    <div className="overflow-hidden rounded-lg bg-[color:var(--surface-secondary)]">
+    <div className="overflow-hidden rounded-lg surface-secondary">
       <div className="flex min-h-11 flex-wrap items-center gap-1 px-2 py-1.5">
         {markdownToolbarActions.map(({ action, label, Icon }) => (
           <button
@@ -634,14 +634,14 @@ function MarkdownNoteEditor({
           aria-pressed={isPreviewing}
           onClick={() => setIsPreviewing((current) => !current)}
           className={`inline-flex size-8 items-center justify-center rounded-md transition focus:outline-none focus:ring-2 focus:ring-orange-200 ${
-            isPreviewing ? "bg-[color:var(--surface-primary)] text-orange-700" : "text-slate-600 hover:bg-[color:var(--surface-primary)] hover:text-slate-950"
+            isPreviewing ? "surface-primary text-orange-700" : "text-slate-600 hover:bg-[color:var(--surface-primary)] hover:text-slate-950"
           }`}
         >
           <Eye className="size-4" />
         </button>
       </div>
       {isPreviewing ? (
-        <div className="min-h-36 bg-[color:var(--surface-primary)] px-4 py-3">
+        <div className="min-h-36 surface-primary px-4 py-3">
           {value.trim() ? <SimpleMarkdown content={value} /> : <p className="text-sm text-slate-500">Nothing to preview yet.</p>}
         </div>
       ) : (
@@ -650,7 +650,7 @@ function MarkdownNoteEditor({
           placeholder="Type here... (Markdown is enabled)"
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="min-h-36 resize-y rounded-none border-0 bg-[color:var(--surface-primary)] px-4 py-3 font-mono text-sm leading-6 shadow-none focus-visible:ring-0"
+          className="min-h-36 resize-y rounded-none border-0 surface-primary px-4 py-3 font-mono text-sm leading-6 shadow-none focus-visible:ring-0"
         />
       )}
       <div className="flex items-center justify-between px-3 py-2">
@@ -725,7 +725,7 @@ function FlashcardDisplay({
             key={i}
             type="button"
             onClick={() => setFlipped((s) => ({ ...s, [i]: !s[i] }))}
-            className="group relative min-h-36 overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)] text-left transition-colors hover:bg-orange-100"
+            className="group relative min-h-36 overflow-hidden rounded-2xl surface-secondary text-left transition-colors hover:bg-orange-100"
           >
             {flipped[i] ? (
               <div className="flex h-full min-h-36 flex-col justify-between bg-slate-950 p-4">
@@ -760,7 +760,7 @@ function ResourceItem({ resource }: { resource: LessonResource }) {
   );
 
   const inner = (
-    <div className="flex items-center gap-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4 transition-colors hover:bg-orange-100">
+    <div className="flex items-center gap-3 rounded-2xl surface-secondary p-4 transition-colors hover:bg-orange-100">
       <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-50">{icon}</div>
       <div className="min-w-0">
         <p className="truncate text-sm font-semibold text-slate-950">{resource.title}</p>
@@ -803,7 +803,7 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
     <section className="mt-10 border-t border-[color:var(--border)] pt-10">
       <h2 className="text-2xl font-extrabold text-slate-950">{config.title || "Graph simulation"}</h2>
       <div className="mt-5 space-y-4">
-        <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-3">
+        <div className="rounded-2xl surface-secondary p-3">
           <svg viewBox="0 0 600 320" className="h-72 w-full">
             <line x1="40" y1="160" x2="560" y2="160" stroke="#d8c7b0" />
             <line x1="40" y1="36" x2="40" y2="284" stroke="#d8c7b0" />
@@ -1817,7 +1817,7 @@ function VideoLearningPageContent({ params }: Props) {
               className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-xs font-semibold transition-colors ${
                 lesson.liked_by_me
                   ? "bg-orange-50 text-orange-700"
-                  : "bg-[color:var(--surface-secondary)] text-slate-600 hover:text-orange-700"
+                  : "surface-secondary text-slate-600 hover:text-orange-700"
               }`}
               aria-pressed={lesson.liked_by_me}
             >
@@ -1899,7 +1899,7 @@ function VideoLearningPageContent({ params }: Props) {
                 <Sparkles className="size-5 text-orange-500" />
                 <h2 className="text-2xl font-extrabold text-slate-950">AI flashcards</h2>
               </div>
-              <div className="mt-5 rounded-lg bg-[color:var(--surface-secondary)] p-4">
+              <div className="mt-5 rounded-lg surface-secondary p-4">
                 <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
                   {artifacts.flashcards.content_markdown}
                 </pre>
@@ -1917,7 +1917,7 @@ function VideoLearningPageContent({ params }: Props) {
                   const questionState = questionStates[question.id];
                   const result = questionState?.result;
                   return (
-                    <div key={question.id} className="rounded-2xl bg-[color:var(--surface-secondary)] p-5">
+                    <div key={question.id} className="rounded-2xl surface-secondary p-5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-semibold text-slate-950">{question.prompt}</p>
                         <Badge variant="blue" className="shrink-0">{formatSeconds(question.timestamp_seconds)}</Badge>
@@ -1981,7 +1981,7 @@ function VideoLearningPageContent({ params }: Props) {
           {course.faqs.length > 0 ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
               <h2 className="text-2xl font-extrabold text-slate-950">FAQs</h2>
-              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg bg-[color:var(--surface-secondary)]">
+              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg surface-secondary">
                 {course.faqs.map((faq, i) => (
                   <details key={`${faq.question}-${i}`} className="group px-4 py-3">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
@@ -1999,7 +1999,7 @@ function VideoLearningPageContent({ params }: Props) {
           <section className="mt-10 border-t border-[color:var(--border)] pt-10">
             <h2 className="text-2xl font-extrabold text-slate-950">Discussion</h2>
             <div className="mt-5 space-y-3">
-              <div className="space-y-2 rounded-lg bg-[color:var(--surface-secondary)] p-3">
+              <div className="space-y-2 rounded-lg surface-secondary p-3">
                 <Textarea
                   placeholder="Ask a question or share a thought…"
                   value={discussionBody}
@@ -2025,7 +2025,7 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               ) : lesson.discussions.length > 0 ? (
                 lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-lg bg-[color:var(--surface-secondary)] px-3 py-3">
+                  <div key={thread.id} className="rounded-lg surface-secondary px-3 py-3">
                     {thread.title ? (
                       <p className="mb-1 text-[11px] font-semibold uppercase text-orange-500">{thread.title}</p>
                     ) : null}
@@ -2034,7 +2034,7 @@ function VideoLearningPageContent({ params }: Props) {
                     {thread.comments.length > 0 ? (
                       <div className="mt-3 space-y-2 border-l border-[color:var(--border)] pl-3">
                         {thread.comments.map((comment) => (
-                          <div key={comment.id} className="rounded-md bg-[color:var(--surface-primary)] px-3 py-2">
+                          <div key={comment.id} className="rounded-md surface-primary px-3 py-2">
                             <p className="text-xs font-medium text-slate-950">
                               {comment.user_display_name}
                               {comment.is_instructor_response ? (
@@ -2089,7 +2089,7 @@ function VideoLearningPageContent({ params }: Props) {
               {lesson.notes.length > 0 ? (
                 <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
                   {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-lg bg-[color:var(--surface-secondary)] p-3">
+                    <div key={note.id} className="rounded-lg surface-secondary p-3">
                       <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
                       <div className="mt-2">
                         <SimpleMarkdown content={note.body} compact />
@@ -2124,7 +2124,7 @@ function VideoLearningPageContent({ params }: Props) {
                           className={`rounded-xl p-3 transition-colors ${
                             isActive
                               ? "bg-orange-50"
-                              : "bg-[color:var(--surface-secondary)]"
+                              : "surface-secondary"
                           }`}
                         >
                           <div className="flex items-center gap-3">
@@ -2183,7 +2183,7 @@ function VideoLearningPageContent({ params }: Props) {
                 </p>
               </div>
               <Progress value={course.access?.progress_percent ?? 0} />
-              <div className="flex items-center justify-between rounded-xl bg-[color:var(--surface-secondary)] px-4 py-3">
+              <div className="flex items-center justify-between rounded-xl surface-secondary px-4 py-3">
                 <p className="text-xs font-semibold uppercase text-slate-500">Access</p>
                 <p className="text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
               </div>

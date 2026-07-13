@@ -509,7 +509,7 @@ export default function LibraryDetailPage({ params }: Props) {
                   </div>
                 )}
                 {readerError ? (
-                  <div className="m-auto max-w-md rounded-xl bg-[color:var(--surface-primary)] p-5 text-sm font-semibold text-rose-600">
+                  <div className="m-auto max-w-md rounded-xl surface-primary p-5 text-sm font-semibold text-rose-600">
                     {readerError}
                   </div>
                 ) : (
@@ -606,7 +606,7 @@ export default function LibraryDetailPage({ params }: Props) {
                     pageAnnotations.map((annotation) => (
                       <div
                         key={annotation.id}
-                        className="rounded-lg bg-[color:var(--surface-secondary)] p-3 text-sm"
+                        className="rounded-lg surface-secondary p-3 text-sm"
                       >
                         <div className="flex items-center justify-between gap-2">
                           <Badge>{annotation.annotation_type}</Badge>
@@ -623,7 +623,7 @@ export default function LibraryDetailPage({ params }: Props) {
                       </div>
                     ))
                   ) : (
-                    <p className="rounded-lg bg-[color:var(--surface-secondary)] p-3 text-sm text-slate-500">
+                    <p className="rounded-lg surface-secondary p-3 text-sm text-slate-500">
                       No annotations on this page.
                     </p>
                   )}

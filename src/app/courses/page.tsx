@@ -108,7 +108,7 @@ export default function CoursesPage() {
               <div className="relative min-w-0 flex-1">
                 <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
                 <Input
-                  className="min-h-[3.5rem] rounded-full bg-[color:var(--surface-secondary)] pl-12"
+                  className="min-h-[3.5rem] rounded-full surface-secondary pl-12"
                   placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
                   value={query}
                   onChange={(event) => setQuery(event.target.value)}
@@ -131,7 +131,7 @@ export default function CoursesPage() {
                 className={
                   activeCategory === "all"
                     ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                    : "shrink-0 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                    : "shrink-0 rounded-full surface-secondary px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
                 }
               >
                 All courses
@@ -144,7 +144,7 @@ export default function CoursesPage() {
                   className={
                     activeCategory === category.slug
                       ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                      : "shrink-0 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                      : "shrink-0 rounded-full surface-secondary px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
                   }
                 >
                   {category.name}
@@ -166,14 +166,14 @@ export default function CoursesPage() {
               <div className="flex flex-wrap gap-2">
                 <Link
                   href="/courses/progress"
-                  className="rounded-full bg-[color:var(--surface-secondary)] px-3 py-1 text-xs font-bold text-orange-600 transition hover:text-orange-700"
+                  className="rounded-full surface-secondary px-3 py-1 text-xs font-bold text-orange-600 transition hover:text-orange-700"
                 >
                   Progress report
                 </Link>
                 {["Beginner", "Intermediate", "Advanced"].map((level) => (
                   <span
                     key={level}
-                    className="rounded-full bg-[color:var(--surface-elevated)] px-3 py-1 text-xs font-bold text-slate-600"
+                    className="rounded-full surface-elevated px-3 py-1 text-xs font-bold text-slate-600"
                   >
                     {level}
                   </span>

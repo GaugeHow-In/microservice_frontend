@@ -409,7 +409,7 @@ function RoadmapEditor({
                   <label>
                     Hours/week{" "}
                     <input
-                      className="w-14 rounded bg-[color:var(--surface-primary)] px-1"
+                      className="w-14 rounded surface-primary px-1"
                       type="number"
                       min="0"
                       max="80"

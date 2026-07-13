@@ -283,7 +283,7 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <section className="rounded-2xl bg-[color:var(--surface-secondary)] p-5 md:p-6">
+        <section className="rounded-2xl surface-secondary p-5 md:p-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
               <ProfileAvatar avatarKey={avatarKey} displayName={displayName} className="size-24" />
@@ -366,7 +366,7 @@ export default function ProfilePage() {
                           "rounded-lg p-2 text-center transition",
                           selected
                             ? "bg-orange-100"
-                            : "bg-[color:var(--surface-secondary)] hover:bg-orange-50",
+                            : "surface-secondary hover:bg-orange-50",
                         )}
                         onClick={() =>
                           setForm((current) => ({ ...current, avatar_key: avatar.key }))
@@ -582,7 +582,7 @@ export default function ProfilePage() {
               {badges.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {badges.map((badge) => (
-                    <div key={badge.code} className="rounded-lg bg-[color:var(--surface-primary)] p-4">
+                    <div key={badge.code} className="rounded-lg surface-primary p-4">
                       <div className="flex items-start gap-3">
                         <Award className="size-5 shrink-0 text-orange-500" />
                         <div>

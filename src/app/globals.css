@@ -693,14 +693,17 @@ p {
 
 .surface-primary {
   background: var(--surface-primary);
+  border: 1px solid var(--border);
 }
 
 .surface-secondary {
   background: var(--surface-secondary);
+  border: 1px solid var(--border);
 }
 
 .surface-elevated {
   background: var(--surface-elevated);
+  border: 1px solid var(--border);
 }
 
 .surface-glass {
@@ -840,11 +843,15 @@ p {
 .ui-card {
   border-radius: var(--radius-token-md);
   background: var(--surface-secondary);
-  transition: background-color var(--motion-duration-md) var(--motion-ease-standard);
+  border: 1px solid var(--border);
+  transition:
+    background-color var(--motion-duration-md) var(--motion-ease-standard),
+    border-color var(--motion-duration-md) var(--motion-ease-standard);
 }
 
 .ui-card:hover {
   background: color-mix(in srgb, var(--surface-secondary) 82%, var(--primary) 18%);
+  border-color: var(--border-strong);
 }
 
 /* For browsable catalog items (course/test/library tiles) rather than

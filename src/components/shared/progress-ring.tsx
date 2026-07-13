@@ -31,7 +31,7 @@ export function ProgressRing({
       style={{ background }}
       aria-label={`${label ?? "Progress"} ${value}%`}
     >
-      <div className="absolute inset-2 rounded-full bg-[color:var(--surface-primary)] backdrop-blur-sm" />
+      <div className="absolute inset-2 rounded-full surface-primary backdrop-blur-sm" />
       <div className="relative text-center font-bold text-slate-950">
         {value}%
         {label && (

@@ -32,7 +32,7 @@ export function BackendPending({
           </Button>
         }
       />
-      <div className="data-panel reveal-delay-1 reveal-up grid gap-6 overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)] p-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
+      <div className="data-panel reveal-delay-1 reveal-up grid gap-6 overflow-hidden rounded-2xl surface-secondary p-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center">
         <div className="relative z-10 space-y-4">
           <div className="signal-line flex size-12 items-center justify-center rounded-2xl bg-orange-50 text-orange-600">
             <Database className="size-6" />
@@ -51,7 +51,7 @@ export function BackendPending({
             </Link>
           </Button>
         </div>
-        <div className="relative z-10 space-y-3 rounded-2xl bg-[color:var(--surface-primary)] p-4">
+        <div className="relative z-10 space-y-3 rounded-2xl surface-primary p-4">
           <Skeleton className="h-8 w-2/3 rounded-lg" />
           <Skeleton className="h-4 w-full rounded-md" />
           <Skeleton className="h-4 w-5/6 rounded-md" />

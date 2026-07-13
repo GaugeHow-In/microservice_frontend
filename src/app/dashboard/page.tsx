@@ -127,7 +127,7 @@ export default function DashboardPage() {
               ].map(({ label, value, icon: LucideIcon }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-slate-600"
+                  className="flex items-center gap-3 rounded-full surface-secondary px-4 py-2 text-slate-600"
                 >
                   <LucideIcon className="size-4 text-accent" />
                   <span className="text-slate-500">{label}</span>
@@ -149,7 +149,7 @@ export default function DashboardPage() {
             </p>
 
             <form onSubmit={openMentor} className="mx-auto mt-7 max-w-4xl">
-              <div className="relative rounded-full bg-[color:var(--surface-secondary)] p-2">
+              <div className="relative rounded-full surface-secondary p-2">
                 <input
                   value={mentorQuery}
                   onChange={(event) => setMentorQuery(event.target.value)}
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   key={prompt}
                   type="button"
                   onClick={() => setMentorQuery(prompt)}
-                  className="rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-accent"
+                  className="rounded-full surface-secondary px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-accent"
                 >
                   {prompt}
                 </button>
@@ -180,7 +180,7 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)]">
+          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl surface-secondary">
             <div className="grid lg:grid-cols-[0.82fr_1fr]">
               <Link
                 href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
@@ -299,7 +299,7 @@ export default function DashboardPage() {
           <section className="grid gap-8 pt-10 lg:grid-cols-[1fr_0.9fr]">
             <div>
               <h2 className="mb-5 text-2xl font-extrabold text-slate-950">Your Certifications</h2>
-              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl bg-[color:var(--surface-secondary)]">
+              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl surface-secondary">
                 {[
                   {
                     title: "UX Engineering Professional",

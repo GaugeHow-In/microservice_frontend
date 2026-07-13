@@ -7,6 +7,7 @@ import { useLearningContext } from "@/components/providers/learning-context-prov
 import { Button } from "@/components/ui/button";
 import { aiClient, type AIMessage } from "@/lib/ai-client";
 import { MentorCitations } from "@/components/shared/mentor-citations";
+import { MentorMarkdown } from "@/components/shared/mentor-markdown";
 
 export function QuickMentor() {
   const { accessToken } = useAuth();
@@ -92,7 +93,7 @@ export function QuickMentor() {
             )}
             {messages.map((message) => (
               <div key={message.id} className={`max-w-[88%] rounded-xl p-3 leading-5 ${message.role === "user" ? "ml-auto bg-slate-900 text-white" : "bg-slate-100 text-slate-700"}`}>
-                {message.content}
+                {message.role === "assistant" ? <MentorMarkdown content={message.content} /> : message.content}
                 {message.role === "assistant" && (
                   <MentorCitations citations={message.citations} retrievedChunks={message.retrieved_chunks} />
                 )}

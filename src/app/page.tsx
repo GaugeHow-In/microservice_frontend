@@ -132,7 +132,7 @@ export default async function Home() {
             <Link href="/verify-certificate">Verify</Link>
           </nav>
           <div className="flex items-center gap-2">
-            <div className="hidden items-center gap-2 rounded-lg bg-[color:var(--surface-secondary)] px-3 py-2 lg:flex">
+            <div className="hidden items-center gap-2 rounded-lg surface-secondary px-3 py-2 lg:flex">
               <Search className="size-4 text-slate-500" />
               <span className="text-sm text-slate-500">Search courses...</span>
             </div>

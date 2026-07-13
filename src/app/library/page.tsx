@@ -99,7 +99,7 @@ export default function LibraryPage() {
           }
         />
 
-        <div className="reveal-delay-1 reveal-up grid gap-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4 md:grid-cols-[1fr_auto]">
+        <div className="reveal-delay-1 reveal-up grid gap-3 rounded-2xl surface-secondary p-4 md:grid-cols-[1fr_auto]">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
@@ -154,7 +154,7 @@ export default function LibraryPage() {
                     draggable={false}
                   />
                 ) : (
-                  <div className="flex h-40 items-center justify-center rounded-xl bg-[color:var(--surface-secondary)] text-slate-500">
+                  <div className="flex h-40 items-center justify-center rounded-xl surface-secondary text-slate-500">
                     <BookOpen className="size-12" />
                   </div>
                 )}

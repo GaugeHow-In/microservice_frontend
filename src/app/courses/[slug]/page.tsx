@@ -370,7 +370,7 @@ export default function CourseDetailPage({ params }: Props) {
   if (!course) {
     return (
       <AppShell>
-        <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-5 text-sm text-rose-600">
+        <div className="rounded-2xl surface-secondary p-5 text-sm text-rose-600">
           {error ?? "Course not found."}
         </div>
       </AppShell>
@@ -441,7 +441,7 @@ export default function CourseDetailPage({ params }: Props) {
     <AppShell>
       <div className="space-y-0">
         {error && (
-          <div className="rounded-2xl bg-[color:var(--surface-secondary)] p-4 text-sm text-rose-600">
+          <div className="rounded-2xl surface-secondary p-4 text-sm text-rose-600">
             {error}
           </div>
         )}
@@ -518,7 +518,7 @@ export default function CourseDetailPage({ params }: Props) {
             </div>
 
             <aside className="lg:sticky lg:top-24">
-              <div className="overflow-hidden rounded-3xl bg-[color:var(--surface-secondary)]">
+              <div className="overflow-hidden rounded-3xl surface-secondary">
                 <div className="course-visual relative aspect-video overflow-hidden">
                   {course.thumbnail_url ? (
                     <Image
@@ -591,7 +591,7 @@ export default function CourseDetailPage({ params }: Props) {
           </div>
         </section>
 
-        <nav className="sticky top-16 z-20 mt-8 rounded-full bg-[color:var(--surface-secondary)] px-3 py-2 backdrop-blur-xl">
+        <nav className="sticky top-16 z-20 mt-8 rounded-full surface-secondary px-3 py-2 backdrop-blur-xl">
           <div className="flex gap-1 overflow-x-auto text-sm font-bold text-slate-600">
             {["About", "Outcomes", "Modules", "Instructor", "Reviews", "FAQ"].map((item) => (
               <a
@@ -664,7 +664,7 @@ export default function CourseDetailPage({ params }: Props) {
               {course.modules.map((module, index) => (
                 <details
                   key={module.id}
-                  className="group rounded-2xl bg-[color:var(--surface-secondary)]"
+                  className="group rounded-2xl surface-secondary"
                 >
                   <summary className="flex cursor-pointer list-none items-start justify-between gap-4 p-5">
                     <div>
@@ -677,7 +677,7 @@ export default function CourseDetailPage({ params }: Props) {
                         {module.duration_minutes ? ` · ${formatMinutes(module.duration_minutes)}` : ""}
                       </p>
                     </div>
-                    <div className="flex shrink-0 items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-3 py-2 text-xs font-bold text-slate-600">
+                    <div className="flex shrink-0 items-center gap-2 rounded-full surface-primary px-3 py-2 text-xs font-bold text-slate-600">
                       Module details
                       <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
                     </div>
@@ -690,7 +690,7 @@ export default function CourseDetailPage({ params }: Props) {
                       {module.lessons.map((lesson) => (
                         <div
                           key={lesson.id}
-                          className="flex items-center justify-between gap-3 rounded-lg bg-[color:var(--surface-primary)] px-3 py-3"
+                          className="flex items-center justify-between gap-3 rounded-lg surface-primary px-3 py-3"
                         >
                         <div>
                           <p className="font-medium text-slate-950">{lesson.title}</p>
@@ -762,7 +762,7 @@ export default function CourseDetailPage({ params }: Props) {
               </div>
 
               {canReview && (
-                <div className="mt-6 space-y-3 rounded-2xl bg-[color:var(--surface-secondary)] p-4">
+                <div className="mt-6 space-y-3 rounded-2xl surface-secondary p-4">
                   <div className="grid gap-3 sm:grid-cols-[120px_1fr]">
                     <label className="text-sm font-semibold text-slate-700">Your rating</label>
                     <Input
@@ -812,7 +812,7 @@ export default function CourseDetailPage({ params }: Props) {
                   course.faqs.map((faq, index) => (
                     <details
                       key={index}
-                      className="group rounded-xl bg-[color:var(--surface-secondary)]"
+                      className="group rounded-xl surface-secondary"
                     >
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
                       <p className="font-semibold text-slate-950">{faq.question}</p>
