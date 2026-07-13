@@ -127,7 +127,7 @@ export default function DashboardPage() {
               ].map(({ label, value, icon: LucideIcon }) => (
                 <div
                   key={label}
-                  className="flex items-center gap-3 rounded-full border border-[color:var(--border)] bg-[color:var(--surface-glass)] px-4 py-2 text-slate-600 backdrop-blur"
+                  className="flex items-center gap-3 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-slate-600"
                 >
                   <LucideIcon className="size-4 text-orange-400" />
                   <span className="text-slate-500">{label}</span>
@@ -149,12 +149,12 @@ export default function DashboardPage() {
             </p>
 
             <form onSubmit={openMentor} className="mx-auto mt-7 max-w-4xl">
-              <div className="relative rounded-[2rem] border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-2 shadow-[var(--shadow-md)] backdrop-blur-xl">
+              <div className="relative rounded-full bg-[color:var(--surface-secondary)] p-2">
                 <input
                   value={mentorQuery}
                   onChange={(event) => setMentorQuery(event.target.value)}
                   placeholder="Ask about lessons, roadmaps, formulas, or your next practice plan..."
-                  className="h-16 w-full rounded-[1.55rem] bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
+                  className="h-16 w-full rounded-full bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
                 />
                 <button
                   type="submit"
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   key={prompt}
                   type="button"
                   onClick={() => setMentorQuery(prompt)}
-                  className="rounded-full border border-[color:var(--border)] bg-[color:var(--surface-primary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:border-orange-300/45 hover:text-orange-300"
+                  className="rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-orange-300"
                 >
                   {prompt}
                 </button>
@@ -180,13 +180,13 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] backdrop-blur-xl">
+          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)]">
             <div className="grid lg:grid-cols-[0.82fr_1fr]">
               <Link
                 href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
                 className="group relative min-h-[13rem] overflow-hidden lg:min-h-[15rem]"
               >
-                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full border border-orange-300/25 bg-[#241a10]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
+                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-[#241a10]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
                   <Play className="size-4" />
                   Continue Learning
                 </div>
@@ -205,15 +205,15 @@ export default function DashboardPage() {
                 <div className="absolute inset-0 bg-gradient-to-r from-[#241a10]/88 via-[#241a10]/36 to-transparent" />
                 <div className="absolute inset-0 surface-grid opacity-20" />
                 <div className="relative z-10 flex h-full min-h-[13rem] items-center p-5 lg:min-h-[15rem]">
-                  <span className="flex size-14 items-center justify-center rounded-full border border-orange-300/40 bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
+                  <span className="flex size-14 items-center justify-center rounded-full bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
                     <Play className="ml-0.5 size-7 fill-current" />
                   </span>
                 </div>
               </Link>
 
-              <div className="flex flex-col justify-center border-t border-[color:var(--border)] p-5 md:p-6 lg:border-l lg:border-t-0">
+              <div className="flex flex-col justify-center p-5 md:p-6">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <span className="rounded-full border border-orange-300/20 bg-orange-300/10 px-3 py-1 text-[11px] font-bold uppercase text-orange-300">
+                  <span className="rounded-full bg-orange-300/10 px-3 py-1 text-[11px] font-bold uppercase text-orange-300">
                     Module 4: Variables
                   </span>
                   <span className="text-xs text-slate-500">
@@ -251,21 +251,18 @@ export default function DashboardPage() {
                 View all
               </Link>
             </div>
-            <div className="grid gap-5 md:grid-cols-3">
+            <div className="grid gap-8 md:grid-cols-3">
               {isDashboardLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] p-4">
-                      <Skeleton className="h-40 rounded-lg" />
+                    <div key={index}>
+                      <Skeleton className="h-48 rounded-xl" />
                       <Skeleton className="mt-4 h-5 w-3/4 rounded" />
+                      <Skeleton className="mt-2 h-4 w-1/2 rounded" />
                     </div>
                   ))
                 : recommendations.map((course, index) => (
-                    <Link
-                      key={course.slug}
-                      href={`/courses/${course.slug}`}
-                      className="group overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)] transition hover:border-orange-300/35"
-                    >
-                      <div className="industrial-hero-media relative h-48 overflow-hidden">
+                    <Link key={course.slug} href={`/courses/${course.slug}`} className="group">
+                      <div className="industrial-hero-media relative h-48 overflow-hidden rounded-xl">
                         {course.thumbnail_url ? (
                           <Image
                             src={course.thumbnail_url}
@@ -281,7 +278,7 @@ export default function DashboardPage() {
                           {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
                         </span>
                       </div>
-                      <div className="p-4">
+                      <div className="pt-4">
                         <h3 className="font-bold text-slate-950 transition group-hover:text-orange-300">
                           {course.title}
                         </h3>
@@ -299,10 +296,10 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="grid gap-8 border-t border-[color:var(--border)] pt-10 lg:grid-cols-[1fr_0.9fr]">
+          <section className="grid gap-8 pt-10 lg:grid-cols-[1fr_0.9fr]">
             <div>
               <h2 className="mb-5 text-2xl font-extrabold text-slate-950">Your Certifications</h2>
-              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl border border-[color:var(--border)] bg-[color:var(--surface-glass)]">
+              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl bg-[color:var(--surface-secondary)]">
                 {[
                   {
                     title: "UX Engineering Professional",

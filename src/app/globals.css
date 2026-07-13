@@ -1,51 +1,79 @@
 @import "tailwindcss";
 
+/*
+  Only three brand colors are declared anywhere in this file:
+  --primary, and the light/dark --background + --foreground pairs below.
+  Every other token (cards, borders, shadows, the orange/slate scales, etc.)
+  is mathematically derived from those three via color-mix() so the whole
+  app stays on-palette without hand-picked hex values scattered around.
+*/
+
 :root {
-  --orange-100: #fde8cb;
-  --orange-200: #fcd9a9;
-  --orange-300: #fcbc6c;
-  --orange-400: #fcbc6c;
-  --orange-500: #b87830;
-
-  --slate-50: #fbf8f4;
-  --slate-100: #f6efe6;
-  --slate-200: #ece1d3;
-  --slate-300: #d8c7b0;
-  --slate-400: #a99377;
-  --slate-500: #8a755c;
-  --slate-600: #6b5847;
-  --slate-700: #4f3f30;
-  --slate-800: #382b1f;
-  --slate-900: #2b2118;
-  --slate-950: #2b2118;
-
+  --primary: #fcbc6c;
   --background: #f4ece4;
   --foreground: #2b2118;
-  --card: #fffbf6;
-  --primary: var(--orange-400);
-  --primary-dark: #e8a855;
-  --muted: #6b5847;
-  --border: rgba(169, 147, 119, 0.28);
-  --border-strong: rgba(169, 147, 119, 0.46);
-  --grid-line: rgba(184, 120, 48, 0.052);
-  --ambient-soft: rgba(232, 168, 85, 0.16);
-  --ambient-muted: rgba(252, 188, 108, 0.24);
 
-  --surface-primary: #fffbf6;
-  --surface-secondary: #fbefdd;
-  --surface-elevated: #fffbf6;
-  --surface-glass: rgba(255, 251, 246, 0.78);
-  --surface-chrome: rgba(244, 236, 228, 0.78);
+  /* Fixed "ink" colors: contrast helpers that don't flip with the theme,
+     because they sit on surfaces (primary buttons, always-dark chips)
+     whose color doesn't flip with the theme either. */
+  --primary-dark: color-mix(in srgb, var(--primary) 78%, black 22%);
+  --ink-on-primary: color-mix(in srgb, black 80%, var(--primary) 20%);
+  --ink-on-dark: color-mix(in srgb, white 85%, var(--primary) 15%);
+  --surface-inverse: color-mix(in srgb, black 84%, var(--primary) 6%);
+
+  /* Neutral scale: interpolated between background and foreground, so it
+     automatically reverses direction under html.dark. */
+  --slate-50: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%);
+  --slate-100: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --slate-200: color-mix(in srgb, var(--background) 80%, var(--foreground) 20%);
+  --slate-300: color-mix(in srgb, var(--background) 68%, var(--foreground) 32%);
+  --slate-400: color-mix(in srgb, var(--background) 54%, var(--foreground) 46%);
+  --slate-500: color-mix(in srgb, var(--background) 42%, var(--foreground) 58%);
+  --slate-600: color-mix(in srgb, var(--background) 32%, var(--foreground) 68%);
+  --slate-700: color-mix(in srgb, var(--background) 22%, var(--foreground) 78%);
+  --slate-800: color-mix(in srgb, var(--background) 13%, var(--foreground) 87%);
+  --slate-900: color-mix(in srgb, var(--background) 5%, var(--foreground) 95%);
+  --slate-950: var(--foreground);
+
+  /* Amber scale: tints of primary toward the background, shades toward
+     black, so tints stay theme-appropriate (pale in light, muted in dark)
+     while shades stay a consistent deep amber in both modes. */
+  --orange-50: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --orange-100: color-mix(in srgb, var(--primary) 30%, var(--background) 70%);
+  --orange-200: color-mix(in srgb, var(--primary) 55%, var(--background) 45%);
+  --orange-300: var(--primary);
+  --orange-400: var(--primary);
+  --orange-500: var(--primary-dark);
+  --orange-600: var(--primary-dark);
+  --orange-700: var(--primary-dark);
+  --orange-800: color-mix(in srgb, var(--primary) 55%, black 45%);
+  --orange-900: color-mix(in srgb, var(--primary) 38%, black 62%);
+
+  --card: color-mix(in srgb, var(--background) 85%, white 15%);
+  --surface-primary: var(--card);
+  --surface-elevated: var(--card);
+  --surface-secondary: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --surface-glass: color-mix(in srgb, var(--card) 78%, transparent 22%);
+  --surface-chrome: color-mix(in srgb, var(--background) 78%, transparent 22%);
+
+  --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
+  --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
+  --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
+
+  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+  --ambient-soft: color-mix(in srgb, var(--primary) 24%, transparent 76%);
+  --ambient-muted: color-mix(in srgb, var(--primary) 15%, transparent 85%);
+  --ring-focus: color-mix(in srgb, var(--primary) 32%, transparent 68%);
 
   --shadow-sm:
-    0 10px 30px -24px rgba(184, 120, 48, 0.34),
-    0 1px 2px rgba(252, 188, 108, 0.24);
+    0 10px 30px -24px rgba(0, 0, 0, 0.28),
+    0 1px 2px rgba(0, 0, 0, 0.08);
   --shadow-md:
-    0 20px 48px -28px rgba(184, 120, 48, 0.32),
-    0 8px 16px -14px rgba(252, 188, 108, 0.34);
+    0 20px 48px -28px rgba(0, 0, 0, 0.28),
+    0 8px 16px -14px rgba(0, 0, 0, 0.14);
   --shadow-lg:
-    0 32px 72px -34px rgba(184, 120, 48, 0.34),
-    0 16px 32px -20px rgba(252, 188, 108, 0.26);
+    0 32px 72px -34px rgba(0, 0, 0, 0.32),
+    0 16px 32px -20px rgba(0, 0, 0, 0.18);
 
   --radius-token-sm: 8px;
   --radius-token-md: 16px;
@@ -64,7 +92,6 @@
   --type-caption: 0.75rem;
   --type-button: 0.9375rem;
 
-  --ring-focus: rgba(252, 188, 108, 0.3);
   --motion-duration-sm: 160ms;
   --motion-duration-md: 220ms;
   --motion-duration-lg: 520ms;
@@ -87,48 +114,51 @@ html {
   color-scheme: light;
 }
 
+/*
+  CSS custom properties inherit their COMPUTED value, not their raw
+  declaration. That means a token like --card, which references
+  var(--background), gets resolved once wherever it's declared and that
+  resolved value is what descendants inherit — overriding --background
+  alone in a nested scope does NOT make --card recompute down the tree.
+  So every scope that overrides --background/--foreground (html.dark,
+  .light-system, .dark-system, .app-shell-dark) has to redeclare the
+  full set of tokens derived from them, using the exact same formulas
+  as :root above. --primary and anything derived only from --primary
+  (black/white included) never changes, so those never need repeating.
+*/
+
 html.dark {
   color-scheme: dark;
-
-  --slate-50: #241a10;
-  --slate-100: #2e2117;
-  --slate-200: #3c2c1c;
-  --slate-300: #4a3826;
-  --slate-400: #6b5847;
-  --slate-500: #8c7b6a;
-  --slate-600: #ad9e8f;
-  --slate-700: #cbc0b3;
-  --slate-800: #e2dace;
-  --slate-900: #f0e9df;
-  --slate-950: #f7f3ee;
-
   --background: #3c2c1c;
   --foreground: #f7f3ee;
-  --card: #4a3826;
-  --primary: var(--orange-300);
-  --primary-dark: #e8a855;
-  --muted: #ad9e8f;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --grid-line: rgba(255, 255, 255, 0.045);
-  --ambient-soft: rgba(252, 188, 108, 0.1);
-  --ambient-muted: rgba(232, 168, 85, 0.07);
 
-  --surface-primary: #4a3826;
-  --surface-secondary: #453320;
-  --surface-elevated: #4a3826;
-  --surface-glass: rgba(74, 56, 38, 0.74);
-  --surface-chrome: rgba(46, 33, 23, 0.78);
+  --slate-50: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%);
+  --slate-100: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --slate-200: color-mix(in srgb, var(--background) 80%, var(--foreground) 20%);
+  --slate-300: color-mix(in srgb, var(--background) 68%, var(--foreground) 32%);
+  --slate-400: color-mix(in srgb, var(--background) 54%, var(--foreground) 46%);
+  --slate-500: color-mix(in srgb, var(--background) 42%, var(--foreground) 58%);
+  --slate-600: color-mix(in srgb, var(--background) 32%, var(--foreground) 68%);
+  --slate-700: color-mix(in srgb, var(--background) 22%, var(--foreground) 78%);
+  --slate-800: color-mix(in srgb, var(--background) 13%, var(--foreground) 87%);
+  --slate-900: color-mix(in srgb, var(--background) 5%, var(--foreground) 95%);
+  --slate-950: var(--foreground);
 
-  --shadow-sm:
-    0 16px 34px -24px rgba(0, 0, 0, 0.75),
-    0 1px 2px rgba(255, 255, 255, 0.03);
-  --shadow-md:
-    0 28px 58px -34px rgba(0, 0, 0, 0.82),
-    0 10px 20px -18px rgba(0, 0, 0, 0.32);
-  --shadow-lg:
-    0 38px 86px -42px rgba(0, 0, 0, 0.86),
-    0 18px 36px -24px rgba(0, 0, 0, 0.34);
+  --orange-50: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --orange-100: color-mix(in srgb, var(--primary) 30%, var(--background) 70%);
+  --orange-200: color-mix(in srgb, var(--primary) 55%, var(--background) 45%);
+
+  --card: color-mix(in srgb, var(--background) 85%, white 15%);
+  --surface-primary: var(--card);
+  --surface-elevated: var(--card);
+  --surface-secondary: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --surface-glass: color-mix(in srgb, var(--card) 78%, transparent 22%);
+  --surface-chrome: color-mix(in srgb, var(--background) 78%, transparent 22%);
+
+  --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
+  --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
+  --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
+  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
 }
 
 @media (min-width: 768px) {
@@ -151,17 +181,16 @@ html.dark {
   --color-primary-dark: var(--primary-dark);
   --color-muted: var(--muted);
   --color-border: var(--border);
-  --color-white: #ffffff;
-  --color-orange-50: #fff6ea;
+  --color-orange-50: var(--orange-50);
   --color-orange-100: var(--orange-100);
   --color-orange-200: var(--orange-200);
   --color-orange-300: var(--orange-300);
   --color-orange-400: var(--orange-400);
   --color-orange-500: var(--orange-500);
-  --color-orange-600: var(--orange-500);
-  --color-orange-700: var(--orange-500);
-  --color-orange-800: #8f5d24;
-  --color-orange-900: #6e481c;
+  --color-orange-600: var(--orange-600);
+  --color-orange-700: var(--orange-700);
+  --color-orange-800: var(--orange-800);
+  --color-orange-900: var(--orange-900);
   --color-slate-50: var(--slate-50);
   --color-slate-100: var(--slate-100);
   --color-slate-200: var(--slate-200);
@@ -173,26 +202,6 @@ html.dark {
   --color-slate-800: var(--slate-800);
   --color-slate-900: var(--slate-900);
   --color-slate-950: var(--slate-950);
-  --color-emerald-50: #fff3e0;
-  --color-emerald-100: #fde0b8;
-  --color-emerald-200: #fcc98a;
-  --color-emerald-500: #e8a855;
-  --color-emerald-600: #b87830;
-  --color-emerald-700: #b87830;
-  --color-sky-50: #fbefdd;
-  --color-sky-100: #fde0b8;
-  --color-sky-200: #fcc98a;
-  --color-sky-500: #fcbc6c;
-  --color-sky-600: #e8a855;
-  --color-sky-700: #b87830;
-  --color-rose-50: #fff3e0;
-  --color-rose-100: #fde0b8;
-  --color-rose-200: #fcc98a;
-  --color-rose-500: #e8a855;
-  --color-rose-600: #b87830;
-  --color-rose-700: #b87830;
-  --color-amber-500: #fcbc6c;
-  --color-amber-600: #e8a855;
   --font-sans: var(--font-sans-stack);
   --font-mono: var(--font-geist-mono);
   --radius-md: var(--radius-token-sm);
@@ -262,7 +271,7 @@ p {
 }
 
 ::selection {
-  background: rgba(252, 188, 108, 0.26);
+  background: color-mix(in srgb, var(--primary) 26%, transparent 74%);
 }
 
 .surface-grid {
@@ -272,65 +281,82 @@ p {
   background-size: 28px 28px;
 }
 
+/* Forces a subtree to render as light or dark regardless of the global
+   theme toggle (marketing pages, the auth screen), so it redeclares the
+   full derived-token set too (see the comment above html.dark). */
 .light-system {
   color-scheme: light;
-  --slate-50: #fbf8f4;
-  --slate-100: #f6efe6;
-  --slate-200: #ece1d3;
-  --slate-300: #d8c7b0;
-  --slate-400: #a99377;
-  --slate-500: #8a755c;
-  --slate-600: #6b5847;
-  --slate-700: #4f3f30;
-  --slate-800: #382b1f;
-  --slate-900: #2b2118;
-  --slate-950: #2b2118;
   --background: #f4ece4;
   --foreground: #2b2118;
-  --card: #fffbf6;
-  --primary: #fcbc6c;
-  --primary-dark: #e8a855;
-  --muted: #6b5847;
-  --border: rgba(169, 147, 119, 0.28);
-  --border-strong: rgba(169, 147, 119, 0.46);
-  --surface-primary: #fffbf6;
-  --surface-secondary: #fbefdd;
-  --surface-elevated: #fffbf6;
-  --surface-glass: rgba(255, 251, 246, 0.78);
-  --surface-chrome: rgba(244, 236, 228, 0.78);
+
+  --slate-50: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%);
+  --slate-100: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --slate-200: color-mix(in srgb, var(--background) 80%, var(--foreground) 20%);
+  --slate-300: color-mix(in srgb, var(--background) 68%, var(--foreground) 32%);
+  --slate-400: color-mix(in srgb, var(--background) 54%, var(--foreground) 46%);
+  --slate-500: color-mix(in srgb, var(--background) 42%, var(--foreground) 58%);
+  --slate-600: color-mix(in srgb, var(--background) 32%, var(--foreground) 68%);
+  --slate-700: color-mix(in srgb, var(--background) 22%, var(--foreground) 78%);
+  --slate-800: color-mix(in srgb, var(--background) 13%, var(--foreground) 87%);
+  --slate-900: color-mix(in srgb, var(--background) 5%, var(--foreground) 95%);
+  --slate-950: var(--foreground);
+
+  --orange-50: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --orange-100: color-mix(in srgb, var(--primary) 30%, var(--background) 70%);
+  --orange-200: color-mix(in srgb, var(--primary) 55%, var(--background) 45%);
+
+  --card: color-mix(in srgb, var(--background) 85%, white 15%);
+  --surface-primary: var(--card);
+  --surface-elevated: var(--card);
+  --surface-secondary: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --surface-glass: color-mix(in srgb, var(--card) 78%, transparent 22%);
+  --surface-chrome: color-mix(in srgb, var(--background) 78%, transparent 22%);
+
+  --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
+  --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
+  --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
+  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+
   background: var(--background);
   color: var(--foreground);
 }
 
 .dark-system {
   color-scheme: dark;
-  --slate-50: #241a10;
-  --slate-100: #2e2117;
-  --slate-200: #3c2c1c;
-  --slate-300: #4a3826;
-  --slate-400: #6b5847;
-  --slate-500: #8c7b6a;
-  --slate-600: #ad9e8f;
-  --slate-700: #cbc0b3;
-  --slate-800: #e2dace;
-  --slate-900: #f0e9df;
-  --slate-950: #f7f3ee;
   --background: #3c2c1c;
   --foreground: #f7f3ee;
-  --card: #4a3826;
-  --primary: #fcbc6c;
-  --primary-dark: #e8a855;
-  --muted: #ad9e8f;
-  --border: rgba(255, 255, 255, 0.1);
-  --border-strong: rgba(255, 255, 255, 0.16);
-  --surface-primary: #4a3826;
-  --surface-secondary: #453320;
-  --surface-elevated: #4a3826;
-  --surface-glass: rgba(74, 56, 38, 0.74);
-  --surface-chrome: rgba(46, 33, 23, 0.78);
+
+  --slate-50: color-mix(in srgb, var(--background) 94%, var(--foreground) 6%);
+  --slate-100: color-mix(in srgb, var(--background) 88%, var(--foreground) 12%);
+  --slate-200: color-mix(in srgb, var(--background) 80%, var(--foreground) 20%);
+  --slate-300: color-mix(in srgb, var(--background) 68%, var(--foreground) 32%);
+  --slate-400: color-mix(in srgb, var(--background) 54%, var(--foreground) 46%);
+  --slate-500: color-mix(in srgb, var(--background) 42%, var(--foreground) 58%);
+  --slate-600: color-mix(in srgb, var(--background) 32%, var(--foreground) 68%);
+  --slate-700: color-mix(in srgb, var(--background) 22%, var(--foreground) 78%);
+  --slate-800: color-mix(in srgb, var(--background) 13%, var(--foreground) 87%);
+  --slate-900: color-mix(in srgb, var(--background) 5%, var(--foreground) 95%);
+  --slate-950: var(--foreground);
+
+  --orange-50: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --orange-100: color-mix(in srgb, var(--primary) 30%, var(--background) 70%);
+  --orange-200: color-mix(in srgb, var(--primary) 55%, var(--background) 45%);
+
+  --card: color-mix(in srgb, var(--background) 85%, white 15%);
+  --surface-primary: var(--card);
+  --surface-elevated: var(--card);
+  --surface-secondary: color-mix(in srgb, var(--primary) 12%, var(--background) 88%);
+  --surface-glass: color-mix(in srgb, var(--card) 78%, transparent 22%);
+  --surface-chrome: color-mix(in srgb, var(--background) 78%, transparent 22%);
+
+  --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
+  --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
+  --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
+  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+
   background:
-    radial-gradient(circle at 12% 0%, rgba(252, 188, 108, 0.1), transparent 28rem),
-    radial-gradient(circle at 88% 14%, rgba(232, 168, 85, 0.06), transparent 26rem),
+    radial-gradient(circle at 12% 0%, var(--ambient-soft), transparent 28rem),
+    radial-gradient(circle at 88% 14%, var(--ambient-muted), transparent 26rem),
     var(--background);
   color: var(--foreground);
 }
@@ -342,44 +368,52 @@ p {
   backdrop-filter: blur(16px);
 }
 
-.dark-system .glass-card {
-  background: rgba(74, 56, 38, 0.82);
-}
-
 .industrial-hero-media {
   background:
-    radial-gradient(circle at 18% 22%, rgba(184, 120, 48, 0.3), transparent 14rem),
-    radial-gradient(circle at 82% 12%, rgba(252, 188, 108, 0.22), transparent 16rem),
-    linear-gradient(135deg, #241a10 0%, #4a3826 44%, #fcbc6c 140%);
+    radial-gradient(circle at 18% 22%, color-mix(in srgb, var(--primary-dark) 35%, transparent 65%), transparent 14rem),
+    radial-gradient(circle at 82% 12%, color-mix(in srgb, var(--primary) 25%, transparent 75%), transparent 16rem),
+    linear-gradient(
+      135deg,
+      var(--surface-inverse) 0%,
+      color-mix(in srgb, var(--surface-inverse) 55%, var(--primary) 15%) 44%,
+      var(--primary) 140%
+    );
 }
 
 .industrial-light-media {
   background:
-    radial-gradient(circle at 20% 18%, rgba(184, 120, 48, 0.22), transparent 14rem),
-    linear-gradient(135deg, #ffffff 0%, #f6efe6 45%, #fde0b8 100%);
+    radial-gradient(circle at 20% 18%, color-mix(in srgb, var(--primary-dark) 26%, transparent 74%), transparent 14rem),
+    linear-gradient(135deg, white 0%, var(--slate-100) 45%, var(--orange-100) 100%);
 }
 
 .course-visual {
   background:
-    linear-gradient(135deg, rgba(36, 26, 16, 0.92), rgba(74, 56, 38, 0.72)),
-    radial-gradient(circle at 25% 20%, rgba(252, 188, 108, 0.52), transparent 10rem),
-    linear-gradient(135deg, #241a10, #6b5847);
+    linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--surface-inverse) 92%, transparent 8%),
+      color-mix(in srgb, var(--surface-inverse) 72%, transparent 28%)
+    ),
+    radial-gradient(circle at 25% 20%, color-mix(in srgb, var(--primary) 52%, transparent 48%), transparent 10rem),
+    linear-gradient(135deg, var(--surface-inverse), color-mix(in srgb, var(--surface-inverse) 40%, var(--primary) 25%));
 }
 
 .light-system .course-visual {
   background:
-    radial-gradient(circle at 24% 18%, rgba(184, 120, 48, 0.24), transparent 10rem),
-    radial-gradient(circle at 78% 18%, rgba(252, 188, 108, 0.22), transparent 12rem),
-    linear-gradient(135deg, #ffffff, #f6efe6);
+    radial-gradient(circle at 24% 18%, color-mix(in srgb, var(--primary-dark) 24%, transparent 76%), transparent 10rem),
+    radial-gradient(circle at 78% 18%, color-mix(in srgb, var(--primary) 22%, transparent 78%), transparent 12rem),
+    linear-gradient(135deg, white, var(--slate-100));
 }
 
 .app-shell-dark {
   min-height: 100vh;
+  color-scheme: dark;
+  --background: #3c2c1c;
+  --foreground: #f7f3ee;
   background:
-    radial-gradient(circle at 0% 0%, rgba(252, 188, 108, 0.1), transparent 28rem),
-    radial-gradient(circle at 100% 6%, rgba(232, 168, 85, 0.06), transparent 24rem),
-    #3c2c1c;
-  color: #f7f3ee;
+    radial-gradient(circle at 0% 0%, var(--ambient-soft), transparent 28rem),
+    radial-gradient(circle at 100% 6%, var(--ambient-muted), transparent 24rem),
+    var(--background);
+  color: var(--foreground);
 }
 
 .premium-bg {
@@ -388,7 +422,7 @@ p {
   overflow: hidden;
   background:
     radial-gradient(circle at 14% 8%, var(--ambient-muted) 0, transparent 30rem),
-    radial-gradient(circle at 84% 0%, rgba(232, 168, 85, 0.1) 0, transparent 24rem),
+    radial-gradient(circle at 84% 0%, var(--ambient-soft) 0, transparent 24rem),
     var(--background);
 }
 
@@ -400,8 +434,8 @@ p {
   pointer-events: none;
   opacity: 0.52;
   background:
-    linear-gradient(rgba(184, 120, 48, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(184, 120, 48, 0.025) 1px, transparent 1px);
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
   background-size: 56px 56px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 78%);
 }
@@ -413,26 +447,9 @@ p {
   z-index: -1;
   pointer-events: none;
   opacity: 0.28;
-  background-image: radial-gradient(rgba(184, 120, 48, 0.18) 0.7px, transparent 0.7px);
+  background-image: radial-gradient(color-mix(in srgb, var(--foreground) 16%, transparent 84%) 0.7px, transparent 0.7px);
   background-size: 18px 18px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 64%);
-}
-
-html.dark .premium-bg {
-  background:
-    radial-gradient(circle at 14% 8%, rgba(252, 188, 108, 0.09) 0, transparent 28rem),
-    radial-gradient(circle at 86% 2%, rgba(232, 168, 85, 0.06) 0, transparent 24rem),
-    var(--background);
-}
-
-html.dark .premium-bg::before {
-  background:
-    linear-gradient(rgba(255, 255, 255, 0.024) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.024) 1px, transparent 1px);
-}
-
-html.dark .premium-bg::after {
-  background-image: radial-gradient(rgba(255, 255, 255, 0.11) 0.7px, transparent 0.7px);
 }
 
 .hero-aura {
@@ -481,8 +498,8 @@ html.dark .premium-bg::after {
   pointer-events: none;
   opacity: 0.72;
   background:
-    linear-gradient(90deg, transparent, rgba(252, 188, 108, 0.14), transparent),
-    radial-gradient(circle at 20% 0%, rgba(252, 217, 169, 0.2), transparent 22rem);
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 20%, transparent 80%), transparent),
+    radial-gradient(circle at 20% 0%, color-mix(in srgb, var(--orange-200) 35%, transparent 65%), transparent 22rem);
   transform: translateX(-62%);
   animation: panel-sheen 7s var(--motion-ease-standard) infinite;
 }
@@ -517,7 +534,7 @@ html.dark .premium-bg::after {
   inset-inline: 0;
   bottom: 0;
   height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(252, 188, 108, 0.7), transparent);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 70%, transparent 30%), transparent);
   transform: translateX(-100%);
   animation: signal-pass 3.8s var(--motion-ease-standard) infinite;
 }
@@ -533,9 +550,9 @@ html.dark .premium-bg::after {
   z-index: 0;
   pointer-events: none;
   background:
-    linear-gradient(115deg, rgba(255, 251, 246, 0.88), rgba(251, 239, 221, 0.64)),
-    repeating-linear-gradient(90deg, rgba(184, 120, 48, 0.1) 0 1px, transparent 1px 5.5rem),
-    repeating-linear-gradient(0deg, rgba(232, 168, 85, 0.08) 0 1px, transparent 1px 5.5rem);
+    linear-gradient(115deg, color-mix(in srgb, var(--card) 90%, transparent 10%), color-mix(in srgb, var(--surface-secondary) 66%, transparent 34%)),
+    repeating-linear-gradient(90deg, color-mix(in srgb, var(--primary-dark) 12%, transparent 88%) 0 1px, transparent 1px 5.5rem),
+    repeating-linear-gradient(0deg, color-mix(in srgb, var(--primary) 10%, transparent 90%) 0 1px, transparent 1px 5.5rem);
 }
 
 .dashboard-mentor-bg::after {
@@ -546,9 +563,9 @@ html.dark .premium-bg::after {
   pointer-events: none;
   opacity: 0.5;
   background:
-    linear-gradient(100deg, transparent 18%, rgba(252, 188, 108, 0.24) 32%, transparent 46%),
-    linear-gradient(120deg, transparent 48%, rgba(184, 120, 48, 0.18) 58%, transparent 70%),
-    linear-gradient(90deg, transparent, rgba(232, 168, 85, 0.22), transparent);
+    linear-gradient(100deg, transparent 18%, color-mix(in srgb, var(--primary) 26%, transparent 74%) 32%, transparent 46%),
+    linear-gradient(120deg, transparent 48%, color-mix(in srgb, var(--primary-dark) 20%, transparent 80%) 58%, transparent 70%),
+    linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary) 24%, transparent 76%), transparent);
   transform: translate3d(-18%, 0, 0);
   animation: dashboard-signal-flow 14s var(--motion-ease-standard) infinite alternate;
 }
@@ -734,15 +751,15 @@ html.dark .premium-bg::after {
 }
 
 .btn-primary {
-  background: var(--orange-400);
-  border-color: rgba(184, 120, 48, 0.55);
-  color: #fffbf6;
+  background: var(--primary);
+  border-color: color-mix(in srgb, var(--primary-dark) 55%, transparent 45%);
+  color: var(--ink-on-primary);
   box-shadow: var(--shadow-md);
 }
 
 .btn-primary:hover {
-  background: var(--orange-500);
-  border-color: rgba(184, 120, 48, 0.75);
+  background: var(--primary-dark);
+  border-color: color-mix(in srgb, var(--primary-dark) 75%, transparent 25%);
   box-shadow: var(--shadow-lg);
 }
 
@@ -764,19 +781,19 @@ html.dark .premium-bg::after {
 }
 
 .btn-ghost:hover {
-  background: rgba(252, 188, 108, 0.1);
+  background: color-mix(in srgb, var(--primary) 12%, transparent 88%);
   color: var(--foreground);
 }
 
 .btn-dark {
-  background: color-mix(in srgb, var(--surface-secondary) 78%, var(--slate-950) 22%);
-  border-color: var(--border-strong);
-  color: #fffbf6;
+  background: var(--surface-inverse);
+  border-color: color-mix(in srgb, var(--ink-on-dark) 24%, transparent 76%);
+  color: var(--ink-on-dark);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-dark:hover {
-  background: color-mix(in srgb, var(--surface-secondary) 70%, var(--slate-950) 30%);
+  background: color-mix(in srgb, var(--surface-inverse) 82%, black 18%);
 }
 
 .btn-soft {
@@ -839,8 +856,8 @@ html.dark .premium-bg::after {
 }
 
 .ui-field:focus-visible {
-  border-color: rgba(252, 188, 108, 0.55);
-  box-shadow: 0 0 0 4px rgba(252, 188, 108, 0.14);
+  border-color: color-mix(in srgb, var(--primary) 55%, transparent 45%);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary) 16%, transparent 84%);
 }
 
 .ui-badge-base {
@@ -874,19 +891,19 @@ html.dark .premium-bg::after {
 }
 
 .ui-badge-rich {
-  background: var(--orange-500);
-  color: #fffbf6;
+  background: var(--primary-dark);
+  color: var(--ink-on-primary);
 }
 
 .ui-progress {
   position: relative;
   overflow: hidden;
   border-radius: 999px;
-  background: rgba(253, 232, 203, 0.42);
+  background: var(--orange-100);
 }
 
 .ui-progress-indicator {
-  background: var(--orange-400);
+  background: var(--primary);
   box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.24);
 }
 
@@ -912,8 +929,8 @@ html.dark .premium-bg::after {
   width: 13px;
   height: 13px;
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(232, 168, 85, 0.6);
+  background: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-dark) 60%, transparent 40%);
   transition: transform 120ms ease;
   margin-top: -5.5px;
 }
@@ -927,8 +944,8 @@ html.dark .premium-bg::after {
   height: 13px;
   border: none;
   border-radius: 999px;
-  background: #ffffff;
-  box-shadow: 0 0 0 3px rgba(232, 168, 85, 0.6);
+  background: white;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-dark) 60%, transparent 40%);
   transition: transform 120ms ease;
 }
 
@@ -937,20 +954,20 @@ html.dark .premium-bg::after {
 }
 
 .gh-player-range:disabled::-webkit-slider-thumb {
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.4);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--muted) 55%, transparent 45%);
 }
 
 .gh-player-range:disabled::-moz-range-thumb {
-  box-shadow: 0 0 0 3px rgba(148, 163, 184, 0.4);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--muted) 55%, transparent 45%);
 }
 
 .ui-tabs-list {
   display: inline-flex;
   border-radius: var(--radius-token-md);
-  background: rgba(251, 239, 221, 0.86);
+  background: var(--surface-secondary);
   padding: 0.25rem;
   color: var(--muted);
-  border: 1px solid rgba(184, 120, 48, 0.08);
+  border: 1px solid color-mix(in srgb, var(--primary-dark) 10%, transparent 90%);
 }
 
 .ui-tabs-trigger {
@@ -966,19 +983,19 @@ html.dark .premium-bg::after {
 }
 
 .ui-tabs-trigger[data-state="active"] {
-  background: rgba(255, 255, 255, 0.94);
+  background: var(--card);
   color: var(--foreground);
   box-shadow: var(--shadow-sm);
 }
 
 .ui-avatar {
-  border: 1px solid rgba(184, 120, 48, 0.08);
-  background: rgba(255, 251, 246, 0.9);
+  border: 1px solid color-mix(in srgb, var(--primary-dark) 10%, transparent 90%);
+  background: color-mix(in srgb, var(--card) 92%, transparent 8%);
 }
 
 .ui-avatar-fallback {
-  background: color-mix(in srgb, var(--orange-400) 88%, var(--orange-500) 12%);
-  color: #fffbf6;
+  background: color-mix(in srgb, var(--primary) 88%, var(--primary-dark) 12%);
+  color: var(--ink-on-primary);
 }
 
 html.dark .bg-white {
@@ -986,92 +1003,23 @@ html.dark .bg-white {
 }
 
 html.dark .bg-white\/90 {
-  background-color: rgba(36, 26, 16, 0.9) !important;
+  background-color: color-mix(in srgb, var(--surface-inverse) 90%, transparent 10%) !important;
 }
 
 html.dark .text-white {
-  color: #f7f3ee;
+  color: var(--ink-on-dark);
 }
 
 html.dark .bg-slate-950 {
-  background-color: #2e2117 !important;
+  background-color: var(--surface-inverse) !important;
 }
 
-html.dark .bg-slate-50,
-html.dark .bg-slate-100 {
-  background-color: rgba(255, 255, 255, 0.035) !important;
+html.dark .bg-slate-950\/78 {
+  background-color: color-mix(in srgb, var(--surface-inverse) 78%, transparent 22%) !important;
 }
 
-html.dark .border-slate-200 {
-  border-color: rgba(255, 255, 255, 0.1) !important;
-}
-
-html.dark .border-white\/10 {
-  border-color: rgba(255, 255, 255, 0.08) !important;
-}
-
-html.dark .bg-white\/5 {
-  background-color: rgba(255, 255, 255, 0.04) !important;
-}
-
-html.dark .bg-orange-50 {
-  background-color: rgba(252, 188, 108, 0.14) !important;
-}
-
-html.dark .bg-orange-100 {
-  background-color: rgba(232, 168, 85, 0.14) !important;
-}
-
-html.dark .border-orange-200,
-html.dark .border-orange-300 {
-  border-color: rgba(252, 188, 108, 0.34) !important;
-}
-
-html.dark .text-orange-300 {
-  color: #fcd9a9 !important;
-}
-
-html.dark .text-orange-600,
-html.dark .text-orange-700 {
-  color: #fcbc6c !important;
-}
-
-html.dark .text-slate-300 {
-  color: #cbc0b3 !important;
-}
-
-html.dark .text-slate-400 {
-  color: #ad9e8f !important;
-}
-
-html.dark .text-slate-500 {
-  color: #8c7b6a !important;
-}
-
-html.dark .text-slate-600 {
-  color: #cbc0b3 !important;
-}
-
-html.dark .text-slate-700 {
-  color: #e2dace !important;
-}
-
-html.dark .text-slate-950 {
-  color: #f7f3ee !important;
-}
-
-html.dark .shadow-slate-950\/10,
-html.dark .shadow-slate-950\/\[0\.03\] {
-  box-shadow: var(--shadow-sm) !important;
-}
-
-html.dark .bg-black\/20 {
-  background-color: rgba(0, 0, 0, 0.24) !important;
-}
-
-html.dark .bg-slate-950\/78,
 html.dark .bg-slate-950\/95 {
-  background-color: rgba(36, 26, 16, 0.9) !important;
+  background-color: color-mix(in srgb, var(--surface-inverse) 95%, transparent 5%) !important;
 }
 
 [class*="tracking-"] {
