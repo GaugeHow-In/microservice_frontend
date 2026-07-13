@@ -144,7 +144,10 @@ html.dark {
   color-scheme: dark;
   --background: #3c2c1c;
   --foreground: #f7f3ee;
-  --accent-ink: color-mix(in srgb, var(--primary) 55%, var(--foreground) 45%);
+  /* Unlike in light mode, primary already has plenty of contrast against a
+     dark surface, so accent text stays at full saturation here instead of
+     blending toward --foreground (which would only pale it out further). */
+  --accent-ink: var(--primary);
 
   /* A warm glow reads much more strongly against a dark surface than a
      light one, so the ambient decoration needs to be dimmer here to look
@@ -349,7 +352,7 @@ p {
   color-scheme: dark;
   --background: #3c2c1c;
   --foreground: #f7f3ee;
-  --accent-ink: color-mix(in srgb, var(--primary) 55%, var(--foreground) 45%);
+  --accent-ink: var(--primary);
   --ambient-soft: color-mix(in srgb, var(--primary) 10%, transparent 90%);
   --ambient-muted: color-mix(in srgb, var(--primary) 6%, transparent 94%);
   --surface-lighten: var(--primary);
