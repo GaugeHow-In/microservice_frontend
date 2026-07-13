@@ -111,7 +111,7 @@ export default function DashboardPage() {
         <div className="mx-auto max-w-7xl space-y-12">
           <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
             <div>
-              <p className="text-sm font-bold uppercase text-orange-400">Dashboard</p>
+              <p className="text-sm font-bold uppercase text-accent">Dashboard</p>
               <h1 className="mt-3 max-w-4xl text-4xl font-extrabold text-slate-950 md:text-5xl">
                 Welcome back, {firstName}!
               </h1>
@@ -129,7 +129,7 @@ export default function DashboardPage() {
                   key={label}
                   className="flex items-center gap-3 rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-slate-600"
                 >
-                  <LucideIcon className="size-4 text-orange-400" />
+                  <LucideIcon className="size-4 text-accent" />
                   <span className="text-slate-500">{label}</span>
                   <span className="max-w-36 truncate font-bold text-slate-950">{value}</span>
                 </div>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
                   key={prompt}
                   type="button"
                   onClick={() => setMentorQuery(prompt)}
-                  className="rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-orange-300"
+                  className="rounded-full bg-[color:var(--surface-secondary)] px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-accent"
                 >
                   {prompt}
                 </button>
@@ -213,7 +213,7 @@ export default function DashboardPage() {
 
               <div className="flex flex-col justify-center p-5 md:p-6">
                 <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <span className="rounded-full bg-orange-300/10 px-3 py-1 text-[11px] font-bold uppercase text-orange-300">
+                  <span className="rounded-full bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase text-accent">
                     Module 4: Variables
                   </span>
                   <span className="text-xs text-slate-500">
@@ -247,7 +247,7 @@ export default function DashboardPage() {
           <section>
             <div className="mb-5 flex items-center justify-between">
               <h2 className="text-2xl font-extrabold text-slate-950">Recommended for You</h2>
-              <Link href="/courses" className="text-sm font-bold text-orange-300 hover:underline">
+              <Link href="/courses" className="text-sm font-bold text-accent hover:underline">
                 View all
               </Link>
             </div>
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                         </span>
                       </div>
                       <div className="pt-4">
-                        <h3 className="font-bold text-slate-950 transition group-hover:text-orange-300">
+                        <h3 className="font-bold text-slate-950 transition group-hover:text-accent">
                           {course.title}
                         </h3>
                         <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
@@ -314,7 +314,7 @@ export default function DashboardPage() {
                 ].map(({ title, detail, icon: LucideIcon }) => (
                   <div key={String(title)} className="flex items-center justify-between gap-4 p-4">
                     <div className="flex min-w-0 items-center gap-4">
-                      <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-orange-300/12 text-orange-300">
+                      <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-accent/12 text-accent">
                         <LucideIcon className="size-5" />
                       </span>
                       <div className="min-w-0">
@@ -339,7 +339,7 @@ export default function DashboardPage() {
                   { label: "Study rhythm", value: `${dashboard.weeklyStudyHours} hours planned`, icon: Flame },
                 ].map(({ label, value, icon: LucideIcon }) => (
                   <div key={String(label)} className="flex gap-4 border-b border-[color:var(--border)] pb-4 last:border-b-0">
-                    <LucideIcon className="mt-1 size-5 shrink-0 text-orange-300" />
+                    <LucideIcon className="mt-1 size-5 shrink-0 text-accent" />
                     <div>
                       <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
                       <p className="mt-1 font-bold text-slate-950">{value}</p>

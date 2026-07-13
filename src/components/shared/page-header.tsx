@@ -15,7 +15,7 @@ export function PageHeader({
   action,
 }: PageHeaderProps) {
   return (
-    <div className="hero-aura signal-line reveal-up relative overflow-hidden pb-2">
+    <div className="reveal-up relative pb-2">
       <div className="relative z-10 flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
         <div className="max-w-3xl space-y-3">
           {eyebrow && <Badge variant="orange">{eyebrow}</Badge>}
