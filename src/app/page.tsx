@@ -250,7 +250,7 @@ export default async function Home() {
 
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {featured.map((course, index) => (
-            <article key={course.slug} className="group flex flex-col">
+            <article key={course.slug} className="browse-card group flex flex-col p-4">
               <div className="course-visual relative aspect-video overflow-hidden rounded-xl">
                 <div className="absolute inset-0 surface-grid opacity-40" />
                 <div className="absolute left-4 top-4 rounded-full bg-orange-600 px-3 py-1 text-xs font-bold text-white">

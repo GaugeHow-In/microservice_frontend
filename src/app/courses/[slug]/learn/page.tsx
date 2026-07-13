@@ -450,7 +450,7 @@ function SimpleMarkdown({ content, compact = false }: { content: string; compact
             );
           }
           return (
-            <h3 key={bi} className="text-base font-semibold text-slate-900">
+            <h3 key={bi} className="text-base font-semibold text-slate-950">
               {renderInline(text)}
             </h3>
           );

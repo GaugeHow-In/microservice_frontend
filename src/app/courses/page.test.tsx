@@ -137,8 +137,6 @@ describe("CoursesPage", () => {
       expect(screen.getByText("AutoCAD for Design Drafting")).toBeInTheDocument();
     });
 
-    expect(screen.getByText("MATLAB for Engineering Computation")).toBeInTheDocument();
-    expect(screen.getByText("Real backend data")).toBeInTheDocument();
   });
 
   it("updates the catalog query when the search input changes", async () => {

@@ -126,7 +126,7 @@ function EmptyState({ title }: { title: string }) {
 
 function CourseCard({ course }: { course: PublicProfileCourse }) {
   return (
-    <article className="rounded-lg bg-[color:var(--surface-secondary)] p-4">
+    <article className="browse-card p-4">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <Link
@@ -162,7 +162,7 @@ function CourseCard({ course }: { course: PublicProfileCourse }) {
 
 function CertificateCard({ certificate }: { certificate: PublicProfileCertificate }) {
   return (
-    <article className="rounded-lg bg-[color:var(--surface-secondary)] p-4">
+    <article className="browse-card p-4">
       <div className="flex items-start gap-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500">
           <Award className="size-5" />

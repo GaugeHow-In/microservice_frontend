@@ -251,17 +251,17 @@ export default function DashboardPage() {
                 View all
               </Link>
             </div>
-            <div className="grid gap-8 md:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-3">
               {isDashboardLoading
                 ? Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index}>
+                    <div key={index} className="browse-card p-4">
                       <Skeleton className="h-48 rounded-xl" />
                       <Skeleton className="mt-4 h-5 w-3/4 rounded" />
                       <Skeleton className="mt-2 h-4 w-1/2 rounded" />
                     </div>
                   ))
                 : recommendations.map((course, index) => (
-                    <Link key={course.slug} href={`/courses/${course.slug}`} className="group">
+                    <Link key={course.slug} href={`/courses/${course.slug}`} className="browse-card group p-4">
                       <div className="industrial-hero-media relative h-48 overflow-hidden rounded-xl">
                         {course.thumbnail_url ? (
                           <Image

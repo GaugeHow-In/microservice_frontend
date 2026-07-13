@@ -125,14 +125,12 @@ export default function TestsPage() {
         ) : isLoading ? (
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <Card key={index}>
-                <CardContent className="space-y-4 p-5">
-                  <Skeleton className="h-7 w-4/5 rounded-md" />
-                  <Skeleton className="h-4 w-full rounded-md" />
-                  <Skeleton className="h-20 rounded-xl" />
-                  <Skeleton className="h-10 rounded-lg" />
-                </CardContent>
-              </Card>
+              <div key={index} className="browse-card space-y-4 p-5">
+                <Skeleton className="h-7 w-4/5 rounded-md" />
+                <Skeleton className="h-4 w-full rounded-md" />
+                <Skeleton className="h-20 rounded-xl" />
+                <Skeleton className="h-10 rounded-lg" />
+              </div>
             ))}
           </div>
         ) : filteredTests.length ? (
@@ -140,51 +138,49 @@ export default function TestsPage() {
             {filteredTests.map((test) => {
               const badge = accessBadge(test);
               return (
-                <Card key={test.slug} className="overflow-hidden">
-                  <CardContent className="space-y-4 p-5">
-                    <div className="flex flex-wrap gap-2">
-                      <Badge variant={badge.variant}>{badge.label}</Badge>
-                      {test.is_certificate_required ? (
-                        <Badge variant="orange">Certificate required</Badge>
-                      ) : null}
-                      {test.course_id ? <Badge>Course final</Badge> : <Badge>Standalone</Badge>}
+                <div key={test.slug} className="browse-card space-y-4 p-5">
+                  <div className="flex flex-wrap gap-2">
+                    <Badge variant={badge.variant}>{badge.label}</Badge>
+                    {test.is_certificate_required ? (
+                      <Badge variant="orange">Certificate required</Badge>
+                    ) : null}
+                    {test.course_id ? <Badge>Course final</Badge> : <Badge>Standalone</Badge>}
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-slate-950">{test.title}</h2>
+                    <p className="mt-1 line-clamp-2 text-sm text-slate-500">
+                      {test.description ?? "Timed GaugeHow assessment."}
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3 rounded-xl bg-[color:var(--surface-secondary)] p-3 text-sm">
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">Time</p>
+                      <p className="mt-1 font-bold text-slate-950">{formatDuration(test.duration_seconds)}</p>
                     </div>
                     <div>
-                      <h2 className="text-xl font-bold text-slate-950">{test.title}</h2>
-                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">
-                        {test.description ?? "Timed GaugeHow assessment."}
-                      </p>
+                      <p className="text-xs font-semibold text-slate-500">Questions</p>
+                      <p className="mt-1 font-bold text-slate-950">{test.question_count}</p>
                     </div>
-                    <div className="grid grid-cols-3 gap-3 rounded-xl bg-slate-50 p-3 text-sm">
-                      <div>
-                        <p className="text-xs font-semibold text-slate-500">Time</p>
-                        <p className="mt-1 font-bold text-slate-900">{formatDuration(test.duration_seconds)}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-slate-500">Questions</p>
-                        <p className="mt-1 font-bold text-slate-900">{test.question_count}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs font-semibold text-slate-500">Pass</p>
-                        <p className="mt-1 font-bold text-slate-900">{test.passing_percent}%</p>
-                      </div>
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500">Pass</p>
+                      <p className="mt-1 font-bold text-slate-950">{test.passing_percent}%</p>
                     </div>
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="text-sm font-semibold text-slate-700">
-                        {formatTestPrice(test.access)}
-                      </span>
-                      <Button asChild disabled={!test.access.has_access}>
-                        <Link href={test.access.has_access ? `/tests/active?test=${test.slug}` : "/tests"}>
-                          {test.access.has_access ? <Timer /> : <LockKeyhole />}
-                          {test.access.has_access ? "Open" : "Locked"}
-                        </Link>
-                      </Button>
-                    </div>
-                    {!test.access.has_access && test.access.locked_reason ? (
-                      <p className="text-xs font-medium text-slate-500">{test.access.locked_reason}</p>
-                    ) : null}
-                  </CardContent>
-                </Card>
+                  </div>
+                  <div className="flex items-center justify-between gap-3">
+                    <span className="text-sm font-semibold text-slate-700">
+                      {formatTestPrice(test.access)}
+                    </span>
+                    <Button asChild disabled={!test.access.has_access}>
+                      <Link href={test.access.has_access ? `/tests/active?test=${test.slug}` : "/tests"}>
+                        {test.access.has_access ? <Timer /> : <LockKeyhole />}
+                        {test.access.has_access ? "Open" : "Locked"}
+                      </Link>
+                    </Button>
+                  </div>
+                  {!test.access.has_access && test.access.locked_reason ? (
+                    <p className="text-xs font-medium text-slate-500">{test.access.locked_reason}</p>
+                  ) : null}
+                </div>
               );
             })}
           </div>

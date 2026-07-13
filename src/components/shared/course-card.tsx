@@ -17,8 +17,8 @@ export function CourseCard({ course }: CourseCardProps) {
   const hasAccess = course.access?.has_access ?? false;
 
   return (
-    <article className="group grid gap-5 py-7 md:grid-cols-[17rem_minmax(0,1fr)]">
-      <div className="relative min-h-48 overflow-hidden rounded-2xl bg-[color:var(--surface-secondary)]">
+    <article className="browse-card group grid gap-5 p-5 md:grid-cols-[17rem_minmax(0,1fr)]">
+      <div className="relative min-h-48 overflow-hidden rounded-xl bg-[color:var(--surface-secondary)]">
         {course.thumbnail_url ? (
           <Image
             src={course.thumbnail_url}

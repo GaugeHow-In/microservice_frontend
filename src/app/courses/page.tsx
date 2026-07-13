@@ -95,7 +95,7 @@ export default function CoursesPage() {
       <div className="space-y-10">
         <section className="pt-4">
           <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="orange">Real backend data</Badge>
+            <Badge variant="orange"></Badge>
             <h2 className="sr-only">Practical courses for engineering workflows.</h2>
             <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-950 md:text-6xl">
               Explore courses for engineering workflows
@@ -184,10 +184,10 @@ export default function CoursesPage() {
             {error ? (
               <p className="p-5 text-sm font-medium text-rose-600">{error}</p>
             ) : isLoading ? (
-              <div className="divide-y divide-[color:var(--border)]">
+              <div className="space-y-5">
                 {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="grid gap-5 py-7 md:grid-cols-[17rem_minmax(0,1fr)]">
-                    <Skeleton className="h-48 rounded-2xl" />
+                  <div key={index} className="browse-card grid gap-5 p-5 md:grid-cols-[17rem_minmax(0,1fr)]">
+                    <Skeleton className="h-48 rounded-xl" />
                     <div className="space-y-4 py-1">
                       <Skeleton className="h-5 w-24 rounded" />
                       <Skeleton className="h-8 w-4/5 rounded" />
@@ -199,7 +199,7 @@ export default function CoursesPage() {
                 ))}
               </div>
             ) : courses.length ? (
-              <div className="divide-y divide-[color:var(--border)]">
+              <div className="space-y-5">
                 {courses.map((course) => (
                   <CourseCard key={course.slug} course={course} />
                 ))}

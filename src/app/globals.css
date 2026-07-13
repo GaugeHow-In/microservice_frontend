@@ -847,6 +847,25 @@ p {
   background: color-mix(in srgb, var(--surface-secondary) 82%, var(--primary) 18%);
 }
 
+/* For browsable catalog items (course/test/library tiles) rather than
+   static layout sections: a thin resting border for definition, then a
+   Coursera-style lift + shadow on hover to signal it's clickable. */
+.browse-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-token-lg);
+  background: var(--surface-primary);
+  transition:
+    transform var(--motion-duration-md) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-md) var(--motion-ease-standard),
+    border-color var(--motion-duration-md) var(--motion-ease-standard);
+}
+
+.browse-card:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+
 .ui-field {
   width: 100%;
   min-height: 2.875rem;

@@ -131,9 +131,9 @@ export default function LibraryPage() {
         {error ? (
           <p className="text-sm font-medium text-rose-600">{error}</p>
         ) : isLoading ? (
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="space-y-4">
+              <div key={index} className="browse-card space-y-4 p-4">
                 <Skeleton className="h-40 rounded-xl" />
                 <Skeleton className="h-6 w-4/5 rounded-md" />
                 <Skeleton className="h-4 w-full rounded-md" />
@@ -142,9 +142,9 @@ export default function LibraryPage() {
             ))}
           </div>
         ) : documents.length ? (
-          <div className="grid gap-8 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
             {documents.map((document) => (
-              <div key={document.slug}>
+              <div key={document.slug} className="browse-card p-4">
                 {document.thumbnail_url ? (
                   // eslint-disable-next-line @next/next/no-img-element
                   <img
