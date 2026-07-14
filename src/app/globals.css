@@ -142,7 +142,8 @@ html {
 
 html.dark {
   color-scheme: dark;
-  --background: #3c2c1c;
+  --primary: #dfb256;
+  --background: #000000;
   --foreground: #f7f3ee;
   /* Unlike in light mode, primary already has plenty of contrast against a
      dark surface, so accent text stays at full saturation here instead of
@@ -350,7 +351,8 @@ p {
 
 .dark-system {
   color-scheme: dark;
-  --background: #3c2c1c;
+  --primary: #dfb256;
+  --background: #000000;
   --foreground: #f7f3ee;
   --accent-ink: var(--primary);
   --ambient-soft: color-mix(in srgb, var(--primary) 10%, transparent 90%);
@@ -438,7 +440,8 @@ p {
 .app-shell-dark {
   min-height: 100vh;
   color-scheme: dark;
-  --background: #3c2c1c;
+  --primary: #dfb256;
+  --background: #000000;
   --foreground: #f7f3ee;
   background:
     radial-gradient(circle at 0% 0%, var(--ambient-soft), transparent 28rem),
