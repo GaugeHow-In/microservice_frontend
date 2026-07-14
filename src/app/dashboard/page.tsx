@@ -5,21 +5,31 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
+  ArrowRight,
   Award,
   BookOpen,
-  ClipboardCheck,
+  Compass,
   Flame,
-  Play,
+  Library,
   Send,
-  Star,
+  Sparkles,
 } from "lucide-react";
 import { AppShell } from "@/components/layout/app-shell";
-import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/providers/auth-provider";
-import { aiClient, type Roadmap, type StudentAIContext } from "@/lib/ai-client";
-import { formatMinutes, learningClient, type CourseCatalogItem } from "@/lib/learning-client";
+import { TwinkleField } from "@/components/shared/twinkle-field";
+import { aiClient, type Roadmap, type RoadmapStep, type StudentAIContext } from "@/lib/ai-client";
+import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
+import { gamificationClient, type GamificationSummary } from "@/lib/gamification-client";
+
+const stepKindLabel: Record<RoadmapStep["kind"], string> = {
+  course: "Course",
+  test: "Test",
+  practice: "Practice",
+  revision: "Revision",
+  milestone: "Milestone",
+};
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -27,6 +37,7 @@ export default function DashboardPage() {
   const [courses, setCourses] = useState<CourseCatalogItem[]>([]);
   const [context, setContext] = useState<StudentAIContext | null>(null);
   const [roadmaps, setRoadmaps] = useState<Roadmap[]>([]);
+  const [gamification, setGamification] = useState<GamificationSummary | null>(null);
   const [mentorQuery, setMentorQuery] = useState("");
   const [isDashboardLoading, setIsDashboardLoading] = useState(true);
 
@@ -36,16 +47,18 @@ export default function DashboardPage() {
 
     async function loadDashboard() {
       setIsDashboardLoading(true);
-      const [courseResult, contextResult, roadmapResult] = await Promise.allSettled([
-        learningClient.listCourses({ pageSize: 6, token: accessToken }),
+      const [courseResult, contextResult, roadmapResult, gamificationResult] = await Promise.allSettled([
+        learningClient.listCourses({ pageSize: 8, token: accessToken }),
         accessToken ? aiClient.getContext(accessToken) : Promise.resolve(null),
         accessToken ? aiClient.listRoadmaps(accessToken) : Promise.resolve([]),
+        accessToken ? gamificationClient.getSummary(accessToken) : Promise.resolve(null),
       ]);
 
       if (cancelled) return;
       setCourses(courseResult.status === "fulfilled" ? courseResult.value.items : []);
       setContext(contextResult.status === "fulfilled" ? contextResult.value : null);
       setRoadmaps(roadmapResult.status === "fulfilled" ? roadmapResult.value : []);
+      setGamification(gamificationResult.status === "fulfilled" ? gamificationResult.value : null);
       setIsDashboardLoading(false);
     }
 
@@ -57,7 +70,6 @@ export default function DashboardPage() {
 
   const dashboard = useMemo(() => {
     const activeCourses = courses.filter((course) => course.access?.has_access);
-    const lessonCount = courses.reduce((total, course) => total + course.lesson_count, 0);
     const averageProgress = activeCourses.length
       ? Math.round(
           activeCourses.reduce(
@@ -67,20 +79,33 @@ export default function DashboardPage() {
         )
       : 0;
     const weeklyStudyHours = context?.weekly_study_hours ?? 8;
-    const focusArea =
-      context?.interests[0] ??
-      roadmaps[0]?.answers.focus_areas[0] ??
-      courses.find((course) => course.access?.has_access)?.categories[0]?.name ??
-      "Core engineering";
+
+    const categoryProgress = new Map<string, { total: number; count: number }>();
+    for (const course of activeCourses) {
+      const categoryName = course.categories[0]?.name;
+      if (!categoryName) continue;
+      const entry = categoryProgress.get(categoryName) ?? { total: 0, count: 0 };
+      entry.total += course.access?.progress_percent ?? 0;
+      entry.count += 1;
+      categoryProgress.set(categoryName, entry);
+    }
+    const skillBreakdown = [...categoryProgress.entries()]
+      .map(([name, { total, count }]) => ({ name, progress: Math.round(total / count) }))
+      .sort((a, b) => b.progress - a.progress)
+      .slice(0, 3);
+
+    const latestRoadmap = roadmaps[0] ?? null;
+    const nextMoves = (latestRoadmap?.plan.steps ?? [])
+      .filter((step) => !step.completed)
+      .sort((a, b) => a.week_start - b.week_start)
+      .slice(0, 2);
 
     return {
       activeCourses,
       averageProgress,
-      focusArea,
-      lessonCount,
-      nextSessionMinutes: Math.max(25, Math.min(90, Math.round((weeklyStudyHours * 60) / 5))),
-      primaryGoal: context?.goals[0] ?? roadmaps[0]?.answers.goal ?? "Build your next skill",
       weeklyStudyHours,
+      skillBreakdown,
+      nextMoves,
     };
   }, [context, courses, roadmaps]);
 
@@ -96,25 +121,23 @@ export default function DashboardPage() {
   }
 
   const firstName = (user?.display_name ?? "learner").split(" ")[0];
-  const currentCourse = dashboard.activeCourses[0] ?? courses[0] ?? null;
-  const recommendations = courses.filter((course) => course.slug !== currentCourse?.slug).slice(0, 3);
-  const progress = Math.max(
-    8,
-    Math.round(currentCourse?.access?.progress_percent ?? (dashboard.averageProgress || 72)),
-  );
-  const promptChips = ["How do I use auto-layout?", "Summarize Lesson 4", "Engineering math cheat sheet"];
+  const progress = Math.round(dashboard.averageProgress);
+  const yourCourses = (dashboard.activeCourses.length ? dashboard.activeCourses : courses).slice(0, 2);
+  const earnedBadges = gamification?.badges.filter((badge) => badge.earned).slice(0, 4) ?? [];
+  const promptChips = ["Calculate gear ratio", "Explain stress-strain curve", "Verify FEA mesh", "GD&T basics"];
 
   return (
     <AppShell>
       <div className="relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
-        <div className="mx-auto max-w-7xl space-y-12">
-          <section className="hero-aura -mx-4 px-4 py-10 text-center sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-10">
+          <section className="hero-aura relative -mx-4 overflow-hidden rounded-none px-4 py-14 text-center sm:-mx-6 sm:rounded-3xl sm:px-6 lg:-mx-8 lg:px-8">
+            <TwinkleField />
             <div className="relative mx-auto max-w-3xl">
               <h1 className="text-4xl font-extrabold text-slate-950 md:text-5xl">
                 Welcome back, {firstName}.
               </h1>
               <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">
-                {progress}% through this week — keep the momentum going.
+                Ready to continue your engineering journey today?
               </p>
 
               <form onSubmit={openMentor} className="mx-auto mt-8 max-w-2xl">
@@ -156,173 +179,188 @@ export default function DashboardPage() {
             </div>
           </section>
 
-          <section className="mx-auto max-w-5xl overflow-hidden rounded-2xl surface-secondary">
-            <div className="grid lg:grid-cols-[0.82fr_1fr]">
-              <Link
-                href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}
-                className="group relative min-h-[13rem] overflow-hidden lg:min-h-[15rem]"
-              >
-                <div className="absolute left-5 top-5 z-10 flex items-center gap-2 rounded-full bg-[#241a10]/70 px-3 py-1 text-xs font-bold uppercase text-orange-300 backdrop-blur">
-                  <Play className="size-4" />
-                  Continue Learning
+          <section className="grid gap-6 lg:grid-cols-[1fr_20rem]">
+            <div className="space-y-8">
+              <div>
+                <div className="mb-4 flex items-center justify-between">
+                  <h2 className="text-xl font-extrabold text-slate-950">Your Courses</h2>
+                  <Link href="/courses" className="text-sm font-bold text-accent hover:underline">
+                    View all
+                  </Link>
                 </div>
-                {currentCourse?.thumbnail_url ? (
-                  <Image
-                    src={currentCourse.thumbnail_url}
-                    alt={currentCourse.title}
-                    fill
-                    unoptimized
-                    sizes="(min-width: 1024px) 42vw, 100vw"
-                    className="object-cover transition duration-500 group-hover:scale-105"
-                  />
-                ) : (
-                  <div className="industrial-hero-media absolute inset-0" />
-                )}
-                <div className="absolute inset-0 bg-gradient-to-r from-[#241a10]/88 via-[#241a10]/36 to-transparent" />
-                <div className="absolute inset-0 surface-grid opacity-20" />
-                <div className="relative z-10 flex h-full min-h-[13rem] items-center p-5 lg:min-h-[15rem]">
-                  <span className="flex size-14 items-center justify-center rounded-full bg-orange-400/20 text-orange-200 backdrop-blur transition group-hover:bg-orange-400 group-hover:text-slate-950">
-                    <Play className="ml-0.5 size-7 fill-current" />
-                  </span>
+                <div className="grid gap-5 sm:grid-cols-2">
+                  {isDashboardLoading ? (
+                    Array.from({ length: 2 }).map((_, index) => (
+                      <div key={index} className="browse-card p-3">
+                        <Skeleton className="h-36 rounded-xl" />
+                        <Skeleton className="mt-3 h-4 w-3/4 rounded" />
+                        <Skeleton className="mt-2 h-3 w-1/2 rounded" />
+                      </div>
+                    ))
+                  ) : yourCourses.length ? (
+                    yourCourses.map((course) => {
+                      const courseProgress = Math.round(course.access?.progress_percent ?? 0);
+                      return (
+                        <Link key={course.slug} href={`/courses/${course.slug}`} className="browse-card group p-3">
+                          <div className="industrial-hero-media relative h-36 overflow-hidden rounded-xl">
+                            {course.thumbnail_url ? (
+                              <Image
+                                src={course.thumbnail_url}
+                                alt={course.title}
+                                fill
+                                unoptimized
+                                sizes="(min-width: 640px) 24vw, 100vw"
+                                className="object-cover transition duration-500 group-hover:scale-105"
+                              />
+                            ) : null}
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#241a10]/75 via-transparent to-transparent" />
+                          </div>
+                          <div className="pt-3">
+                            <h3 className="truncate font-bold text-slate-950 transition group-hover:text-accent">
+                              {course.title}
+                            </h3>
+                            <p className="truncate text-xs text-slate-500">
+                              {course.instructors[0]?.display_name ?? "GaugeHow Faculty"}
+                            </p>
+                            <div className="mt-3 space-y-1.5">
+                              <div className="flex justify-between text-[11px]">
+                                <span className="font-bold text-slate-950">{courseProgress}% Complete</span>
+                                <span className="text-slate-500">{course.lesson_count} lessons</span>
+                              </div>
+                              <Progress value={courseProgress} />
+                            </div>
+                          </div>
+                        </Link>
+                      );
+                    })
+                  ) : (
+                    <Link
+                      href="/courses"
+                      className="browse-card col-span-full flex flex-col items-center gap-2 p-8 text-center"
+                    >
+                      <Compass className="size-6 text-accent" />
+                      <p className="font-bold text-slate-950">Enroll in your first course</p>
+                      <p className="text-sm text-slate-500">Browse the catalog to get your dashboard rolling.</p>
+                    </Link>
+                  )}
                 </div>
-              </Link>
+              </div>
 
-              <div className="flex flex-col justify-center p-5 md:p-6">
-                <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-                  <span className="rounded-full bg-accent/10 px-3 py-1 text-[11px] font-bold uppercase text-accent">
-                    Module 4: Variables
-                  </span>
-                  <span className="text-xs text-slate-500">
-                    {dashboard.nextSessionMinutes} mins remaining
-                  </span>
-                </div>
-                <h2 className="max-w-xl text-2xl font-extrabold text-slate-950 md:text-3xl">
-                  {currentCourse?.title ?? "Advanced Figma Prototyping"}
-                </h2>
-                <p className="mt-3 line-clamp-2 text-sm leading-6 text-slate-500">
-                  {currentCourse?.short_description ??
-                    "Master conditional logic, component sets, and advanced micro-interactions for engineering dashboards."}
-                </p>
-                <div className="mt-5 space-y-2">
+              <div>
+                <h2 className="mb-4 text-xl font-extrabold text-slate-950">Recent Achievements</h2>
+                {earnedBadges.length ? (
+                  <div className="flex flex-wrap gap-6">
+                    {earnedBadges.map((badge) => (
+                      <div key={badge.code} className="flex w-20 flex-col items-center gap-2 text-center">
+                        <span className="flex size-14 items-center justify-center rounded-full bg-accent/12 text-accent">
+                          <Award className="size-6" />
+                        </span>
+                        <p className="truncate text-xs font-bold text-slate-950">{badge.name}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="rounded-xl surface-secondary p-4 text-sm text-slate-500">
+                    Keep learning to unlock your first badge.
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-5">
+              <div className="rounded-2xl surface-secondary p-5">
+                <p className="text-sm font-extrabold text-slate-950">Weekly Progress</p>
+                <div className="mt-3 space-y-1.5">
                   <div className="flex justify-between text-xs">
-                    <span className="font-bold text-slate-950">{progress}% Complete</span>
-                    <span className="text-slate-500">{currentCourse?.lesson_count ?? 14} lessons</span>
+                    <span className="text-slate-500">Overall course progress</span>
+                    <span className="font-bold text-slate-950">{progress}%</span>
                   </div>
                   <Progress value={progress} />
                 </div>
-                <Button asChild className="mt-5 w-fit">
-                  <Link href={currentCourse ? `/courses/${currentCourse.slug}` : "/courses"}>
-                    Resume module
-                    <Play />
-                  </Link>
-                </Button>
+                <div className="mt-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-[color:var(--card)] p-3">
+                    <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-500">
+                      <BookOpen className="size-3.5" /> Active
+                    </p>
+                    <p className="mt-1 font-extrabold text-slate-950">{dashboard.activeCourses.length} courses</p>
+                  </div>
+                  <div className="rounded-xl bg-[color:var(--card)] p-3">
+                    <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase text-slate-500">
+                      <Flame className="size-3.5" /> Streak
+                    </p>
+                    <p className="mt-1 font-extrabold text-slate-950">
+                      {gamification?.daily_check_in.streak_days ?? 0} days
+                    </p>
+                  </div>
+                </div>
               </div>
-            </div>
-          </section>
 
-          <section>
-            <div className="mb-5 flex items-center justify-between">
-              <h2 className="text-2xl font-extrabold text-slate-950">Recommended for You</h2>
-              <Link href="/courses" className="text-sm font-bold text-accent hover:underline">
-                View all
-              </Link>
-            </div>
-            <div className="grid gap-6 md:grid-cols-3">
-              {isDashboardLoading
-                ? Array.from({ length: 3 }).map((_, index) => (
-                    <div key={index} className="browse-card p-4">
-                      <Skeleton className="h-48 rounded-xl" />
-                      <Skeleton className="mt-4 h-5 w-3/4 rounded" />
-                      <Skeleton className="mt-2 h-4 w-1/2 rounded" />
-                    </div>
-                  ))
-                : recommendations.map((course, index) => (
-                    <Link key={course.slug} href={`/courses/${course.slug}`} className="browse-card group p-4">
-                      <div className="industrial-hero-media relative h-48 overflow-hidden rounded-xl">
-                        {course.thumbnail_url ? (
-                          <Image
-                            src={course.thumbnail_url}
-                            alt={course.title}
-                            fill
-                            unoptimized
-                            sizes="(min-width: 768px) 33vw, 100vw"
-                            className="object-cover transition duration-500 group-hover:scale-105"
-                          />
-                        ) : null}
-                        <div className="absolute inset-0 bg-gradient-to-t from-[#241a10]/80 via-transparent to-transparent" />
-                        <span className="absolute right-3 top-3 rounded bg-[#241a10]/80 px-2 py-1 text-[10px] font-bold text-orange-300 backdrop-blur">
-                          {index === 0 ? "ADVANCED" : index === 1 ? "INTERMEDIATE" : "BEGINNER"}
+              <div className="rounded-2xl surface-secondary p-5">
+                <p className="text-sm font-extrabold text-slate-950">Next Moves</p>
+                <div className="mt-3 space-y-3">
+                  {dashboard.nextMoves.length ? (
+                    dashboard.nextMoves.map((step) => (
+                      <Link
+                        key={step.id}
+                        href={step.course_slug ? `/courses/${step.course_slug}` : "/roadmaps"}
+                        className="flex items-start gap-3 rounded-xl p-2 transition hover:bg-[color:var(--card)]"
+                      >
+                        <span className="mt-0.5 rounded-md bg-accent/12 px-2 py-1 text-[10px] font-bold uppercase text-accent">
+                          {stepKindLabel[step.kind]}
                         </span>
-                      </div>
-                      <div className="pt-4">
-                        <h3 className="font-bold text-slate-950 transition group-hover:text-accent">
-                          {course.title}
-                        </h3>
-                        <div className="mt-2 flex items-center gap-2 text-xs text-slate-500">
-                          <span>{formatMinutes(course.duration_minutes)}</span>
-                          <span className="size-1 rounded-full bg-slate-500" />
-                          <span className="flex items-center gap-1">
-                            <Star className="size-3" />
-                            {course.average_rating.toFixed(1)}
-                          </span>
-                        </div>
-                      </div>
+                        <span className="min-w-0 text-sm font-semibold text-slate-950">{step.title}</span>
+                      </Link>
+                    ))
+                  ) : (
+                    <Link
+                      href="/roadmaps"
+                      className="flex items-center justify-between rounded-xl p-2 text-sm font-semibold text-accent hover:bg-[color:var(--card)]"
+                    >
+                      Build a study roadmap
+                      <ArrowRight className="size-4" />
                     </Link>
-                  ))}
-            </div>
-          </section>
+                  )}
+                </div>
+              </div>
 
-          <section className="grid gap-8 pt-10 lg:grid-cols-[1fr_0.9fr]">
-            <div>
-              <h2 className="mb-5 text-2xl font-extrabold text-slate-950">Your Certifications</h2>
-              <div className="divide-y divide-[color:var(--border)] overflow-hidden rounded-xl surface-secondary">
-                {[
-                  {
-                    title: "UX Engineering Professional",
-                    detail: "Issued June 12, 2024 · ID: GH-889-21",
-                    icon: Award,
-                  },
-                  {
-                    title: "Applied Systems Thinking",
-                    detail: `${dashboard.lessonCount} lessons available`,
-                    icon: ClipboardCheck,
-                  },
-                ].map(({ title, detail, icon: LucideIcon }) => (
-                  <div key={String(title)} className="flex items-center justify-between gap-4 p-4">
-                    <div className="flex min-w-0 items-center gap-4">
-                      <span className="flex size-12 shrink-0 items-center justify-center rounded-lg bg-accent/12 text-accent">
-                        <LucideIcon className="size-5" />
-                      </span>
-                      <div className="min-w-0">
-                        <h3 className="truncate font-bold text-slate-950">{title}</h3>
-                        <p className="truncate text-xs text-slate-500">{detail}</p>
+              {dashboard.skillBreakdown.length > 0 && (
+                <div className="rounded-2xl surface-secondary p-5">
+                  <p className="text-sm font-extrabold text-slate-950">Course Progress</p>
+                  <div className="mt-3 space-y-3">
+                    {dashboard.skillBreakdown.map((skill) => (
+                      <div key={skill.name} className="space-y-1">
+                        <div className="flex justify-between text-xs">
+                          <span className="text-slate-500">{skill.name}</span>
+                          <span className="font-bold text-slate-950">{skill.progress}%</span>
+                        </div>
+                        <Progress value={skill.progress} className="h-1.5" />
                       </div>
-                    </div>
-                    <Button variant="outline" size="sm" className="shrink-0">
-                      Download PDF
-                    </Button>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              )}
 
-            <div>
-              <h2 className="mb-5 text-2xl font-extrabold text-slate-950">This Week</h2>
-              <div className="space-y-4">
-                {[
-                  { label: "Focus area", value: dashboard.focusArea, icon: BookOpen },
-                  { label: "Primary goal", value: dashboard.primaryGoal, icon: ClipboardCheck },
-                  { label: "Study rhythm", value: `${dashboard.weeklyStudyHours} hours planned`, icon: Flame },
-                ].map(({ label, value, icon: LucideIcon }) => (
-                  <div key={String(label)} className="flex gap-4 border-b border-[color:var(--border)] pb-4 last:border-b-0">
-                    <LucideIcon className="mt-1 size-5 shrink-0 text-accent" />
-                    <div>
-                      <p className="text-xs font-bold uppercase text-slate-500">{label}</p>
-                      <p className="mt-1 font-bold text-slate-950">{value}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <Link
+                href="/library"
+                className="block rounded-2xl border border-[color:var(--primary)] bg-accent/8 p-5 transition hover:bg-accent/12"
+              >
+                <p className="flex items-center gap-2 text-sm font-extrabold text-accent">
+                  <Library className="size-4" /> GaugeHow Library
+                </p>
+                <p className="mt-1.5 text-xs leading-5 text-slate-500">
+                  Handbooks and cheat sheets curated for your courses.
+                </p>
+                <span className="mt-2 inline-flex items-center gap-1 text-xs font-bold text-accent">
+                  Open library <ArrowRight className="size-3.5" />
+                </span>
+              </Link>
+
+              {!isDashboardLoading && dashboard.activeCourses.length === 0 && (
+                <div className="flex items-start gap-2 rounded-2xl surface-secondary p-4 text-xs text-slate-500">
+                  <Sparkles className="mt-0.5 size-4 shrink-0 text-accent" />
+                  Enroll in a course to start tracking real progress here.
+                </div>
+              )}
             </div>
           </section>
         </div>

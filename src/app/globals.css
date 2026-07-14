@@ -1237,6 +1237,39 @@ html.dark .bg-slate-950\/95 {
   }
 }
 
+.twinkle-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.twinkle-dot {
+  position: absolute;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 55%, transparent 45%);
+  animation-name: twinkle;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+}
+
+.twinkle-dot.accent {
+  background: var(--primary);
+  box-shadow: 0 0 6px color-mix(in srgb, var(--primary) 70%, transparent 30%);
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 0.15;
+    transform: scale(0.75);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.15);
+  }
+}
+
 .mentor-reveal {
   animation: mentor-type-reveal 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
