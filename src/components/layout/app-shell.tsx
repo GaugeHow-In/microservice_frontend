@@ -250,7 +250,7 @@ export function AppShell({ children }: AppShellProps) {
         </main>
       </div>
 
-      <QuickMentor />
+      {pathname !== "/mentor" && <QuickMentor />}
     </div>
   );
 }

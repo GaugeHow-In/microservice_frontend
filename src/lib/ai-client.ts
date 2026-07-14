@@ -63,6 +63,13 @@ export type RAGChatResponse = {
   message_id: string;
 };
 
+export type ConversationSummary = {
+  id: string;
+  title: string;
+  message_count: number;
+  updated_at: string;
+};
+
 export type RoadmapStep = {
   id: string;
   title: string;
@@ -180,6 +187,14 @@ export const aiClient = {
   },
   chatSources(token: string, messageId: string) {
     return request<{ message_id: string; citations: Citation[] }>(`/chat/sources/${messageId}`, token);
+  },
+  listConversations(token: string) {
+    return request<ConversationSummary[]>("/chat/conversations", token);
+  },
+  deleteConversation(token: string, conversationId: string) {
+    return request<void>(`/chat/conversations/${conversationId}`, token, {
+      method: "DELETE",
+    });
   },
   listRoadmaps(token: string) {
     return request<Roadmap[]>("/roadmaps", token);

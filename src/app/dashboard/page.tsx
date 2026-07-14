@@ -7,7 +7,6 @@ import { FormEvent, useEffect, useMemo, useState } from "react";
 import {
   Award,
   BookOpen,
-  Bot,
   ClipboardCheck,
   Flame,
   Play,
@@ -109,74 +108,51 @@ export default function DashboardPage() {
     <AppShell>
       <div className="relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl space-y-12">
-          <header className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
-            <div>
-              <p className="text-sm font-bold uppercase text-accent">Dashboard</p>
-              <h1 className="mt-3 max-w-4xl text-4xl font-extrabold text-slate-950 md:text-5xl">
-                Welcome back, {firstName}!
+          <section className="hero-aura -mx-4 px-4 py-10 text-center sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div className="relative mx-auto max-w-3xl">
+              <h1 className="text-4xl font-extrabold text-slate-950 md:text-5xl">
+                Welcome back, {firstName}.
               </h1>
-              <p className="mt-3 text-lg text-slate-500">
-                {progress}% through this week. Keep the learning loop moving.
+              <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">
+                {progress}% through this week — keep the momentum going.
               </p>
-            </div>
-            <div className="flex flex-wrap gap-3 text-sm">
-              {[
-                { label: "Streak", value: "24 days", icon: Flame },
-                { label: "Focus", value: dashboard.focusArea, icon: BookOpen },
-                { label: "Planned", value: `${dashboard.weeklyStudyHours}h`, icon: ClipboardCheck },
-              ].map(({ label, value, icon: LucideIcon }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-3 rounded-full surface-secondary px-4 py-2 text-slate-600"
-                >
-                  <LucideIcon className="size-4 text-accent" />
-                  <span className="text-slate-500">{label}</span>
-                  <span className="max-w-36 truncate font-bold text-slate-950">{value}</span>
+
+              <form onSubmit={openMentor} className="mx-auto mt-8 max-w-2xl">
+                <div className="relative rounded-full surface-secondary p-2 shadow-[var(--shadow-sm)]">
+                  <input
+                    value={mentorQuery}
+                    onChange={(event) => setMentorQuery(event.target.value)}
+                    placeholder="Ask GaugeHow anything about mechanical engineering..."
+                    className="h-14 w-full rounded-full bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
+                  />
+                  <button
+                    type="submit"
+                    disabled={!mentorQuery.trim()}
+                    className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
+                    aria-label="Send"
+                  >
+                    <Send className="size-5" />
+                  </button>
                 </div>
-              ))}
-            </div>
-          </header>
+              </form>
 
-          <section className="mx-auto max-w-5xl pt-1 text-center">
-            <div className="mx-auto flex size-14 items-center justify-center rounded-2xl bg-gradient-to-br from-orange-300 to-orange-500 text-slate-950 shadow-[var(--shadow-sm)]">
-              <Bot className="size-7" />
-            </div>
-            <h2 className="mt-5 text-4xl font-extrabold text-slate-950 md:text-5xl">
-              Engineering Copilot
-            </h2>
-            <p className="mx-auto mt-2 max-w-xl text-sm text-slate-500">
-              Ask anything about your courses or technical queries.
-            </p>
-
-            <form onSubmit={openMentor} className="mx-auto mt-7 max-w-4xl">
-              <div className="relative rounded-full surface-secondary p-2">
-                <input
-                  value={mentorQuery}
-                  onChange={(event) => setMentorQuery(event.target.value)}
-                  placeholder="Ask about lessons, roadmaps, formulas, or your next practice plan..."
-                  className="h-16 w-full rounded-full bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
-                />
-                <button
-                  type="submit"
-                  disabled={!mentorQuery.trim()}
-                  className="absolute right-4 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
-                  aria-label="Send"
-                >
-                  <Send className="size-5" />
-                </button>
+              <div className="mt-5">
+                <p className="text-[11px] font-bold uppercase tracking-wide text-slate-400">
+                  Quick prompts
+                </p>
+                <div className="mx-auto mt-2 flex flex-wrap justify-center gap-2">
+                  {promptChips.map((prompt) => (
+                    <button
+                      key={prompt}
+                      type="button"
+                      onClick={() => setMentorQuery(prompt)}
+                      className="rounded-full surface-secondary px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-accent"
+                    >
+                      {prompt}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </form>
-            <div className="mx-auto mt-4 flex max-w-4xl flex-wrap justify-center gap-2">
-              {promptChips.map((prompt) => (
-                <button
-                  key={prompt}
-                  type="button"
-                  onClick={() => setMentorQuery(prompt)}
-                  className="rounded-full surface-secondary px-4 py-2 text-xs font-bold text-slate-500 transition hover:text-accent"
-                >
-                  {prompt}
-                </button>
-              ))}
             </div>
           </section>
 
