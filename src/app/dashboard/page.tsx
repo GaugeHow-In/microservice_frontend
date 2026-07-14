@@ -128,7 +128,7 @@ export default function DashboardPage() {
 
   return (
     <AppShell>
-      <div className="relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
+      <div className="dark-system relative left-1/2 -my-6 min-h-screen w-screen -translate-x-1/2 overflow-hidden bg-[color:var(--background)] px-4 py-7 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-7xl space-y-10">
           <section className="hero-aura relative -mx-4 overflow-hidden rounded-none px-4 py-14 text-center sm:-mx-6 sm:rounded-3xl sm:px-6 lg:-mx-8 lg:px-8">
             <TwinkleField />
