@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { usePathname, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   Bold,
   CheckCircle2,
@@ -990,6 +990,7 @@ function LessonPlayerControls({
 function VideoLearningPageContent({ params }: Props) {
   const { accessToken, user, isLoading: isAuthLoading } = useAuth();
   const { setContext: setLearningContext } = useLearningContext();
+  const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -1263,6 +1264,15 @@ function VideoLearningPageContent({ params }: Props) {
 
         if (!defaultLessonSlug) throw new Error("No accessible lesson found for this course.");
 
+        if (!coursePayload.access?.has_access) {
+          const overviewParams = new URLSearchParams({
+            lesson: defaultLessonSlug,
+            source: "mentor",
+          });
+          router.replace(`/courses/${activeCourseSlug}?${overviewParams.toString()}`);
+          return;
+        }
+
         if (activeLessonSlugRef.current && activeLessonSlugRef.current !== defaultLessonSlug) await flushProgress();
 
         const lessonPayload = await learningClient.getLessonDetail(activeCourseSlug, defaultLessonSlug, {
@@ -1299,7 +1309,7 @@ function VideoLearningPageContent({ params }: Props) {
 
     void loadLearningState();
     return () => { cancelled = true; };
-  }, [accessToken, courseSlug, flushProgress, isAuthLoading, lessonSlugFromQuery, user?.id]);
+  }, [accessToken, courseSlug, flushProgress, isAuthLoading, lessonSlugFromQuery, router, user?.id]);
 
   useEffect(() => {
     if (!course) return;
