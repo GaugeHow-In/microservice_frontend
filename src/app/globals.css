@@ -73,7 +73,12 @@
   --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
   --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
 
+  /* Backdrop texture. Dark scopes need a much higher mix than these light
+     values to read as the same whisper of texture: on a near-black surface
+     a 5% tint lands ~12/255 above the background and disappears, while the
+     same 5% of dark ink on a cream surface still reads. */
   --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+  --grid-dot: color-mix(in srgb, var(--foreground) 16%, transparent 84%);
   --ambient-soft: color-mix(in srgb, var(--primary) 24%, transparent 76%);
   --ambient-muted: color-mix(in srgb, var(--primary) 15%, transparent 85%);
   --ring-focus: color-mix(in srgb, var(--primary) 32%, transparent 68%);
@@ -183,7 +188,8 @@ html.dark {
   --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
   --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
   --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
-  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+  --grid-line: color-mix(in srgb, var(--foreground) 11%, transparent 89%);
+  --grid-dot: color-mix(in srgb, var(--foreground) 34%, transparent 66%);
 }
 
 @media (min-width: 768px) {
@@ -344,6 +350,7 @@ p {
   --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
   --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
   --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+  --grid-dot: color-mix(in srgb, var(--foreground) 16%, transparent 84%);
 
   background: var(--background);
   color: var(--foreground);
@@ -385,7 +392,8 @@ p {
   --muted: color-mix(in srgb, var(--foreground) 60%, var(--background) 40%);
   --border: color-mix(in srgb, var(--foreground) 20%, transparent 80%);
   --border-strong: color-mix(in srgb, var(--foreground) 32%, transparent 68%);
-  --grid-line: color-mix(in srgb, var(--foreground) 5%, transparent 95%);
+  --grid-line: color-mix(in srgb, var(--foreground) 11%, transparent 89%);
+  --grid-dot: color-mix(in srgb, var(--foreground) 34%, transparent 66%);
 
   background:
     radial-gradient(circle at 12% 0%, var(--ambient-soft), transparent 28rem),
@@ -481,7 +489,7 @@ p {
   z-index: -1;
   pointer-events: none;
   opacity: 0.28;
-  background-image: radial-gradient(color-mix(in srgb, var(--foreground) 16%, transparent 84%) 0.7px, transparent 0.7px);
+  background-image: radial-gradient(var(--grid-dot) 0.7px, transparent 0.7px);
   background-size: 18px 18px;
   mask-image: linear-gradient(to bottom, black 0%, transparent 64%);
 }
