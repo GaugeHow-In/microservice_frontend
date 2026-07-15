@@ -1,4 +1,4 @@
-import { Bot } from "lucide-react";
+import { Robot } from "@phosphor-icons/react/dist/ssr";
 import { cn } from "@/lib/utils";
 
 type MentorOrbProps = {
@@ -18,7 +18,7 @@ export function MentorOrb({ state = "idle", size = "lg", className }: MentorOrbP
       )}
       aria-hidden="true"
     >
-      <Bot className={size === "lg" ? "size-8" : "size-4"} />
+      <Robot className={size === "lg" ? "size-8" : "size-4"} />
     </div>
   );
 }

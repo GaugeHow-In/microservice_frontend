@@ -1,4 +1,6 @@
-import { LucideIcon } from "lucide-react";
+// Type-only, so it comes from the main entry (erased at compile time) even
+// though this is a server component: the /dist/ssr entry has no `Icon` type.
+import type { Icon } from "@phosphor-icons/react";
 import { Card, CardContent } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
@@ -6,7 +8,7 @@ type MetricCardProps = {
   label: string;
   value: string;
   change: string;
-  icon: LucideIcon;
+  icon: Icon;
   tone?: "orange" | "green" | "blue" | "rose" | "slate";
 };
 

@@ -1,16 +1,5 @@
 import Link from "next/link";
-import {
-  ArrowRight,
-  Bell,
-  BookOpen,
-  GraduationCap,
-  Play,
-  Search,
-  ShieldCheck,
-  Star,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { ArrowRight, Bell, BookOpen, GraduationCap, MagnifyingGlass, Play, ShieldCheck, Star, Trophy, Users } from "@phosphor-icons/react/dist/ssr";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -133,7 +122,7 @@ export default async function Home() {
           </nav>
           <div className="flex items-center gap-2">
             <div className="hidden items-center gap-2 rounded-lg surface-secondary px-3 py-2 lg:flex">
-              <Search className="size-4 text-slate-500" />
+              <MagnifyingGlass className="size-4 text-slate-500" />
               <span className="text-sm text-slate-500">Search courses...</span>
             </div>
             <Button variant="ghost" size="icon" aria-label="Notifications">

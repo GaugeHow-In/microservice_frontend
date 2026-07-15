@@ -2,21 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  ArrowLeft,
-  Bookmark,
-  BookOpen,
-  ChevronLeft,
-  ChevronRight,
-  Expand,
-  Highlighter,
-  Loader2,
-  Maximize2,
-  Minus,
-  Plus,
-  StickyNote,
-  Trash2,
-} from "lucide-react";
+import { ArrowLeft, ArrowsOut, BookOpen, BookmarkSimple, CaretLeft, CaretRight, CircleNotch, CornersOut, Highlighter, Minus, Note, Plus, Trash } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -441,7 +427,7 @@ export default function LibraryDetailPage({ params }: Props) {
                     onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
                     disabled={currentPage <= 1}
                   >
-                    <ChevronLeft />
+                    <CaretLeft />
                   </Button>
                   <span className="min-w-20 text-center text-sm font-semibold">
                     {currentPage}/{pageCount ?? "-"}
@@ -453,7 +439,7 @@ export default function LibraryDetailPage({ params }: Props) {
                     onClick={() => setCurrentPage((page) => Math.min(pageCount ?? page + 1, page + 1))}
                     disabled={pageCount !== null && currentPage >= pageCount}
                   >
-                    <ChevronRight />
+                    <CaretRight />
                   </Button>
                   <Button
                     variant="dark"
@@ -472,7 +458,7 @@ export default function LibraryDetailPage({ params }: Props) {
                     <Plus />
                   </Button>
                   <Button variant="dark" size="icon" title="Fullscreen" onClick={enterFullscreen}>
-                    <Maximize2 />
+                    <CornersOut />
                   </Button>
                 </div>
               ) : null}
@@ -491,12 +477,12 @@ export default function LibraryDetailPage({ params }: Props) {
                 </div>
                 {freeAccessAvailable ? (
                   <Button onClick={grantFreeAccess} disabled={grantingFreeAccess || !accessToken}>
-                    {grantingFreeAccess ? <Loader2 className="animate-spin" /> : <BookOpen />}
+                    {grantingFreeAccess ? <CircleNotch className="animate-spin" /> : <BookOpen />}
                     Start reading
                   </Button>
                 ) : (
                   <Button variant="secondary" disabled>
-                    <Expand />
+                    <ArrowsOut />
                     Subscription required
                   </Button>
                 )}
@@ -552,7 +538,7 @@ export default function LibraryDetailPage({ params }: Props) {
                   onClick={() => void saveProgress({ markCompleted: true })}
                   disabled={!hasAccess}
                 >
-                  <Bookmark />
+                  <BookmarkSimple />
                   Mark done
                 </Button>
               </CardContent>
@@ -561,16 +547,16 @@ export default function LibraryDetailPage({ params }: Props) {
             <Card>
               <CardHeader>
                 <CardTitle className="flex items-center gap-2 text-lg">
-                  <StickyNote className="size-5" />
+                  <Note className="size-5" />
                   Annotations
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-3 gap-2">
                   {[
-                    { type: "note" as const, icon: StickyNote, label: "Note" },
+                    { type: "note" as const, icon: Note, label: "Note" },
                     { type: "highlight" as const, icon: Highlighter, label: "Highlight" },
-                    { type: "bookmark" as const, icon: Bookmark, label: "Bookmark" },
+                    { type: "bookmark" as const, icon: BookmarkSimple, label: "Bookmark" },
                   ].map((item) => {
                     const Icon = item.icon;
                     return (
@@ -598,7 +584,7 @@ export default function LibraryDetailPage({ params }: Props) {
                   onClick={saveAnnotation}
                   disabled={!hasAccess || savingAnnotation || !annotationBody.trim()}
                 >
-                  {savingAnnotation ? <Loader2 className="animate-spin" /> : <StickyNote />}
+                  {savingAnnotation ? <CircleNotch className="animate-spin" /> : <Note />}
                   Save
                 </Button>
                 <div className="max-h-72 space-y-2 overflow-auto pr-1">
@@ -616,7 +602,7 @@ export default function LibraryDetailPage({ params }: Props) {
                             title="Delete annotation"
                             onClick={() => void deleteAnnotation(annotation)}
                           >
-                            <Trash2 />
+                            <Trash />
                           </Button>
                         </div>
                         <p className="mt-2 text-slate-700">{annotation.body}</p>

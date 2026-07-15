@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { BookOpen, LockKeyhole, Search } from "lucide-react";
+import { BookOpen, LockKey, MagnifyingGlass } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -92,7 +92,7 @@ export default function LibraryPage() {
           action={
             <Button asChild variant="secondary">
               <Link href="/library">
-                <LockKeyhole />
+                <LockKey />
                 Secure reader
               </Link>
             </Button>
@@ -101,7 +101,7 @@ export default function LibraryPage() {
 
         <div className="reveal-delay-1 reveal-up grid gap-3 rounded-2xl surface-secondary p-4 md:grid-cols-[1fr_auto]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-10"
               placeholder="Search study notes, authors, and categories"

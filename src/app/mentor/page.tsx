@@ -1,6 +1,6 @@
 "use client";
 
-import { History, MessageSquarePlus, Send } from "lucide-react";
+import { ChatCenteredDots, ClockCounterClockwise, PaperPlaneTilt } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
@@ -203,11 +203,11 @@ function MentorPageContent() {
       <div className="flex min-h-[calc(100vh-10rem)] flex-col">
         <div className="flex items-center justify-end gap-2 pb-4">
           <Button variant="ghost" size="sm" onClick={newConversation}>
-            <MessageSquarePlus />
+            <ChatCenteredDots />
             New chat
           </Button>
           <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)}>
-            <History />
+            <ClockCounterClockwise />
             History
           </Button>
         </div>
@@ -234,7 +234,7 @@ function MentorPageContent() {
                   className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
                   aria-label="Send"
                 >
-                  <Send className="size-5" />
+                  <PaperPlaneTilt className="size-5" />
                 </button>
               </div>
             </form>
@@ -289,7 +289,7 @@ function MentorPageContent() {
                   className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
                   aria-label="Send"
                 >
-                  <Send className="size-5" />
+                  <PaperPlaneTilt className="size-5" />
                 </button>
               </div>
             </form>

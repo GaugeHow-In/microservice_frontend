@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { CourseCard } from "@/components/shared/course-card";
@@ -106,7 +106,7 @@ export default function CoursesPage() {
             </p>
             <div className="mx-auto mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row">
               <div className="relative min-w-0 flex-1">
-                <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
+                <MagnifyingGlass className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
                 <Input
                   className="min-h-[3.5rem] rounded-full surface-secondary pl-12"
                   placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
@@ -115,7 +115,7 @@ export default function CoursesPage() {
                 />
               </div>
               <Button className="min-h-[3.5rem] rounded-full px-7">
-                <Search />
+                <MagnifyingGlass />
                 Search
               </Button>
             </div>

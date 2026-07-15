@@ -2,21 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import {
-  ArrowLeft,
-  BookOpen,
-  Check,
-  Eye,
-  EyeOff,
-  Gauge,
-  LoaderCircle,
-  Mail,
-  NotebookText,
-  ShieldCheck,
-  Sparkles,
-  Wrench,
-  X,
-} from "lucide-react";
+import { ArrowLeft, BookOpen, Check, Envelope, Eye, EyeSlash, Gauge, Notebook, ShieldCheck, Sparkle, SpinnerGap, Wrench, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -330,7 +316,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
               <div className="rounded-xl bg-[#453320]/70 p-4">
                 <div className="flex items-center gap-3">
                   <div className="flex size-10 items-center justify-center rounded-lg bg-[#e8a855] text-[#2b2118]">
-                    <Sparkles className="size-5" />
+                    <Sparkle className="size-5" />
                   </div>
                   <div>
                     <p className="text-sm font-bold text-[#f7f3ee]">Ask GaugeHow Mentor</p>
@@ -354,7 +340,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
             {[
               { label: "CAD Pro", icon: Wrench },
               { label: "68% goal", icon: Gauge },
-              { label: "Notes ready", icon: NotebookText },
+              { label: "Notes ready", icon: Notebook },
             ].map((item) => {
               const Icon = item.icon;
               return (
@@ -439,7 +425,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                           onClick={() => setShowPassword((value) => !value)}
                         >
-                          {showPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          {showPassword ? <EyeSlash className="size-4" /> : <Eye className="size-4" />}
                         </button>
                       </div>
                       {mode === "signup" ? (
@@ -481,7 +467,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                               onClick={() => setShowConfirmPassword((value) => !value)}
                             >
-                              {showConfirmPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                              {showConfirmPassword ? <EyeSlash className="size-4" /> : <Eye className="size-4" />}
                             </button>
                           </div>
                           {fieldErrors.confirmPassword ? (
@@ -541,7 +527,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                           onClick={() => setShowNewPassword((value) => !value)}
                         >
-                          {showNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          {showNewPassword ? <EyeSlash className="size-4" /> : <Eye className="size-4" />}
                         </button>
                       </div>
                       <div className="space-y-3 rounded-lg bg-slate-50 p-4">
@@ -579,7 +565,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                           className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 transition hover:text-slate-600"
                           onClick={() => setShowConfirmNewPassword((value) => !value)}
                         >
-                          {showConfirmNewPassword ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
+                          {showConfirmNewPassword ? <EyeSlash className="size-4" /> : <Eye className="size-4" />}
                         </button>
                       </div>
                       {fieldErrors.confirmNewPassword ? (
@@ -601,8 +587,8 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                   {message ? <p className="text-sm font-medium text-emerald-600">{message}</p> : null}
                 </div>
                 <Button className="w-full" onClick={submit} disabled={isSubmitting}>
-                  {isSubmitting ? <LoaderCircle className="animate-spin" /> : null}
-                  {mode === "forgot" && !isSubmitting ? <Mail /> : null}
+                  {isSubmitting ? <SpinnerGap className="animate-spin" /> : null}
+                  {mode === "forgot" && !isSubmitting ? <Envelope /> : null}
                   {data.primary}
                 </Button>
                 {(mode === "login" || mode === "signup") && (
@@ -612,7 +598,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                       onClick={handleOAuthClick}
                       disabled={isSubmitting || isOAuthSubmitting}
                     >
-                      {isOAuthSubmitting ? <LoaderCircle className="animate-spin" /> : null}
+                      {isOAuthSubmitting ? <SpinnerGap className="animate-spin" /> : null}
                       Continue with Google
                     </Button>
                   </div>

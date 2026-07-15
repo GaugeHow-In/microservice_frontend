@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Search, ShieldCheck } from "lucide-react";
+import { MagnifyingGlass, ShieldCheck } from "@phosphor-icons/react";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -43,7 +43,7 @@ export default function VerifyCertificatePage() {
                 required
               />
               <Button type="submit">
-                <Search />
+                <MagnifyingGlass />
                 Verify certificate
               </Button>
             </form>

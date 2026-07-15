@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { ClipboardCheck, LockKeyhole, Search, Timer } from "lucide-react";
+import { ClipboardText, LockKey, MagnifyingGlass, Timer } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -88,7 +88,7 @@ export default function TestsPage() {
           action={
             <Button asChild variant="secondary">
               <Link href="/tests/previous">
-                <ClipboardCheck />
+                <ClipboardText />
                 Attempt history
               </Link>
             </Button>
@@ -97,7 +97,7 @@ export default function TestsPage() {
 
         <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_auto]">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
             <Input
               className="pl-10"
               placeholder="Search certification tests, practice sets, and course finals"
@@ -172,7 +172,7 @@ export default function TestsPage() {
                     </span>
                     <Button asChild disabled={!test.access.has_access}>
                       <Link href={test.access.has_access ? `/tests/active?test=${test.slug}` : "/tests"}>
-                        {test.access.has_access ? <Timer /> : <LockKeyhole />}
+                        {test.access.has_access ? <Timer /> : <LockKey />}
                         {test.access.has_access ? "Open" : "Locked"}
                       </Link>
                     </Button>

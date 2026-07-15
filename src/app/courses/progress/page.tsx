@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { Award, CheckCircle2, Clock, Ticket } from "lucide-react";
+import { CheckCircle, Clock, Medal, Ticket } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
@@ -84,8 +84,8 @@ export default function CourseProgressPage() {
         <section className="grid gap-4 md:grid-cols-4">
           {[
             { label: "Enrolled courses", value: String(stats.enrolled), icon: Ticket },
-            { label: "Average progress", value: `${stats.averageProgress}%`, icon: CheckCircle2 },
-            { label: "Active access", value: String(stats.activeAccess), icon: Award },
+            { label: "Average progress", value: `${stats.averageProgress}%`, icon: CheckCircle },
+            { label: "Active access", value: String(stats.activeAccess), icon: Medal },
             { label: "Approx. time learned", value: formatMinutes(stats.totalMinutes), icon: Clock },
           ].map(({ label, value, icon: Icon }) => (
             <Card key={label}>

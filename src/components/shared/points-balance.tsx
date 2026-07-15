@@ -1,6 +1,6 @@
 "use client";
 
-import { Award, Coins, Gift, Loader2, Medal, Sparkles } from "lucide-react";
+import { CircleNotch, Coins, Gift, Medal, MedalMilitary, Sparkle } from "@phosphor-icons/react";
 import { useEffect, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -93,7 +93,7 @@ export function PointsBalance({ accessToken }: PointsBalanceProps) {
         aria-expanded={open}
         aria-label="Points balance"
       >
-        {loading && !summary ? <Loader2 className="animate-spin" /> : <Coins />}
+        {loading && !summary ? <CircleNotch className="animate-spin" /> : <Coins />}
         <span>{formatPoints(summary?.available_points ?? 0)} pts</span>
       </Button>
 
@@ -109,7 +109,7 @@ export function PointsBalance({ accessToken }: PointsBalanceProps) {
               </p>
             </div>
             <Badge variant="orange" className="gap-1">
-              <Award className="size-3.5" />
+              <Medal className="size-3.5" />
               {summary?.level.name ?? "Unranked"}
             </Badge>
           </div>
@@ -160,7 +160,7 @@ export function PointsBalance({ accessToken }: PointsBalanceProps) {
                     )}
                     title={badge.description}
                   >
-                    <Medal className="size-3.5" />
+                    <MedalMilitary className="size-3.5" />
                     {badge.name}
                   </span>
               ))}
@@ -191,7 +191,7 @@ export function PointsBalance({ accessToken }: PointsBalanceProps) {
             Redeem coming soon
           </Button>
           <p className="mt-2 flex items-center gap-1.5 type-caption text-slate-500">
-            <Sparkles className="size-3.5" />
+            <Sparkle className="size-3.5" />
             Daily reset is 00:00 UTC.
           </p>
         </div>

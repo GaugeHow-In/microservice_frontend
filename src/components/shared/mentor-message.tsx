@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDown, RotateCw } from "lucide-react";
+import { ArrowClockwise, CaretDown } from "@phosphor-icons/react";
 import { useState } from "react";
 import { MentorCitations } from "@/components/shared/mentor-citations";
 import { MentorMarkdown } from "@/components/shared/mentor-markdown";
@@ -47,7 +47,7 @@ export function MentorMessage({ message, isFresh, onRegenerate, regenerating }: 
                 className="inline-flex items-center gap-1 font-semibold text-slate-500 hover:text-accent"
               >
                 grounded in {sourceCount} source{sourceCount === 1 ? "" : "s"}
-                <ChevronDown className={cn("size-3 transition-transform", sourcesOpen && "rotate-180")} />
+                <CaretDown className={cn("size-3 transition-transform", sourcesOpen && "rotate-180")} />
               </button>
             ) : (
               <span>general guidance</span>
@@ -59,7 +59,7 @@ export function MentorMessage({ message, isFresh, onRegenerate, regenerating }: 
                 disabled={regenerating}
                 className="inline-flex items-center gap-1 font-semibold text-slate-500 transition hover:text-accent disabled:opacity-50"
               >
-                <RotateCw className={cn("size-3", regenerating && "animate-spin")} />
+                <ArrowClockwise className={cn("size-3", regenerating && "animate-spin")} />
                 Regenerate
               </button>
             )}

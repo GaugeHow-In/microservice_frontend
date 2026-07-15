@@ -3,20 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import {
-  Award,
-  BookOpen,
-  CheckCircle2,
-  ChevronDown,
-  Clock3,
-  Globe2,
-  GraduationCap,
-  Languages,
-  Play,
-  Star,
-  Ticket,
-  Users,
-} from "lucide-react";
+import { BookOpen, CaretDown, CheckCircle, ClockAfternoon, Globe, GraduationCap, Medal, Play, Star, Ticket, Translate, Users } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -551,15 +538,15 @@ export default function CourseDetailPage({ params }: Props) {
                   {renderPrimaryAction("w-full")}
                   <div className="space-y-3 border-t border-[color:var(--border)] pt-4 text-sm text-slate-600">
                     <div className="flex items-center gap-2">
-                      <Award className="size-4 text-orange-500" />
+                      <Medal className="size-4 text-orange-500" />
                       {course.certificate_enabled ? "Shareable certificate" : "Completion tracking"}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Clock3 className="size-4 text-orange-500" />
+                      <ClockAfternoon className="size-4 text-orange-500" />
                       {formatMinutes(course.duration_minutes)}
                     </div>
                     <div className="flex items-center gap-2">
-                      <Globe2 className="size-4 text-orange-500" />
+                      <Globe className="size-4 text-orange-500" />
                       Fully online
                     </div>
                   </div>
@@ -573,7 +560,7 @@ export default function CourseDetailPage({ params }: Props) {
               { icon: BookOpen, label: `${moduleCount} modules`, value: `${course.lesson_count} lessons` },
               { icon: Star, label: `${course.average_rating.toFixed(1)} rating`, value: `${course.total_reviews} reviews` },
               { icon: Users, label: "Level", value: course.level.replaceAll("_", " ") },
-              { icon: Clock3, label: "Schedule", value: "Flexible" },
+              { icon: ClockAfternoon, label: "Schedule", value: "Flexible" },
             ].map((item) => {
               const Icon = item.icon;
               return (
@@ -612,7 +599,7 @@ export default function CourseDetailPage({ params }: Props) {
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 {outcomes.map((item) => (
                   <div key={item} className="flex gap-3">
-                    <CheckCircle2 className="mt-1 size-5 shrink-0 text-orange-500" />
+                    <CheckCircle className="mt-1 size-5 shrink-0 text-orange-500" />
                     <p className="text-sm leading-6 text-slate-600">{item}</p>
                   </div>
                 ))}
@@ -634,9 +621,9 @@ export default function CourseDetailPage({ params }: Props) {
               <h2 className="text-2xl font-extrabold text-slate-950">Details to know</h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {[
-                  { icon: Award, title: "Certificate", text: course.certificate_enabled ? "Included" : "Not included" },
-                  { icon: Clock3, title: "Duration", text: formatMinutes(course.duration_minutes) },
-                  { icon: Languages, title: "Language", text: course.language_code.toUpperCase() },
+                  { icon: Medal, title: "Certificate", text: course.certificate_enabled ? "Included" : "Not included" },
+                  { icon: ClockAfternoon, title: "Duration", text: formatMinutes(course.duration_minutes) },
+                  { icon: Translate, title: "Language", text: course.language_code.toUpperCase() },
                   { icon: Users, title: "Experience", text: course.level.replaceAll("_", " ") },
                 ].map((item) => {
                   const Icon = item.icon;
@@ -679,7 +666,7 @@ export default function CourseDetailPage({ params }: Props) {
                     </div>
                     <div className="flex shrink-0 items-center gap-2 rounded-full surface-primary px-3 py-2 text-xs font-bold text-slate-600">
                       Module details
-                      <ChevronDown className="size-4 transition-transform group-open:rotate-180" />
+                      <CaretDown className="size-4 transition-transform group-open:rotate-180" />
                     </div>
                   </summary>
                   <div className="border-t border-[color:var(--border)] p-5 pt-0">
@@ -816,7 +803,7 @@ export default function CourseDetailPage({ params }: Props) {
                     >
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 p-4">
                       <p className="font-semibold text-slate-950">{faq.question}</p>
-                        <ChevronDown className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180" />
+                        <CaretDown className="size-4 shrink-0 text-slate-500 transition-transform group-open:rotate-180" />
                       </summary>
                       <p className="border-t border-[color:var(--border)] p-4 text-sm leading-6 text-slate-600">
                         {faq.answer}
@@ -835,19 +822,19 @@ export default function CourseDetailPage({ params }: Props) {
               <h2 className="text-lg font-extrabold text-slate-950">Included with this course</h2>
               <div className="mt-4 space-y-3 text-sm text-slate-600">
                 <div className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                  <CheckCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
                   <span>{course.lesson_count} lessons across {moduleCount} modules</span>
                 </div>
                 <div className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                  <CheckCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
                   <span>{course.certificate_enabled ? "Certificate-ready learning path" : "Structured progress tracking"}</span>
                 </div>
                 <div className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                  <CheckCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
                   <span>Self-paced, online access</span>
                 </div>
                 <div className="flex gap-3">
-                  <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-orange-500" />
+                  <CheckCircle className="mt-0.5 size-4 shrink-0 text-orange-500" />
                   <span>{accessLabel}</span>
                 </div>
               </div>

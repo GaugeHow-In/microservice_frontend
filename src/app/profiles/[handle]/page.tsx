@@ -3,22 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import {
-  Award,
-  BadgeCheck,
-  BookOpen,
-  CalendarDays,
-  ExternalLink,
-  Globe2,
-  GraduationCap,
-  MapPin,
-  Medal,
-  Share2,
-  ShieldCheck,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { ArrowSquareOut, BookOpen, CalendarDots, Globe, GraduationCap, MapPin, Medal, MedalMilitary, SealCheck, ShareNetwork, ShieldCheck, Sparkle, Trophy } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -43,7 +30,7 @@ const statCards = [
   {
     key: "lifetime_points",
     label: "lifetime points",
-    icon: Sparkles,
+    icon: Sparkle,
   },
   {
     key: "completed_courses",
@@ -165,7 +152,7 @@ function CertificateCard({ certificate }: { certificate: PublicProfileCertificat
     <article className="browse-card p-4">
       <div className="flex items-start gap-3">
         <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500">
-          <Award className="size-5" />
+          <Medal className="size-5" />
         </span>
         <div className="min-w-0 flex-1">
           <p className="font-semibold text-slate-950">{certificate.course_title}</p>
@@ -175,7 +162,7 @@ function CertificateCard({ certificate }: { certificate: PublicProfileCertificat
           <div className="mt-3">
             <Button asChild variant="secondary" size="sm">
               <Link href={`/verify-certificate/${certificate.certificate_number}`}>
-                <BadgeCheck />
+                <SealCheck />
                 Verify
               </Link>
             </Button>
@@ -192,10 +179,10 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
   const selectedAvatar = getProfileAvatar(profile.avatar_key);
   const location = [profile.city, profile.country].filter(Boolean).join(", ");
   const shareUrl = publicProfileUrl(profile.handle);
-  const socialLinks: Array<{ href: string | null; label: string; icon: LucideIcon }> = [
-    { href: profile.website_url, label: "Website", icon: Globe2 },
-    { href: profile.linkedin_url, label: "LinkedIn", icon: ExternalLink },
-    { href: profile.github_url, label: "GitHub", icon: ExternalLink },
+  const socialLinks: Array<{ href: string | null; label: string; icon: Icon }> = [
+    { href: profile.website_url, label: "Website", icon: Globe },
+    { href: profile.linkedin_url, label: "LinkedIn", icon: ArrowSquareOut },
+    { href: profile.github_url, label: "GitHub", icon: ArrowSquareOut },
   ];
   const hasSocialLinks = socialLinks.some((item) => item.href);
 
@@ -251,12 +238,12 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1.5">
-                  <CalendarDays className="size-4 text-orange-500" />
+                  <CalendarDots className="size-4 text-orange-500" />
                   Joined {formatMonthYear(profile.joined_at)}
                 </span>
                 {profile.birthday && (
                   <span className="inline-flex items-center gap-1.5">
-                    <Sparkles className="size-4 text-orange-500" />
+                    <Sparkle className="size-4 text-orange-500" />
                     Birthday {profile.birthday}
                   </span>
                 )}
@@ -278,7 +265,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
             </div>
           </div>
           <Button type="button" variant="default" onClick={handleShare}>
-            <Share2 />
+            <ShareNetwork />
             {copied ? "Copied" : "Share profile"}
           </Button>
         </div>
@@ -313,7 +300,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                 <p className="type-caption font-semibold uppercase text-slate-500">Current level</p>
                 <p className="type-h4 text-slate-950">{profile.gamification.level.name}</p>
               </div>
-              <Medal className="size-8 text-orange-500" />
+              <MedalMilitary className="size-8 text-orange-500" />
             </div>
             <Progress
               className="mt-5"
@@ -339,7 +326,7 @@ function ProfileContent({ profile }: { profile: PublicProfile }) {
                 >
                   <div className="flex items-start gap-3">
                     <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-orange-100 text-orange-500">
-                      <Medal className="size-5" />
+                      <MedalMilitary className="size-5" />
                     </span>
                     <div>
                       <p className="font-semibold text-slate-950">{badge.name}</p>
@@ -463,7 +450,7 @@ export default function PublicProfilePage({ params }: Props) {
           <BrandLogo />
           <Button asChild variant="secondary">
             <Link href="/courses">
-              <ExternalLink />
+              <ArrowSquareOut />
               Browse courses
             </Link>
           </Button>

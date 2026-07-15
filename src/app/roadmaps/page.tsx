@@ -1,14 +1,6 @@
 "use client";
 
-import {
-  CheckCircle2,
-  Edit3,
-  LoaderCircle,
-  Plus,
-  Save,
-  Sparkles,
-  Trash2,
-} from "lucide-react";
+import { CheckCircle, FloppyDisk, PencilLine, Plus, Sparkle, SpinnerGap, Trash } from "@phosphor-icons/react";
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
@@ -283,7 +275,7 @@ export default function RoadmapsPage() {
                     />
                   </label>
                   <Button className="sm:col-span-2" disabled={busy}>
-                    {busy ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
+                    {busy ? <SpinnerGap className="animate-spin" /> : <Sparkle />}
                     Generate roadmap
                   </Button>
                 </form>
@@ -354,7 +346,7 @@ function RoadmapEditor({
               />
             </div>
             <Button disabled={busy} onClick={save}>
-              <Save />
+              <FloppyDisk />
               Save roadmap
             </Button>
           </div>
@@ -398,7 +390,7 @@ function RoadmapEditor({
                       })
                     }
                   >
-                    <Trash2 />
+                    <Trash />
                   </Button>
                 </div>
                 <p className="text-sm text-slate-600">{step.description}</p>
@@ -472,7 +464,7 @@ function RoadmapEditor({
               placeholder="Make the plan less intense, add more revision before tests…"
             />
             <Button disabled={busy || !revision.trim()} onClick={revise}>
-              {busy ? <LoaderCircle className="animate-spin" /> : <Sparkles />}
+              {busy ? <SpinnerGap className="animate-spin" /> : <Sparkle />}
               Improve
             </Button>
           </div>
@@ -506,7 +498,7 @@ function SavedRoadmapView({
               <p className="mt-2 text-sm leading-6 text-slate-600">{selected.plan.summary}</p>
             </div>
             <Button variant="outline" onClick={onEdit}>
-              <Edit3 />
+              <PencilLine />
               Edit roadmap
             </Button>
           </div>
@@ -546,13 +538,13 @@ function SavedRoadmapView({
                         disabled={busy}
                         onClick={() => onMarkStep(step.id, true)}
                       >
-                        <CheckCircle2 />
+                        <CheckCircle />
                         Mark as done
                       </Button>
                     )}
                     {!isCourseSynced && step.completed && (
                       <Badge className="gap-1">
-                        <CheckCircle2 className="size-3.5" />
+                        <CheckCircle className="size-3.5" />
                         Done
                       </Badge>
                     )}

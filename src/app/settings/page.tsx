@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Eye, Palette, Shield, Sparkles, User } from "lucide-react";
+import { Bell, Eye, Palette, Shield, Sparkle, User } from "@phosphor-icons/react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -18,7 +18,7 @@ export default function SettingsPage() {
     { icon: Bell, title: "Notifications", text: "Study reminders, goal alerts, streak nudges, and community replies." },
     { icon: Palette, title: "Appearance", text: "Theme preference, density, reading comfort, and accent choices." },
     { icon: Shield, title: "Privacy", text: "Profile visibility, progress sharing, and data export controls." },
-    { icon: Sparkles, title: "AI preferences", text: "Preferred explanations, planning style, and recommendation tone." },
+    { icon: Sparkle, title: "AI preferences", text: "Preferred explanations, planning style, and recommendation tone." },
     { icon: Eye, title: "Gamification", text: "XP visibility, badges, streaks, leaderboards, and milestones." },
   ];
 

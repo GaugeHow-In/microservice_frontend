@@ -3,23 +3,9 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import type { LucideIcon } from "lucide-react";
-import {
-  Award,
-  BadgeCheck,
-  BookOpen,
-  CalendarDays,
-  ExternalLink,
-  GraduationCap,
-  MapPin,
-  Medal,
-  Pencil,
-  Save,
-  Share2,
-  Shield,
-  Sparkles,
-  Trophy,
-} from "lucide-react";
+import { ArrowSquareOut, BookOpen, CalendarDots, FloppyDisk, GraduationCap, MapPin, Medal, MedalMilitary, Pencil, SealCheck, ShareNetwork, Shield, Sparkle, Trophy } from "@phosphor-icons/react";
+import type { Icon } from "@phosphor-icons/react";
+
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -51,7 +37,7 @@ type ProfileFormState = {
 type ProfileStatCard = {
   label: string;
   value: number;
-  icon: LucideIcon;
+  icon: Icon;
 };
 
 const emptyStats = {
@@ -228,9 +214,9 @@ export default function ProfilePage() {
   const visibility = user?.profile?.visibility ?? "public";
   const isPublic = visibility === "public";
   const statCards: ProfileStatCard[] = [
-    { label: "Lifetime points", value: stats.lifetime_points, icon: Sparkles },
+    { label: "Lifetime points", value: stats.lifetime_points, icon: Sparkle },
     { label: "Completed courses", value: stats.completed_courses, icon: GraduationCap },
-    { label: "Certificates", value: stats.certificates, icon: BadgeCheck },
+    { label: "Certificates", value: stats.certificates, icon: SealCheck },
     { label: "Lessons completed", value: stats.completed_lessons, icon: BookOpen },
   ];
 
@@ -315,12 +301,12 @@ export default function ProfilePage() {
                   )}
                   {birthday && (
                     <span className="inline-flex items-center gap-1.5">
-                      <CalendarDays className="size-4 text-orange-500" />
+                      <CalendarDots className="size-4 text-orange-500" />
                       Birthday {birthday}
                     </span>
                   )}
                   <span className="inline-flex items-center gap-1.5">
-                    <Sparkles className="size-4 text-orange-500" />
+                    <Sparkle className="size-4 text-orange-500" />
                     {formatNumber(stats.lifetime_points)} lifetime points
                   </span>
                 </div>
@@ -329,7 +315,7 @@ export default function ProfilePage() {
             <div className="flex flex-wrap gap-2">
               {profileUrl && (
                 <Button type="button" variant="secondary" onClick={handleShare}>
-                  <Share2 />
+                  <ShareNetwork />
                   Share
                 </Button>
               )}
@@ -515,7 +501,7 @@ export default function ProfilePage() {
                   Cancel
                 </Button>
                 <Button type="button" onClick={handleSave} disabled={isSaving}>
-                  <Save />
+                  <FloppyDisk />
                   {isSaving ? "Saving" : "Save profile"}
                 </Button>
               </div>
@@ -557,7 +543,7 @@ export default function ProfilePage() {
                       </p>
                       <p className="type-h4 text-slate-950">{level.name}</p>
                     </div>
-                    <Medal className="size-8 text-orange-500" />
+                    <MedalMilitary className="size-8 text-orange-500" />
                   </div>
                   <Progress className="mt-5" value={level.progress_percent} />
                   <p className="mt-3 text-sm text-slate-500">
@@ -584,7 +570,7 @@ export default function ProfilePage() {
                   {badges.map((badge) => (
                     <div key={badge.code} className="rounded-lg surface-primary p-4">
                       <div className="flex items-start gap-3">
-                        <Award className="size-5 shrink-0 text-orange-500" />
+                        <Medal className="size-5 shrink-0 text-orange-500" />
                         <div>
                           <p className="font-semibold text-slate-950">{badge.name}</p>
                           <p className="mt-1 text-sm text-slate-500">{badge.description}</p>
@@ -651,7 +637,7 @@ export default function ProfilePage() {
                     </p>
                     <Button asChild variant="secondary" size="sm" className="mt-3">
                       <Link href={`/verify-certificate/${certificate.certificate_number}`}>
-                        <ExternalLink />
+                        <ArrowSquareOut />
                         Verify
                       </Link>
                     </Button>

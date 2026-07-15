@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Award, ArrowLeft } from "lucide-react";
+import { ArrowLeft, Medal } from "@phosphor-icons/react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { CertificateViewer } from "@/components/sections/certificate-viewer";
@@ -89,7 +89,7 @@ export default function CourseCertificatePage() {
           <Card>
             <CardContent className="flex flex-col items-start gap-4 p-6">
               <div className="flex size-12 items-center justify-center rounded-xl bg-orange-50 text-orange-600">
-                <Award />
+                <Medal />
               </div>
               <div>
                 <h2 className="text-lg font-bold text-slate-950">Issue your certificate</h2>
@@ -100,7 +100,7 @@ export default function CourseCertificatePage() {
               {error ? <p className="text-sm text-rose-600">{error}</p> : null}
               {notIssued ? (
                 <Button type="button" disabled={issuing} onClick={issueCertificate}>
-                  <Award />
+                  <Medal />
                   {issuing ? "Generating…" : "Generate certificate"}
                 </Button>
               ) : null}

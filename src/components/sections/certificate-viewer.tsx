@@ -1,6 +1,6 @@
 "use client";
 
-import { Download, FileImage, ShieldCheck, ShieldX } from "lucide-react";
+import { DownloadSimple, FileImage, ShieldCheck, ShieldWarning } from "@phosphor-icons/react";
 import { useEffect, useRef, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export function CertificateViewer({ certificate }: { certificate: Certificate })
             variant={certificate.valid ? "green" : "default"}
             className={certificate.valid ? undefined : "border-rose-200 bg-rose-50 text-rose-700"}
           >
-            {certificate.valid ? <ShieldCheck /> : <ShieldX />}
+            {certificate.valid ? <ShieldCheck /> : <ShieldWarning />}
             {certificate.valid ? "Valid certificate" : "Certificate not valid"}
           </Badge>
           <span className="font-mono text-sm text-slate-600">
@@ -73,7 +73,7 @@ export function CertificateViewer({ certificate }: { certificate: Certificate })
               if (canvasRef.current) downloadCertificatePdf(canvasRef.current, certificate);
             }}
           >
-            <Download />
+            <DownloadSimple />
             Download PDF
           </Button>
         </div>

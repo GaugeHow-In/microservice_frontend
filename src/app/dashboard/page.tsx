@@ -4,17 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
-import {
-  ArrowRight,
-  Award,
-  BookOpen,
-  ChevronDown,
-  Compass,
-  Flame,
-  Library,
-  Send,
-  Sparkles,
-} from "lucide-react";
+import { ArrowRight, BookOpen, Books, CaretDown, Compass, Flame, Medal, PaperPlaneTilt, Sparkle } from "@phosphor-icons/react";
 import { AppShell } from "@/components/layout/app-shell";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -156,7 +146,7 @@ export default function DashboardPage() {
                   className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
                   aria-label="Send"
                 >
-                  <Send className="size-5" />
+                  <PaperPlaneTilt className="size-5" />
                 </button>
               </div>
             </form>
@@ -187,7 +177,7 @@ export default function DashboardPage() {
             className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-slate-400 motion-safe:animate-[soft-float_2.4s_var(--motion-ease-standard)_infinite_alternate]"
           >
             <span className="text-[10px] font-bold uppercase tracking-widest">Scroll</span>
-            <ChevronDown className="size-4" />
+            <CaretDown className="size-4" />
           </span>
         </section>
 
@@ -265,7 +255,7 @@ export default function DashboardPage() {
                   {earnedBadges.map((badge) => (
                     <div key={badge.code} className="flex w-20 flex-col items-center gap-2 text-center">
                       <span className="flex size-14 items-center justify-center rounded-full bg-accent/12 text-accent">
-                        <Award className="size-6" />
+                        <Medal className="size-6" />
                       </span>
                       <p className="truncate text-xs font-bold text-slate-950">{badge.name}</p>
                     </div>
@@ -357,7 +347,7 @@ export default function DashboardPage() {
               className="block rounded-2xl border border-[color:var(--primary)] bg-accent/8 p-5 transition hover:bg-accent/12"
             >
               <p className="flex items-center gap-2 text-sm font-extrabold text-accent">
-                <Library className="size-4" /> GaugeHow Library
+                <Books className="size-4" /> GaugeHow Library
               </p>
               <p className="mt-1.5 text-xs leading-5 text-slate-500">
                 Handbooks and cheat sheets curated for your courses.
@@ -369,7 +359,7 @@ export default function DashboardPage() {
 
             {!isDashboardLoading && dashboard.activeCourses.length === 0 && (
               <div className="flex items-start gap-2 rounded-2xl surface-secondary p-4 text-xs text-slate-500">
-                <Sparkles className="mt-0.5 size-4 shrink-0 text-accent" />
+                <Sparkle className="mt-0.5 size-4 shrink-0 text-accent" />
                 Enroll in a course to start tracking real progress here.
               </div>
             )}

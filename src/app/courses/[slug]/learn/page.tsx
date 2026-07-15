@@ -3,32 +3,7 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import {
-  Bold,
-  CheckCircle2,
-  ChevronRight,
-  Code2,
-  Download,
-  Eye,
-  ExternalLink,
-  Heading,
-  Italic,
-  Link2,
-  List,
-  ListOrdered,
-  Loader2,
-  Lock,
-  Maximize2,
-  Pause,
-  Play,
-  Quote,
-  RotateCcw,
-  RotateCw,
-  Sparkles,
-  ThumbsUp,
-  Volume2,
-  VolumeX,
-} from "lucide-react";
+import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -91,14 +66,14 @@ type MarkdownToolbarAction = {
 };
 
 const markdownToolbarActions: MarkdownToolbarAction[] = [
-  { action: "heading", label: "Heading", Icon: Heading },
-  { action: "bold", label: "Bold", Icon: Bold },
-  { action: "italic", label: "Italic", Icon: Italic },
-  { action: "unordered-list", label: "Bulleted list", Icon: List },
-  { action: "ordered-list", label: "Numbered list", Icon: ListOrdered },
-  { action: "quote", label: "Quote", Icon: Quote },
-  { action: "code", label: "Code", Icon: Code2 },
-  { action: "link", label: "Link", Icon: Link2 },
+  { action: "heading", label: "Heading", Icon: TextH },
+  { action: "bold", label: "Bold", Icon: TextB },
+  { action: "italic", label: "Italic", Icon: TextItalic },
+  { action: "unordered-list", label: "Bulleted list", Icon: ListBullets },
+  { action: "ordered-list", label: "Numbered list", Icon: ListNumbers },
+  { action: "quote", label: "Quote", Icon: Quotes },
+  { action: "code", label: "Code", Icon: Code },
+  { action: "link", label: "Link", Icon: LinkSimple },
 ];
 
 type PlayerJsPlayer = {
@@ -716,7 +691,7 @@ function FlashcardDisplay({
       <div className="flex items-center justify-between gap-3">
         <p className="text-sm text-slate-500">{pairs.length} cards — click to reveal answer</p>
         <Button variant="secondary" size="sm" onClick={onDownload}>
-          <Download className="size-3.5" /> PNG
+          <DownloadSimple className="size-3.5" /> PNG
         </Button>
       </div>
       <div className="grid gap-3 sm:grid-cols-2">
@@ -752,11 +727,11 @@ function FlashcardDisplay({
 function ResourceItem({ resource }: { resource: LessonResource }) {
   const url = resource.external_url ?? resource.media_url;
   const icon = resource.is_downloadable ? (
-    <Download className="size-4 shrink-0 text-orange-500" />
+    <DownloadSimple className="size-4 shrink-0 text-orange-500" />
   ) : resource.external_url ? (
-    <ExternalLink className="size-4 shrink-0 text-slate-400" />
+    <ArrowSquareOut className="size-4 shrink-0 text-slate-400" />
   ) : (
-    <Link2 className="size-4 shrink-0 text-slate-400" />
+    <LinkSimple className="size-4 shrink-0 text-slate-400" />
   );
 
   const inner = (
@@ -920,7 +895,7 @@ function LessonPlayerControls({
             type="button"
             variant="ghost"
           >
-            <RotateCcw className="size-4" />
+            <ArrowCounterClockwise className="size-4" />
           </Button>
           <Button
             aria-label="Forward 10 seconds"
@@ -931,7 +906,7 @@ function LessonPlayerControls({
             type="button"
             variant="ghost"
           >
-            <RotateCw className="size-4" />
+            <ArrowClockwise className="size-4" />
           </Button>
           <span className="min-w-28 text-sm font-medium tabular-nums text-slate-200">
             {formatSeconds(timelineValue)} / {formatSeconds(timelineMax)}
@@ -946,7 +921,7 @@ function LessonPlayerControls({
               type="button"
               variant="ghost"
             >
-              {muted || volume === 0 ? <VolumeX /> : <Volume2 />}
+              {muted || volume === 0 ? <SpeakerSlash /> : <SpeakerHigh />}
             </Button>
             <div className="relative flex h-3.5 w-20 items-center sm:w-28">
               <div className="pointer-events-none absolute inset-x-0 h-1 overflow-hidden rounded-full bg-white/15">
@@ -976,7 +951,7 @@ function LessonPlayerControls({
               type="button"
               variant="ghost"
             >
-              <Maximize2 />
+              <CornersOut />
             </Button>
           </div>
         </div>
@@ -1716,7 +1691,7 @@ function VideoLearningPageContent({ params }: Props) {
 
               {hasCustomPlayerControls && !playerReady ? (
                 <div className="absolute inset-4 flex items-center justify-center rounded-lg bg-slate-950/50 sm:inset-5">
-                  <Loader2 className="size-8 animate-spin text-white/80" />
+                  <CircleNotch className="size-8 animate-spin text-white/80" />
                 </div>
               ) : null}
 
@@ -1840,7 +1815,7 @@ function VideoLearningPageContent({ params }: Props) {
               onClick={() => void handleArtifact("flashcards")}
               disabled={submitting === "flashcards"}
             >
-              <Sparkles className="size-4" />
+              <Sparkle className="size-4" />
               {submitting === "flashcards" ? "Generating..." : "AI flashcards"}
             </Button>
           </div>
@@ -1849,7 +1824,7 @@ function VideoLearningPageContent({ params }: Props) {
           {lesson.flashcard_markdown ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-5 text-orange-500" />
+                <Sparkle className="size-5 text-orange-500" />
                 <h2 className="text-2xl font-extrabold text-slate-950">Flashcards</h2>
               </div>
               <div className="mt-5">
@@ -1866,7 +1841,7 @@ function VideoLearningPageContent({ params }: Props) {
           {lesson.resources.length > 0 ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
               <div className="flex items-center gap-2">
-                <Download className="size-5 text-orange-500" />
+                <DownloadSimple className="size-5 text-orange-500" />
                 <h2 className="text-2xl font-extrabold text-slate-950">Resources</h2>
               </div>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
@@ -1906,7 +1881,7 @@ function VideoLearningPageContent({ params }: Props) {
           {artifacts.flashcards ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
               <div className="flex items-center gap-2">
-                <Sparkles className="size-5 text-orange-500" />
+                <Sparkle className="size-5 text-orange-500" />
                 <h2 className="text-2xl font-extrabold text-slate-950">AI flashcards</h2>
               </div>
               <div className="mt-5 rounded-lg surface-secondary p-4">
@@ -1996,7 +1971,7 @@ function VideoLearningPageContent({ params }: Props) {
                   <details key={`${faq.question}-${i}`} className="group px-4 py-3">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
                       <span>{faq.question}</span>
-                      <ChevronRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                      <CaretRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
                     </summary>
                     <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
                   </details>
@@ -2121,7 +2096,7 @@ function VideoLearningPageContent({ params }: Props) {
               {course.modules.map((module) => (
                 <div key={module.id}>
                   <div className="mb-2 flex items-center gap-2">
-                    <ChevronRight className="size-3.5 shrink-0 text-orange-500" />
+                    <CaretRight className="size-3.5 shrink-0 text-orange-500" />
                     <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{module.title}</p>
                   </div>
                   <div className="space-y-1.5">
@@ -2149,7 +2124,7 @@ function VideoLearningPageContent({ params }: Props) {
                                     : "bg-slate-100 text-slate-500 hover:bg-orange-100 hover:text-orange-600"
                                 }`}
                               >
-                                {isDone ? <CheckCircle2 className="size-4" /> : <Play className="size-3.5" />}
+                                {isDone ? <CheckCircle className="size-4" /> : <Play className="size-3.5" />}
                               </Link>
                             ) : (
                               <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400">

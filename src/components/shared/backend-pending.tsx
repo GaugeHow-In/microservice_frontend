@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, Database, GraduationCap } from "lucide-react";
+import { ArrowRight, Database, GraduationCap } from "@phosphor-icons/react/dist/ssr";
 import { PageHeader } from "@/components/shared/page-header";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";

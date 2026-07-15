@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { FileText } from "@phosphor-icons/react";
 import type { Citation, RetrievedChunk } from "@/lib/ai-client";
 
 type MentorCitationsProps = {

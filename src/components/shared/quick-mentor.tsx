@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, LoaderCircle, Send, X } from "lucide-react";
+import { PaperPlaneTilt, Robot, SpinnerGap, X } from "@phosphor-icons/react";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
@@ -80,7 +80,7 @@ export function QuickMentor() {
       {open && (
         <div className="chrome-surface mb-3 flex h-[30rem] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl shadow-[var(--shadow-lg)]">
           <div className="flex items-center justify-between border-b border-slate-200/70 p-4">
-            <div className="flex items-center gap-2 font-semibold text-slate-950"><Bot className="size-5 text-orange-600" />Quick mentor <span className="text-xs text-slate-400">Beta</span></div>
+            <div className="flex items-center gap-2 font-semibold text-slate-950"><Robot className="size-5 text-orange-600" />Quick mentor <span className="text-xs text-slate-400">Beta</span></div>
             <Button size="icon" variant="ghost" onClick={() => setOpen(false)} aria-label="Close mentor"><X /></Button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
@@ -99,16 +99,16 @@ export function QuickMentor() {
                 )}
               </div>
             ))}
-            {busy && <LoaderCircle className="size-5 animate-spin text-orange-600" />}
+            {busy && <SpinnerGap className="size-5 animate-spin text-orange-600" />}
             {error && <p className="text-red-600">{error}</p>}
           </div>
           <form onSubmit={submit} className="flex gap-2 border-t border-slate-200/70 p-3">
             <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Ask a quick question…" className="min-w-0 flex-1 rounded-xl border border-slate-200 bg-white px-3 text-sm outline-none focus:border-orange-400" maxLength={4000} />
-            <Button size="icon" disabled={busy || !input.trim()} aria-label="Send"><Send /></Button>
+            <Button size="icon" disabled={busy || !input.trim()} aria-label="Send"><PaperPlaneTilt /></Button>
           </form>
         </div>
       )}
-      <Button size="icon" className="size-14 rounded-full shadow-[var(--shadow-lg)]" onClick={() => setOpen((value) => !value)} aria-label="Open quick mentor"><Bot className="size-6" /></Button>
+      <Button size="icon" className="size-14 rounded-full shadow-[var(--shadow-lg)]" onClick={() => setOpen((value) => !value)} aria-label="Open quick mentor"><Robot className="size-6" /></Button>
     </div>
   );
 }

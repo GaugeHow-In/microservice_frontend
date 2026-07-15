@@ -1,6 +1,6 @@
 "use client";
 
-import { MessageSquareText, Trash2, X } from "lucide-react";
+import { ChatCenteredText, Trash, X } from "@phosphor-icons/react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ConversationSummary } from "@/lib/ai-client";
@@ -77,7 +77,7 @@ export function MentorHistoryDrawer({
                   : "text-slate-600 hover:bg-slate-50",
               )}
             >
-              <MessageSquareText className="size-4 shrink-0 opacity-60" />
+              <ChatCenteredText className="size-4 shrink-0 opacity-60" />
               <button
                 type="button"
                 onClick={() => onSelect(conversation.id)}
@@ -94,7 +94,7 @@ export function MentorHistoryDrawer({
                 aria-label={`Delete ${conversation.title}`}
                 className="shrink-0 rounded-lg p-1.5 text-slate-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100"
               >
-                <Trash2 className="size-3.5" />
+                <Trash className="size-3.5" />
               </button>
             </div>
           ))}

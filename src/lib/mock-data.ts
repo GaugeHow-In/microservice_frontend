@@ -1,42 +1,17 @@
-import {
-  Award,
-  BarChart3,
-  BookOpen,
-  Bot,
-  BrainCircuit,
-  BriefcaseBusiness,
-  CalendarCheck,
-  Code2,
-  Compass,
-  Flame,
-  GraduationCap,
-  Home,
-  Library,
-  LineChart,
-  Medal,
-  NotebookText,
-  Rocket,
-  Route,
-  Settings,
-  ShieldCheck,
-  Sparkles,
-  Target,
-  Trophy,
-  Users,
-} from "lucide-react";
+import { BookOpen, Books, Brain, Briefcase, CalendarCheck, ChartBar, ChartLine, Code, Compass, Flame, Gear, GraduationCap, House, Medal, MedalMilitary, Notebook, Path, Robot, Rocket, ShieldCheck, Sparkle, Target, Trophy, Users } from "@phosphor-icons/react/dist/ssr";
 
 export const platformNav = [
-  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Dashboard", href: "/dashboard", icon: House },
   { label: "Goals", href: "/goals", icon: Target },
   { label: "Courses", href: "/courses", icon: GraduationCap },
-  { label: "AI Mentor", href: "/mentor", icon: Bot },
-  { label: "Notes", href: "/notes", icon: NotebookText },
-  { label: "Library", href: "/library", icon: Library },
-  { label: "Tests", href: "/tests", icon: BarChart3 },
-  { label: "Roadmaps", href: "/roadmaps", icon: Route },
+  { label: "AI Mentor", href: "/mentor", icon: Robot },
+  { label: "Notes", href: "/notes", icon: Notebook },
+  { label: "Library", href: "/library", icon: Books },
+  { label: "Tests", href: "/tests", icon: ChartBar },
+  { label: "Roadmaps", href: "/roadmaps", icon: Path },
   { label: "Community", href: "/community", icon: Users },
-  { label: "Profile", href: "/profile", icon: Award },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Profile", href: "/profile", icon: Medal },
+  { label: "Settings", href: "/settings", icon: Gear },
 ];
 
 export const bottomNav = platformNav.slice(0, 5);
@@ -91,7 +66,7 @@ export const goals = [
     progress: 72,
     deadline: "Oct 2026",
     daysLeft: 126,
-    icon: BriefcaseBusiness,
+    icon: Briefcase,
     accent: "orange",
     milestones: [
       "Finish 250 curated DSA problems",
@@ -117,7 +92,7 @@ export const goals = [
     progress: 54,
     deadline: "Feb 2027",
     daysLeft: 238,
-    icon: Medal,
+    icon: MedalMilitary,
     accent: "blue",
     milestones: [
       "Complete engineering mathematics",
@@ -165,7 +140,7 @@ export const goals = [
     progress: 63,
     deadline: "Sep 2026",
     daysLeft: 96,
-    icon: Code2,
+    icon: Code,
     accent: "slate",
     milestones: ["Arrays and strings", "Trees and graphs", "Dynamic programming", "Timed contests"],
     remainingTasks: ["Trie implementation", "DP on subsequences", "Weekly contest review"],
@@ -182,7 +157,7 @@ export const goals = [
     progress: 46,
     deadline: "Dec 2026",
     daysLeft: 178,
-    icon: BrainCircuit,
+    icon: Brain,
     accent: "violet",
     milestones: ["Linear models", "Deep learning basics", "NLP project", "Model deployment"],
     remainingTasks: ["Regularization notebook", "CNN visual notes", "Model monitoring primer"],
@@ -339,25 +314,25 @@ export const performanceTrend = [
 export const roadmaps = [
   {
     title: "Web Development",
-    icon: Code2,
+    icon: Code,
     progress: 64,
     steps: ["HTML/CSS", "JavaScript", "React", "Next.js", "APIs", "Deployment"],
   },
   {
     title: "DSA",
-    icon: Route,
+    icon: Path,
     progress: 58,
     steps: ["Arrays", "Hashing", "Trees", "Graphs", "DP", "Contests"],
   },
   {
     title: "AI/ML",
-    icon: BrainCircuit,
+    icon: Brain,
     progress: 41,
     steps: ["Python", "Math", "ML", "Deep Learning", "NLP", "MLOps"],
   },
   {
     title: "Data Science",
-    icon: LineChart,
+    icon: ChartLine,
     progress: 36,
     steps: ["Stats", "SQL", "Pandas", "Visualization", "ML", "Storytelling"],
   },
@@ -402,8 +377,8 @@ export const communityPosts = [
 export const achievements = [
   { title: "23-day streak", icon: Flame, detail: "Consistency builder" },
   { title: "DSA Finisher", icon: Trophy, detail: "150 problems solved" },
-  { title: "Note Scholar", icon: NotebookText, detail: "42 highlights saved" },
-  { title: "AI Planner", icon: Sparkles, detail: "12 study plans generated" },
+  { title: "Note Scholar", icon: Notebook, detail: "42 highlights saved" },
+  { title: "AI Planner", icon: Sparkle, detail: "12 study plans generated" },
 ];
 
 export const mentorPrompts = [

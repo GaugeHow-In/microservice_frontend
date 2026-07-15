@@ -1,6 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ArrowRight, BookOpen, Clock3, GraduationCap, Star } from "lucide-react";
+import { ArrowRight, BookOpen, ClockAfternoon, GraduationCap, Star } from "@phosphor-icons/react/dist/ssr";
 import { CourseCatalogItem, formatMinutes, formatPrice } from "@/lib/learning-client";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -66,7 +66,7 @@ export function CourseCard({ course }: CourseCardProps) {
 
         <div className="flex flex-wrap gap-4 text-sm font-semibold text-slate-600">
           <span className="flex items-center gap-1.5">
-            <Clock3 className="size-4 text-orange-600" />
+            <ClockAfternoon className="size-4 text-orange-600" />
             {formatMinutes(course.duration_minutes)}
           </span>
           <span className="flex items-center gap-1.5">

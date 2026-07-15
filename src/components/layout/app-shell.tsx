@@ -3,27 +3,21 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import {
-  Award,
-  Bell,
-  BookOpen,
-  Bot,
-  ClipboardCheck,
-  GraduationCap,
-  HelpCircle,
-  Home,
-  LogOut,
-  Map,
-  Menu,
-  Search,
-  Settings,
-  X,
-} from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MagnifyingGlass, MapTrifold, Medal, Question, Robot, SignOut, User, X } from "@phosphor-icons/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { BrandLogo } from "@/components/shared/brand-logo";
+import { LogoutDialog } from "@/components/shared/logout-dialog";
 import { PointsBalance } from "@/components/shared/points-balance";
 import { QuickMentor } from "@/components/shared/quick-mentor";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -34,18 +28,20 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
+const SIDEBAR_STORAGE_KEY = "gaugehow:sidebar-collapsed";
+
 const platformNav = [
-  { label: "Dashboard", href: "/dashboard", icon: Home },
+  { label: "Dashboard", href: "/dashboard", icon: House },
   { label: "Courses", href: "/courses", icon: GraduationCap },
-  { label: "Tests", href: "/tests", icon: ClipboardCheck },
+  { label: "Tests", href: "/tests", icon: ClipboardText },
   { label: "Library", href: "/library", icon: BookOpen },
-  { label: "Roadmaps", href: "/roadmaps", icon: Map },
-  { label: "AI Mentor", href: "/mentor", icon: Bot },
-  { label: "Profile", href: "/profile", icon: Award },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
+  { label: "AI Mentor", href: "/mentor", icon: Robot },
+  { label: "Profile", href: "/profile", icon: Medal },
+  { label: "Settings", href: "/settings", icon: Gear },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -60,15 +56,17 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
+            title={collapsed ? item.label : undefined}
             className={cn(
               "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition",
+              collapsed && "lg:justify-center lg:px-0",
               active
                 ? "bg-orange-50 text-orange-700 shadow-[inset_2px_0_0_var(--orange-400)]"
                 : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
             )}
           >
-            <Icon className="size-4" />
-            {item.label}
+            <Icon className="size-4 shrink-0" />
+            <span className={cn("truncate", collapsed && "lg:hidden")}>{item.label}</span>
           </Link>
         );
       })}
@@ -78,9 +76,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [logoutOpen, setLogoutOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
-  const { accessToken, user, isLoading, logout } = useAuth();
+  const { accessToken, user, isLoading } = useAuth();
   const activeLabel =
     platformNav.find((item) => pathname === item.href || pathname.startsWith(item.href + "/"))
       ?.label ?? "Dashboard";
@@ -101,6 +101,28 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, [isLoading, router, user]);
 
+  // Read persisted state after mount: the server render can't know it, so
+  // reading it during render would desync hydration.
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true");
+  }, []);
+
+  // Opening the dialog straight from the menu item leaves the closing menu and
+  // the opening dialog fighting over focus and the scroll lock, which can strand
+  // `pointer-events: none` on <body> and freeze the page. Letting the menu
+  // finish closing first keeps the two from overlapping.
+  const requestLogout = useCallback(() => {
+    window.setTimeout(() => setLogoutOpen(true), 0);
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((previous) => {
+      const next = !previous;
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+      return next;
+    });
+  }, []);
+
   if (isLoading || !user) {
     return (
       <div className="premium-bg flex min-h-screen items-center justify-center">
@@ -111,23 +133,23 @@ export function AppShell({ children }: AppShellProps) {
     );
   }
 
+  const avatarImage = selectedAvatar ? (
+    <Image
+      src={selectedAvatar.url}
+      alt=""
+      width={40}
+      height={40}
+      unoptimized
+      className="size-full rounded-full object-cover"
+    />
+  ) : (
+    <AvatarFallback>{initials}</AvatarFallback>
+  );
+
   const account = (
-    <div className="surface-secondary rounded-xl p-4">
+    <div className={cn("surface-secondary rounded-xl p-4", collapsed && "lg:hidden")}>
       <div className="flex items-center gap-3">
-        <Avatar>
-          {selectedAvatar ? (
-            <Image
-              src={selectedAvatar.url}
-              alt=""
-              width={40}
-              height={40}
-              unoptimized
-              className="size-full rounded-full object-cover"
-            />
-          ) : (
-            <AvatarFallback>{initials}</AvatarFallback>
-          )}
-        </Avatar>
+        <Avatar>{avatarImage}</Avatar>
         <div className="min-w-0">
           <p className="truncate text-sm font-bold text-slate-950">Welcome back</p>
           <p className="truncate text-xs text-slate-500">{user.display_name}</p>
@@ -135,75 +157,108 @@ export function AppShell({ children }: AppShellProps) {
       </div>
       <button
         type="button"
-        className="mt-4 flex items-center gap-2 text-xs font-bold text-orange-600 hover:text-orange-700"
-        onClick={async () => {
-          await logout();
-          router.replace("/login");
+        className="mt-4 flex cursor-pointer items-center gap-2 text-xs font-bold text-orange-600 transition hover:text-orange-700"
+        onClick={() => {
+          setDrawerOpen(false);
+          setLogoutOpen(true);
         }}
       >
-        <LogOut className="size-4" />
+        <SignOut className="size-4" />
         Logout
       </button>
     </div>
   );
 
   return (
-    <div className="premium-bg min-h-screen">
+    <div className="premium-bg min-h-screen lg:flex">
       {drawerOpen && (
         <button
-          className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm transition-opacity"
+          className="fixed inset-0 z-40 bg-slate-950/35 backdrop-blur-sm transition-opacity lg:hidden"
           aria-label="Close navigation"
           onClick={() => setDrawerOpen(false)}
         />
       )}
 
       <aside
+        data-drawer-open={drawerOpen}
+        data-collapsed={collapsed}
         className={cn(
-          "chrome-surface fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl transition-transform duration-300 ease-out",
-          drawerOpen ? "translate-x-0" : "-translate-x-full",
+          "chrome-surface fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] shrink-0 flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl",
+          // `visibility` rides along in the transition so the drawer stays
+          // visible while sliding out, then drops out of the tab order.
+          "transition-[transform,width,visibility] duration-300 ease-out",
+          "lg:sticky lg:z-30 lg:max-w-none lg:translate-x-0 lg:visible lg:shadow-none",
+          drawerOpen ? "translate-x-0" : "invisible -translate-x-full",
+          collapsed ? "lg:w-[5.5rem]" : "lg:w-72",
         )}
-        aria-hidden={!drawerOpen}
       >
-        <div className="flex items-center justify-between px-2 py-3">
-          <BrandLogo />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setDrawerOpen(false)}
-            aria-label="Close navigation"
-          >
-            <X />
-          </Button>
+        <div className="flex items-center justify-between gap-2 px-2 py-3">
+          <span className={cn(collapsed && "lg:hidden")}>
+            <BrandLogo />
+          </span>
+          {/* Responsive display classes go on wrappers, never on <Button>:
+              .btn-base sets `display` from unlayered CSS, which outranks every
+              Tailwind display utility no matter the breakpoint. */}
+          <span className="lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setDrawerOpen(false)}
+              aria-label="Close navigation"
+            >
+              <X />
+            </Button>
+          </span>
+          <span className={cn("hidden lg:block", collapsed && "lg:mx-auto")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleCollapsed}
+              aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+              title={collapsed ? "Expand navigation" : "Collapse navigation"}
+              aria-expanded={!collapsed}
+            >
+              <CaretLeft
+                className={cn("transition-transform duration-300", collapsed && "rotate-180")}
+              />
+            </Button>
+          </span>
         </div>
         <div className="mt-8">
-          <NavLinks onNavigate={() => setDrawerOpen(false)} />
+          <NavLinks collapsed={collapsed} onNavigate={() => setDrawerOpen(false)} />
         </div>
         <div className="mt-auto space-y-3">
           <Link
             href="/mentor"
             onClick={() => setDrawerOpen(false)}
-            className="flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-700 transition hover:border-orange-300"
+            title={collapsed ? "Engineering help" : undefined}
+            className={cn(
+              "flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-700 transition hover:border-orange-300",
+              collapsed && "lg:justify-center lg:px-0",
+            )}
           >
-            <HelpCircle className="size-5" />
-            Engineering help
+            <Question className="size-5 shrink-0" />
+            <span className={cn(collapsed && "lg:hidden")}>Engineering help</span>
           </Link>
           {account}
         </div>
       </aside>
 
-      <div>
+      <div className="min-w-0 flex-1">
         <header className="chrome-surface sticky top-0 z-30 rounded-none border-x-0 border-t-0 backdrop-blur-xl">
           <div className="flex h-16 items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
             <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDrawerOpen(true)}
-                aria-label="Open navigation"
-              >
-                <Menu />
-              </Button>
-              <div className="hidden sm:block">
+              <span className="lg:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setDrawerOpen(true)}
+                  aria-label="Open navigation"
+                >
+                  <List />
+                </Button>
+              </span>
+              <div className="hidden sm:block lg:hidden">
                 <BrandLogo compact />
               </div>
               <div>
@@ -212,35 +267,59 @@ export function AppShell({ children }: AppShellProps) {
               </div>
             </div>
             <div className="surface-secondary hidden w-full max-w-md items-center gap-2 rounded-lg px-3 py-2 md:flex">
-              <Search className="size-4 text-slate-500" />
+              <MagnifyingGlass className="size-4 text-slate-500" />
               <span className="text-sm text-slate-500">Search courses</span>
             </div>
             <div className="flex items-center gap-2">
               <PointsBalance accessToken={accessToken} />
               <ThemeToggle />
-              <Button asChild variant="soft" size="sm" className="hidden sm:inline-flex">
-                <Link href="/courses">
-                  <GraduationCap />
-                  Courses
-                </Link>
-              </Button>
+              <span className="hidden sm:block">
+                <Button asChild variant="soft" size="sm">
+                  <Link href="/courses">
+                    <GraduationCap />
+                    Courses
+                  </Link>
+                </Button>
+              </span>
               <Button variant="ghost" size="icon" aria-label="Notifications">
                 <Bell />
               </Button>
-              <Avatar className="hidden sm:flex">
-                {selectedAvatar ? (
-                  <Image
-                    src={selectedAvatar.url}
-                    alt=""
-                    width={40}
-                    height={40}
-                    unoptimized
-                    className="size-full rounded-full object-cover"
-                  />
-                ) : (
-                  <AvatarFallback>{initials}</AvatarFallback>
-                )}
-              </Avatar>
+
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    type="button"
+                    className="hidden cursor-pointer rounded-full transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring-focus)] data-[state=open]:ring-4 data-[state=open]:ring-[color:var(--ring-focus)] sm:block"
+                    aria-label="Open account menu"
+                  >
+                    <Avatar>{avatarImage}</Avatar>
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent>
+                  <DropdownMenuLabel>
+                    <p className="truncate text-sm font-bold text-slate-950">{user.display_name}</p>
+                    <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem asChild>
+                    <Link href="/profile">
+                      <User />
+                      Profile
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/settings">
+                      <Gear />
+                      Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem variant="warning" onSelect={requestLogout}>
+                    <SignOut />
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           </div>
         </header>
@@ -249,6 +328,8 @@ export function AppShell({ children }: AppShellProps) {
           <div className="mx-auto max-w-7xl">{children}</div>
         </main>
       </div>
+
+      <LogoutDialog open={logoutOpen} onOpenChange={setLogoutOpen} />
 
       {pathname !== "/mentor" && <QuickMentor />}
     </div>
