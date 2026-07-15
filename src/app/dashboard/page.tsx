@@ -138,12 +138,12 @@ export default function DashboardPage() {
                   value={mentorQuery}
                   onChange={(event) => setMentorQuery(event.target.value)}
                   placeholder="Ask GaugeHow anything about mechanical engineering..."
-                  className="h-14 w-full rounded-full bg-transparent pl-6 pr-16 text-base text-slate-950 outline-none placeholder:text-slate-500"
+                  className="h-14 w-full rounded-full bg-transparent pl-6 pr-20 text-base text-slate-950 outline-none placeholder:text-slate-500"
                 />
                 <button
                   type="submit"
                   disabled={!mentorQuery.trim()}
-                  className="absolute right-2 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
+                  className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
                   aria-label="Send"
                 >
                   <PaperPlaneTilt className="size-5" />

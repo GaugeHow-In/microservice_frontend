@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils";
 type BrandLogoProps = {
   className?: string;
   compact?: boolean;
+  /** Where the lockup links. Signed-in surfaces point at the dashboard. */
+  href?: string;
 };
 
-export function BrandLogo({ className, compact = false }: BrandLogoProps) {
+export function BrandLogo({ className, compact = false, href = "/" }: BrandLogoProps) {
   return (
     <Link
-      href="/"
+      href={href}
       aria-label="GaugeHowLearning OS"
       className={cn("flex items-center gap-3 text-slate-950", className)}
     >

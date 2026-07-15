@@ -461,7 +461,10 @@ p {
 .premium-bg {
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  /* `clip` and not `hidden`: hidden makes this a scroll container, which
+     silently kills `position: sticky` for the sidebar and top bar inside it.
+     clip does the same visual clipping without that side effect. */
+  overflow: clip;
   background:
     radial-gradient(circle at 14% 8%, var(--ambient-muted) 0, transparent 30rem),
     radial-gradient(circle at 84% 0%, var(--ambient-soft) 0, transparent 24rem),

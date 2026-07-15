@@ -18,4 +18,13 @@ describe("BrandLogo", () => {
     expect(screen.getByRole("link")).toHaveAttribute("href", "/");
     expect(screen.queryByText("Learning OS")).not.toBeInTheDocument();
   });
+
+  it("links wherever href points, so signed-in shells can target the dashboard", () => {
+    render(createElement(BrandLogo, { href: "/dashboard" }));
+
+    expect(screen.getByRole("link", { name: /gaugehowlearning os/i })).toHaveAttribute(
+      "href",
+      "/dashboard",
+    );
+  });
 });

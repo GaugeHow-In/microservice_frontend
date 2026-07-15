@@ -54,10 +54,10 @@ describe("AppShell", () => {
   it("derives the active section label from nested routes", () => {
     renderShell();
 
-    expect(screen.getAllByRole("link", { name: /gaugehowlearning os/i })[0]).toHaveAttribute(
-      "href",
-      "/",
-    );
+    // Signed in, the lockup goes to the dashboard rather than the marketing home.
+    for (const logo of screen.getAllByRole("link", { name: /gaugehowlearning os/i })) {
+      expect(logo).toHaveAttribute("href", "/dashboard");
+    }
     expect(screen.getAllByText("Courses").length).toBeGreaterThan(0);
     expect(screen.getByText("Search courses")).toBeInTheDocument();
     expect(screen.getAllByRole("link", { name: /courses/i })[0]).toHaveAttribute("href", "/courses");

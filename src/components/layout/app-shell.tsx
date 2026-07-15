@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MagnifyingGlass, MapTrifold, Medal, Question, Robot, SignOut, User, X } from "@phosphor-icons/react";
+import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MagnifyingGlass, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -61,7 +61,7 @@ function NavLinks({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: 
               "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition",
               collapsed && "lg:justify-center lg:px-0",
               active
-                ? "bg-orange-50 text-orange-700 shadow-[inset_2px_0_0_var(--orange-400)]"
+                ? "bg-[color:var(--surface-secondary)] text-slate-950"
                 : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
             )}
           >
@@ -186,15 +186,16 @@ export function AppShell({ children }: AppShellProps) {
           "chrome-surface fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] shrink-0 flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl",
           // `visibility` rides along in the transition so the drawer stays
           // visible while sliding out, then drops out of the tab order.
-          "transition-[transform,width,visibility] duration-300 ease-out",
+          "transition-[transform,width,padding,visibility] duration-300 ease-out",
           "lg:sticky lg:z-30 lg:max-w-none lg:translate-x-0 lg:visible lg:shadow-none",
           drawerOpen ? "translate-x-0" : "invisible -translate-x-full",
-          collapsed ? "lg:w-[5.5rem]" : "lg:w-72",
+          // The rail is only as wide as a 42px icon button plus breathing room.
+          collapsed ? "lg:w-16 lg:px-2" : "lg:w-72",
         )}
       >
-        <div className="flex items-center justify-between gap-2 px-2 py-3">
+        <div className={cn("flex items-center justify-between gap-2 px-2 py-3", collapsed && "lg:px-0")}>
           <span className={cn(collapsed && "lg:hidden")}>
-            <BrandLogo />
+            <BrandLogo href="/dashboard" />
           </span>
           {/* Responsive display classes go on wrappers, never on <Button>:
               .btn-base sets `display` from unlayered CSS, which outranks every
@@ -227,21 +228,7 @@ export function AppShell({ children }: AppShellProps) {
         <div className="mt-8">
           <NavLinks collapsed={collapsed} onNavigate={() => setDrawerOpen(false)} />
         </div>
-        <div className="mt-auto space-y-3">
-          <Link
-            href="/mentor"
-            onClick={() => setDrawerOpen(false)}
-            title={collapsed ? "Engineering help" : undefined}
-            className={cn(
-              "flex items-center gap-3 rounded-xl border border-orange-200 bg-orange-50 p-4 text-sm font-bold text-orange-700 transition hover:border-orange-300",
-              collapsed && "lg:justify-center lg:px-0",
-            )}
-          >
-            <Question className="size-5 shrink-0" />
-            <span className={cn(collapsed && "lg:hidden")}>Engineering help</span>
-          </Link>
-          {account}
-        </div>
+        <div className="mt-auto">{account}</div>
       </aside>
 
       <div className="min-w-0 flex-1">
@@ -259,7 +246,7 @@ export function AppShell({ children }: AppShellProps) {
                 </Button>
               </span>
               <div className="hidden sm:block lg:hidden">
-                <BrandLogo compact />
+                <BrandLogo compact href="/dashboard" />
               </div>
               <div>
                 <p className="text-xs font-bold uppercase text-slate-500">GaugeHow</p>
