@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Inter, Manrope, Noto_Sans, Noto_Sans_Thaana } from "next/font/google";
+import { Geist_Mono, Noto_Sans_Thaana } from "next/font/google";
 import { AuthProvider } from "@/components/providers/auth-provider";
 import { LearningContextProvider } from "@/components/providers/learning-context-provider";
 import { PlayerErrorGuard } from "@/components/providers/player-error-guard";
@@ -9,27 +9,6 @@ import "./globals.css";
 const notoSansThaana = Noto_Sans_Thaana({
   variable: "--font-noto-sans-thaana",
   subsets: ["latin", "thaana"],
-  display: "swap",
-  weight: ["400", "600", "700", "800"],
-});
-
-const notoSans = Noto_Sans({
-  variable: "--font-noto-sans",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "600", "700", "800"],
-});
-
-const inter = Inter({
-  variable: "--font-inter",
-  subsets: ["latin"],
-  display: "swap",
-  weight: ["400", "600", "700", "800"],
-});
-
-const manrope = Manrope({
-  variable: "--font-manrope",
-  subsets: ["latin"],
   display: "swap",
   weight: ["400", "600", "700", "800"],
 });
@@ -64,7 +43,7 @@ export default function RootLayout({
       // custom property resolves var()s at the element where it's declared. On
       // <body> they'd be defined too late, leaving --font-sans-stack empty and
       // the whole site on system fonts.
-      className={`${notoSansThaana.variable} ${notoSans.variable} ${inter.variable} ${manrope.variable} ${geistMono.variable}`}
+      className={`${notoSansThaana.variable} ${geistMono.variable}`}
     >
       <body className="bg-background text-foreground antialiased">
         <ThemeProvider>

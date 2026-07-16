@@ -177,9 +177,9 @@ export default function DashboardPage() {
             className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-slate-400 motion-safe:animate-[soft-float_2.4s_var(--motion-ease-standard)_infinite_alternate]"
           >
             <span className="text-[10px] font-bold uppercase tracking-widest">Scroll</span>
-            <span className="flex flex-col items-center leading-[0.6]">
+            <span className="flex flex-col items-center gap-0.5">
               <CaretDown className="size-4" />
-              <CaretDown className="size-4 -mt-1 opacity-60" />
+              <CaretDown className="size-4 opacity-60" />
             </span>
           </span>
         </section>
