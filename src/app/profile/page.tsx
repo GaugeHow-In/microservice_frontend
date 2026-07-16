@@ -83,8 +83,9 @@ function nullable(value: string) {
 }
 
 function publicProfileUrl(handle: string) {
-  if (typeof window === "undefined") return `/profiles/${handle}`;
-  return `${window.location.origin}/profiles/${handle}`;
+  // Public-facing short link; a rewrite maps /p/<handle> to the profile route.
+  if (typeof window === "undefined") return `/p/${handle}`;
+  return `${window.location.origin}/p/${handle}`;
 }
 
 function birthdayLabel(dateOfBirth: string | null | undefined) {

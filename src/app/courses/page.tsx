@@ -184,22 +184,21 @@ export default function CoursesPage() {
             {error ? (
               <p className="p-5 text-sm font-medium text-rose-600">{error}</p>
             ) : isLoading ? (
-              <div className="space-y-5">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <div key={index} className="browse-card grid gap-5 p-5 md:grid-cols-[17rem_minmax(0,1fr)]">
-                    <Skeleton className="h-48 rounded-xl" />
-                    <div className="space-y-4 py-1">
-                      <Skeleton className="h-5 w-24 rounded" />
-                      <Skeleton className="h-8 w-4/5 rounded" />
-                      <Skeleton className="h-4 w-full rounded" />
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                  <div key={index} className="course-card flex flex-col">
+                    <Skeleton className="aspect-[16/9] w-full rounded-none" />
+                    <div className="space-y-3 p-4">
+                      <Skeleton className="h-3 w-1/2 rounded" />
+                      <Skeleton className="h-5 w-4/5 rounded" />
+                      <Skeleton className="h-3 w-1/3 rounded" />
                       <Skeleton className="h-4 w-2/3 rounded" />
-                      <Skeleton className="h-11 w-36 rounded-lg" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : courses.length ? (
-              <div className="space-y-5">
+              <div className="grid gap-6 sm:grid-cols-2 xl:grid-cols-3">
                 {courses.map((course) => (
                   <CourseCard key={course.slug} course={course} />
                 ))}

@@ -98,7 +98,7 @@ export function PointsBalance({ accessToken }: PointsBalanceProps) {
       </Button>
 
       {open ? (
-        <div className="chrome-surface absolute right-0 top-12 z-50 w-[min(92vw,360px)] rounded-xl p-4">
+        <div className="popover-surface absolute right-0 top-12 z-50 w-[min(92vw,360px)] rounded-xl p-4">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="type-caption font-semibold uppercase tracking-[0.18em] text-slate-500">

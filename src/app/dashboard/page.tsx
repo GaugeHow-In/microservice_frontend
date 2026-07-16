@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useMemo, useState } from "react";
@@ -9,6 +8,7 @@ import { AppShell } from "@/components/layout/app-shell";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useAuth } from "@/components/providers/auth-provider";
+import { CourseCard } from "@/components/shared/course-card";
 import { TwinkleField } from "@/components/shared/twinkle-field";
 import { aiClient, type Roadmap, type RoadmapStep, type StudentAIContext } from "@/lib/ai-client";
 import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
@@ -177,7 +177,10 @@ export default function DashboardPage() {
             className="absolute bottom-6 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-slate-400 motion-safe:animate-[soft-float_2.4s_var(--motion-ease-standard)_infinite_alternate]"
           >
             <span className="text-[10px] font-bold uppercase tracking-widest">Scroll</span>
-            <CaretDown className="size-4" />
+            <span className="flex flex-col items-center leading-[0.6]">
+              <CaretDown className="size-4" />
+              <CaretDown className="size-4 -mt-1 opacity-60" />
+            </span>
           </span>
         </section>
 
@@ -193,48 +196,17 @@ export default function DashboardPage() {
               <div className="grid gap-5 sm:grid-cols-2">
                 {isDashboardLoading ? (
                   Array.from({ length: 2 }).map((_, index) => (
-                    <div key={index} className="browse-card p-3">
-                      <Skeleton className="h-36 rounded-xl" />
-                      <Skeleton className="mt-3 h-4 w-3/4 rounded" />
-                      <Skeleton className="mt-2 h-3 w-1/2 rounded" />
+                    <div key={index} className="course-card flex flex-col">
+                      <Skeleton className="aspect-[16/9] w-full rounded-none" />
+                      <div className="space-y-3 p-4">
+                        <Skeleton className="h-3 w-1/2 rounded" />
+                        <Skeleton className="h-5 w-3/4 rounded" />
+                        <Skeleton className="h-3 w-1/3 rounded" />
+                      </div>
                     </div>
                   ))
                 ) : yourCourses.length ? (
-                  yourCourses.map((course) => {
-                    const courseProgress = Math.round(course.access?.progress_percent ?? 0);
-                    return (
-                      <Link key={course.slug} href={`/courses/${course.slug}`} className="browse-card group p-3">
-                        <div className="industrial-hero-media relative h-36 overflow-hidden rounded-xl">
-                          {course.thumbnail_url ? (
-                            <Image
-                              src={course.thumbnail_url}
-                              alt={course.title}
-                              fill
-                              unoptimized
-                              sizes="(min-width: 640px) 24vw, 100vw"
-                              className="object-cover transition duration-500 group-hover:scale-105"
-                            />
-                          ) : null}
-                          <div className="absolute inset-0 bg-gradient-to-t from-[#241a10]/75 via-transparent to-transparent" />
-                        </div>
-                        <div className="pt-3">
-                          <h3 className="truncate font-bold text-slate-950 transition group-hover:text-accent">
-                            {course.title}
-                          </h3>
-                          <p className="truncate text-xs text-slate-500">
-                            {course.instructors[0]?.display_name ?? "GaugeHow Faculty"}
-                          </p>
-                          <div className="mt-3 space-y-1.5">
-                            <div className="flex justify-between text-[11px]">
-                              <span className="font-bold text-slate-950">{courseProgress}% Complete</span>
-                              <span className="text-slate-500">{course.lesson_count} lessons</span>
-                            </div>
-                            <Progress value={courseProgress} />
-                          </div>
-                        </div>
-                      </Link>
-                    );
-                  })
+                  yourCourses.map((course) => <CourseCard key={course.slug} course={course} />)
                 ) : (
                   <Link
                     href="/courses"

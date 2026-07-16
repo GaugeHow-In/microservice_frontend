@@ -9,6 +9,11 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    // Public share links use the short /p/<handle> form but are served by the
+    // existing /profiles/<handle> route without changing the visible URL.
+    return [{ source: "/p/:handle", destination: "/profiles/:handle" }];
+  },
 };
 
 export default nextConfig;

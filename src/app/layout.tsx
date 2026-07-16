@@ -56,10 +56,17 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body
-        className={`${notoSansThaana.variable} ${notoSans.variable} ${inter.variable} ${manrope.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
-      >
+    <html
+      lang="en"
+      suppressHydrationWarning
+      // The font CSS variables must live on <html>, not <body>: the token
+      // --font-sans-stack is declared in :root and references these vars, and a
+      // custom property resolves var()s at the element where it's declared. On
+      // <body> they'd be defined too late, leaving --font-sans-stack empty and
+      // the whole site on system fonts.
+      className={`${notoSansThaana.variable} ${notoSans.variable} ${inter.variable} ${manrope.variable} ${geistMono.variable}`}
+    >
+      <body className="bg-background text-foreground antialiased">
         <ThemeProvider>
           <PlayerErrorGuard />
           <AuthProvider>

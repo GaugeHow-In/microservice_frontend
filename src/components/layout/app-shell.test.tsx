@@ -59,8 +59,12 @@ describe("AppShell", () => {
       expect(logo).toHaveAttribute("href", "/dashboard");
     }
     expect(screen.getAllByText("Courses").length).toBeGreaterThan(0);
-    expect(screen.getByText("Search courses")).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /courses/i })[0]).toHaveAttribute("href", "/courses");
+    // The top-bar search pill and Courses button were removed; the sidebar nav
+    // still carries the Courses link, so exactly one Courses link remains.
+    expect(screen.queryByText("Search courses")).not.toBeInTheDocument();
+    const coursesLinks = screen.getAllByRole("link", { name: /^courses$/i });
+    expect(coursesLinks).toHaveLength(1);
+    expect(coursesLinks[0]).toHaveAttribute("href", "/courses");
     expect(screen.getByText("Aarav Mehta")).toBeInTheDocument();
   });
 

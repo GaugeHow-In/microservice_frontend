@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MagnifyingGlass, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
+import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -253,21 +253,9 @@ export function AppShell({ children }: AppShellProps) {
                 <p className="text-sm font-bold text-slate-950">{activeLabel}</p>
               </div>
             </div>
-            <div className="surface-secondary hidden w-full max-w-md items-center gap-2 rounded-lg px-3 py-2 md:flex">
-              <MagnifyingGlass className="size-4 text-slate-500" />
-              <span className="text-sm text-slate-500">Search courses</span>
-            </div>
-            <div className="flex items-center gap-2">
+            <div className="ml-auto flex items-center gap-2">
               <PointsBalance accessToken={accessToken} />
               <ThemeToggle />
-              <span className="hidden sm:block">
-                <Button asChild variant="soft" size="sm">
-                  <Link href="/courses">
-                    <GraduationCap />
-                    Courses
-                  </Link>
-                </Button>
-              </span>
               <Button variant="ghost" size="icon" aria-label="Notifications">
                 <Bell />
               </Button>

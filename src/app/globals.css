@@ -115,13 +115,16 @@
   --motion-duration-lg: 520ms;
   --motion-ease-standard: cubic-bezier(0.2, 0.8, 0.2, 1);
   --motion-ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  /* One family across the whole site: Noto Sans Thaana leads both body and
+     headings; the others stay only as fallbacks while the webfont loads. */
   --font-sans-stack:
+    var(--font-noto-sans-thaana),
     var(--font-inter),
     var(--font-noto-sans),
-    var(--font-noto-sans-thaana),
     system-ui,
     sans-serif;
   --font-heading-stack:
+    var(--font-noto-sans-thaana),
     var(--font-manrope),
     var(--font-inter),
     system-ui,
@@ -734,6 +737,16 @@ p {
   backdrop-filter: blur(10px);
 }
 
+/* Floating popovers (points panel, etc.) sit over live content, so they need
+   a near-opaque frosted fill — the chrome surface is too see-through to read
+   against a busy page. */
+.popover-surface {
+  background: color-mix(in srgb, var(--card) 94%, transparent 6%);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  backdrop-filter: blur(20px) saturate(1.4);
+}
+
 .btn-base {
   display: inline-flex;
   align-items: center;
@@ -885,6 +898,30 @@ p {
   transform: translateY(-6px);
   box-shadow: var(--shadow-lg);
   border-color: var(--border-strong);
+}
+
+/* Coursera-style catalog card: fixed vertical rhythm, 16:9 media on top, a
+   subtle lift + elevated shadow on hover (no image zoom, matching Coursera). */
+.course-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-token-md);
+  background: var(--card);
+  overflow: hidden;
+  transition:
+    transform var(--motion-duration-md) var(--motion-ease-standard),
+    box-shadow var(--motion-duration-md) var(--motion-ease-standard),
+    border-color var(--motion-duration-md) var(--motion-ease-standard);
+}
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--border-strong);
+}
+.course-card:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px var(--ring-focus),
+    var(--shadow-md);
 }
 
 .ui-field {
@@ -1416,6 +1453,12 @@ html.dark .bg-slate-950\/95 {
   animation-name: twinkle;
   animation-timing-function: ease-in-out;
   animation-iteration-count: infinite;
+}
+/* Light theme only: the dark ink dots read too heavy on the cream canvas, so
+   drop their presence ~40% to a softer shade. Dark mode keeps the full value
+   since dots need to stay visible against black. */
+html:not(.dark) .twinkle-dot {
+  background: color-mix(in srgb, var(--foreground) 33%, transparent 67%);
 }
 
 .twinkle-dot.accent {
