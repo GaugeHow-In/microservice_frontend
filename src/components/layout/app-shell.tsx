@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { Bell, BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
+import { BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutDialog } from "@/components/shared/logout-dialog";
+import { NotificationBell } from "@/components/shared/notification-bell";
 import { PointsBalance } from "@/components/shared/points-balance";
 import { QuickMentor } from "@/components/shared/quick-mentor";
 import { ThemeToggle } from "@/components/shared/theme-toggle";
@@ -256,9 +257,7 @@ export function AppShell({ children }: AppShellProps) {
             <div className="ml-auto flex items-center gap-2">
               <PointsBalance accessToken={accessToken} />
               <ThemeToggle />
-              <Button variant="ghost" size="icon" aria-label="Notifications">
-                <Bell />
-              </Button>
+              <NotificationBell accessToken={accessToken} />
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
