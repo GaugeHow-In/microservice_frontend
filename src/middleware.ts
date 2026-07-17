@@ -1,8 +1,22 @@
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 import { updateSession } from "@/utils/supabase/middleware";
 
-export function middleware(request: NextRequest) {
-  return updateSession(request);
+export async function middleware(request: NextRequest) {
+  const { response, user } = await updateSession(request);
+
+  if (request.nextUrl.pathname === "/") {
+    const destination = request.nextUrl.clone();
+    destination.pathname = user ? "/dashboard" : "/login";
+    const redirectResponse = NextResponse.redirect(destination);
+    // updateSession may have rotated the auth cookies; without copying them the
+    // refreshed session would be dropped on the redirect hop.
+    for (const cookie of response.cookies.getAll()) {
+      redirectResponse.cookies.set(cookie);
+    }
+    return redirectResponse;
+  }
+
+  return response;
 }
 
 export const config = {

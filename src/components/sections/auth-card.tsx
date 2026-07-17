@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, BookOpen, Check, Envelope, Eye, EyeSlash, Gauge, Notebook, ShieldCheck, Sparkle, SpinnerGap, Wrench, X } from "@phosphor-icons/react";
+import { BookOpen, Check, Envelope, Eye, EyeSlash, Gauge, Notebook, ShieldCheck, Sparkle, SpinnerGap, Wrench, X } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
@@ -354,14 +354,8 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
         </section>
         <section className="flex items-center justify-center p-4 sm:p-8">
           <div className="w-full max-w-md">
-            <div className="mb-8 flex items-center justify-between">
+            <div className="mb-8 flex items-center">
               <BrandLogo />
-              <Button asChild variant="ghost" size="sm">
-                <Link href="/">
-                  <ArrowLeft />
-                  Home
-                </Link>
-              </Button>
             </div>
             <Card className="glass-card overflow-hidden rounded-xl bg-[#4a3826]/80 shadow-[0_0_44px_rgba(232,168,85,0.12)]">
               <CardContent className="space-y-6 p-6 sm:p-8">

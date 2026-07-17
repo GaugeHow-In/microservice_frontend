@@ -6,7 +6,7 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY;
 
 export async function updateSession(request: NextRequest) {
   if (!supabaseUrl || !supabaseKey) {
-    return NextResponse.next({ request });
+    return { response: NextResponse.next({ request }), user: null };
   }
 
   let supabaseResponse = NextResponse.next({
@@ -32,7 +32,9 @@ export async function updateSession(request: NextRequest) {
     },
   });
 
-  await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  return supabaseResponse;
+  return { response: supabaseResponse, user };
 }
