@@ -1,5 +1,4 @@
 import { API_BASE_URL } from "@/lib/api-base";
-import type { AccessType, PricingOption } from "@/lib/learning-client";
 
 export class LibraryApiError extends Error {
   status: number;
@@ -23,11 +22,8 @@ export type LibraryCategory = {
 
 export type LibraryAccess = {
   status: LibraryAccessStatus | null;
-  access_type: AccessType | string | null;
-  has_access: boolean;
-  is_lifetime_access: boolean;
-  access_expires_at: string | null;
-  days_left: number | null;
+  is_started: boolean;
+  last_accessed_at: string | null;
 };
 
 export type LibraryProgress = {
@@ -62,7 +58,11 @@ export type LibraryDocumentCatalogItem = {
   estimated_read_minutes: number | null;
   thumbnail_url: string | null;
   category: LibraryCategory | null;
-  pricing: PricingOption | null;
+  /** Cost to unlock with points. Null means this book is not redeemable. */
+  points_price: number | null;
+  is_free: boolean;
+  requires_plus: boolean;
+  has_access: boolean;
   access: LibraryAccess | null;
   progress: LibraryProgress | null;
 };
@@ -75,8 +75,6 @@ export type LibraryDocumentListResponse = {
 };
 
 export type LibraryDocumentDetail = LibraryDocumentCatalogItem & {
-  pricing_options: PricingOption[];
-  recommended_pricing: PricingOption | null;
   annotations: LibraryAnnotation[];
   security: {
     watermark_enabled: boolean;
@@ -157,8 +155,15 @@ export const libraryClient = {
       token: options?.token,
     });
   },
-  grantFreeAccess(slug: string, token: string) {
-    return libraryRequest<{ access: LibraryAccess }>(`/library/documents/${slug}/access/free`, {
+  startReading(slug: string, token: string) {
+    return libraryRequest<{ access: LibraryAccess }>(`/library/documents/${slug}/read`, {
+      method: "POST",
+      token,
+      body: {},
+    });
+  },
+  redeemWithPoints(slug: string, token: string) {
+    return libraryRequest<{ access: LibraryAccess }>(`/library/documents/${slug}/access/redeem`, {
       method: "POST",
       token,
       body: {},

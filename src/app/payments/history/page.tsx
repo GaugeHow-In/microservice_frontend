@@ -1,25 +1,24 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CreditCard } from "@phosphor-icons/react";
+import { Sparkle } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
-import { paymentClient, type PaymentOrder } from "@/lib/payment-client";
+import {
+  formatMinor,
+  subscriptionClient,
+  type SubscriptionSummaryResponse
+} from "@/lib/subscription-client";
 
-function formatMinor(amountMinor: number, currencyCode: string): string {
-  return new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: currencyCode,
-  }).format(amountMinor / 100);
-}
-
-export default function PaymentHistoryPage() {
+export default function BillingPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
-  const [payments, setPayments] = useState<PaymentOrder[]>([]);
+  const [subscription, setSubscription] = useState<SubscriptionSummaryResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -27,7 +26,7 @@ export default function PaymentHistoryPage() {
     if (isAuthLoading) return;
     let cancelled = false;
 
-    async function loadPayments() {
+    async function load() {
       if (!accessToken) {
         setLoading(false);
         return;
@@ -35,34 +34,34 @@ export default function PaymentHistoryPage() {
       setLoading(true);
       setError(null);
       try {
-        const response = await paymentClient.history(accessToken);
-        if (!cancelled) {
-          setPayments(response.items);
-        }
+        const current = await subscriptionClient.current(accessToken);
+        if (!cancelled) setSubscription(current);
       } catch (cause) {
         if (!cancelled) {
-          setError(cause instanceof Error ? cause.message : "Unable to load payment history.");
+          setError(cause instanceof Error ? cause.message : "Unable to load your subscription.");
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
-    void loadPayments();
+    void load();
     return () => {
       cancelled = true;
     };
   }, [accessToken, isAuthLoading]);
 
+  const renews = subscription?.current_period_end
+    ? new Date(subscription.current_period_end).toLocaleDateString()
+    : null;
+
   return (
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Payments"
-          title="Payment history"
-          description="Review course checkout attempts, successful purchases, and gateway references."
+          eyebrow="Billing"
+          title="Your subscription"
+          description="Manage your GaugeHow-Plus membership and see when it renews."
         />
 
         {error && (
@@ -71,46 +70,53 @@ export default function PaymentHistoryPage() {
           </Card>
         )}
 
-        <div className="divide-y divide-[color:var(--border)]">
-          {loading ? (
-            Array.from({ length: 4 }).map((_, index) => (
-              <div key={index} className="py-4">
-                <Skeleton className="h-14 rounded-xl" />
-              </div>
-            ))
-          ) : payments.length ? (
-            payments.map((payment) => (
-              <div
-                key={payment.id}
-                className="flex flex-col gap-3 py-4 first:pt-0 sm:flex-row sm:items-center sm:justify-between"
-              >
-                <div className="flex gap-3">
-                  <div className="flex size-10 items-center justify-center rounded-lg surface-secondary text-slate-950">
-                    <CreditCard className="size-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-slate-950">
-                      {payment.course_title ?? "Course payment"}
-                    </p>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {payment.gateway} · {payment.gateway_payment_id ?? payment.gateway_order_id ?? payment.id}
-                    </p>
-                  </div>
-                </div>
-                <div className="sm:text-right">
-                  <p className="font-bold text-slate-950">
-                    {formatMinor(payment.display_amount_minor, payment.display_currency_code)}
+        {loading ? (
+          <Skeleton className="h-28 rounded-2xl" />
+        ) : subscription ? (
+          <Card>
+            <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <Sparkle weight="fill" className="size-7 text-amber-500" />
+                <div>
+                  <p className="flex items-center gap-2 font-bold text-slate-950">
+                    {subscription.plan_name}
+                    <Badge variant={subscription.is_plus ? "green" : "default"}>
+                      {subscription.status.replace("_", " ")}
+                    </Badge>
                   </p>
-                  <Badge variant={payment.status === "succeeded" ? "green" : "default"}>
-                    {payment.status.replace("_", " ")}
-                  </Badge>
+                  <p className="mt-1 text-sm text-slate-500">
+                    {formatMinor(subscription.amount_minor, subscription.currency_code)} ·{" "}
+                    {subscription.cancel_at_period_end
+                      ? renews
+                        ? `Ends ${renews}`
+                        : "Ending soon"
+                      : renews
+                        ? `Renews ${renews}`
+                        : "Active"}
+                  </p>
                 </div>
               </div>
-            ))
-          ) : (
-            <p className="py-4 text-sm text-slate-500">No payment history yet.</p>
-          )}
-        </div>
+              <Button asChild variant="outline">
+                <Link href="/plus">Manage</Link>
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-start gap-4 p-6">
+              <p className="text-sm text-slate-500">
+                You don’t have an active subscription. Go Plus to unlock every course, test and
+                document.
+              </p>
+              <Button asChild className="bg-gradient-to-r from-amber-500 to-amber-600">
+                <Link href="/plus">
+                  <Sparkle weight="fill" />
+                  See GaugeHow-Plus plans
+                </Link>
+              </Button>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </AppShell>
   );

@@ -133,11 +133,11 @@ export default function CourseProgressPage() {
                         {course.level.replaceAll("_", " ")}
                       </p>
                     </div>
-                    <Badge variant={course.access?.is_lifetime_access ? "green" : "blue"}>
-                      {course.access?.is_lifetime_access
-                        ? "Lifetime"
-                        : course.access?.days_left
-                          ? `${course.access.days_left} days left`
+                    <Badge variant={course.access?.unlocked_by === "plus" ? "orange" : "green"}>
+                      {course.access?.unlocked_by === "plus"
+                        ? "Plus"
+                        : course.access?.unlocked_by === "free_course"
+                          ? "Free"
                           : "Active"}
                     </Badge>
                   </div>

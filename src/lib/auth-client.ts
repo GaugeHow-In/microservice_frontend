@@ -47,6 +47,25 @@ export type AuthUser = {
     public_bio: string | null;
     visibility: string;
   } | null;
+  subscription: SubscriptionSummary;
+};
+
+export type SubscriptionSummary = {
+  is_plus: boolean;
+  plan_code: string | null;
+  interval: "monthly" | "half_yearly" | "annual" | null;
+  status: string | null;
+  current_period_end: string | null;
+  cancel_at_period_end: boolean;
+};
+
+export const EMPTY_SUBSCRIPTION: SubscriptionSummary = {
+  is_plus: false,
+  plan_code: null,
+  interval: null,
+  status: null,
+  current_period_end: null,
+  cancel_at_period_end: false
 };
 
 export type ProfileUpdateInput = {

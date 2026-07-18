@@ -33,36 +33,14 @@ export type InstructorSummary = {
   linkedin_url: string | null;
 };
 
-export type PricingRegion = {
-  code: string;
-  name: string;
-  pricing_scope: "country" | "country_group" | "global_default";
-  currency_code: string;
-  country_codes: string[];
-};
-
-export type PricingOption = {
-  id: string;
-  purchase_type: AccessType;
-  base_price_minor: number;
-  currency_code: string;
-  display_price_minor?: number | null;
-  display_currency_code?: string | null;
-  buyer_country_code?: string | null;
-  pricing_tier?: string | null;
-  is_display_price_estimated?: boolean;
-  subscription_days: number | null;
-  is_active: boolean;
-  region: PricingRegion;
-};
+export type CourseAccessSource = "free_course" | "plus";
 
 export type AccessSummary = {
   status: EnrollmentStatus | null;
-  access_type: AccessType | null;
   has_access: boolean;
-  is_lifetime_access: boolean;
-  access_expires_at: string | null;
-  days_left: number | null;
+  unlocked_by: CourseAccessSource | null;
+  is_enrolled: boolean;
+  free_trial_lesson_count: number;
   progress_percent: number | null;
   current_lesson_id: string | null;
 };
@@ -82,7 +60,8 @@ export type CourseCatalogItem = {
   thumbnail_url: string | null;
   categories: Category[];
   instructors: InstructorSummary[];
-  pricing: PricingOption | null;
+  is_free: boolean;
+  requires_plus: boolean;
   access: AccessSummary | null;
 };
 
@@ -102,6 +81,7 @@ export type LessonSummary = {
   duration_seconds: number | null;
   sort_order: number;
   is_preview: boolean;
+  is_free_trial: boolean;
   progress_percent: number | null;
   accessible: boolean;
 };
@@ -148,8 +128,8 @@ export type CourseDetail = {
   categories: Category[];
   instructors: InstructorSummary[];
   modules: CourseModule[];
-  pricing_options: PricingOption[];
-  recommended_pricing: PricingOption | null;
+  is_free: boolean;
+  requires_plus: boolean;
   access: AccessSummary | null;
   reviews: CourseReview[];
 };
@@ -293,6 +273,7 @@ export type LessonDetail = {
   };
   duration_seconds: number | null;
   is_preview: boolean;
+  is_free_trial: boolean;
   accessible: boolean;
   video_provider: "bunny" | "youtube" | "vimeo" | "internal" | null;
   video_provider_asset_id: string | null;
@@ -528,8 +509,8 @@ export const learningClient = {
       `/learning/certificates/${encodeURIComponent(certificateNumber)}`,
     );
   },
-  enrollFree(slug: string, token: string) {
-    return learningRequest<{ access: AccessSummary }>(`/learning/courses/${slug}/enroll/free`, {
+  enroll(slug: string, token: string) {
+    return learningRequest<{ access: AccessSummary }>(`/learning/courses/${slug}/enroll`, {
       method: "POST",
       token,
       body: {},
@@ -696,16 +677,4 @@ export function formatSeconds(seconds: number | null): string {
   const minutes = Math.floor(seconds / 60);
   const remaining = seconds % 60;
   return `${minutes}:${String(remaining).padStart(2, "0")}`;
-}
-
-export function formatPrice(option: PricingOption | null): string {
-  if (!option) return "Pricing unavailable";
-  if (option.base_price_minor === 0) return "Free";
-  const priceMinor = option.display_price_minor ?? option.base_price_minor;
-  const currencyCode = option.display_currency_code ?? option.currency_code;
-  const formatter = new Intl.NumberFormat("en", {
-    style: "currency",
-    currency: currencyCode,
-  });
-  return formatter.format(priceMinor / 100);
 }

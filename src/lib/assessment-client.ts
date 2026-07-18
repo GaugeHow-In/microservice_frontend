@@ -1,14 +1,13 @@
 import { API_BASE_URL } from "@/lib/api-base";
 
-export type TestAccessType = "free" | "paid" | "course_access";
+export type TestAccessType = "free" | "plus" | "course_access";
 
 export type TestAccessSummary = {
   has_access: boolean;
   access_type: TestAccessType;
   locked_reason: string | null;
   course_slug: string | null;
-  price_minor: number;
-  currency_code: string;
+  requires_plus: boolean;
 };
 
 export type TestCatalogItem = {
@@ -84,12 +83,8 @@ export function formatDuration(seconds: number): string {
   return rest ? `${hours} hr ${rest} min` : `${hours} hr`;
 }
 
-export function formatTestPrice(access: TestAccessSummary): string {
-  if (access.access_type === "course_access") return "Included with course";
-  if (access.access_type === "free" || access.price_minor === 0) return "Free";
-  return new Intl.NumberFormat("en-IN", {
-    style: "currency",
-    currency: access.currency_code,
-    maximumFractionDigits: 0,
-  }).format(access.price_minor / 100);
+export function formatTestAccess(access: TestAccessSummary): string {
+  if (access.access_type === "free") return "Free";
+  if (access.access_type === "course_access") return "With course access";
+  return "GaugeHow-Plus";
 }

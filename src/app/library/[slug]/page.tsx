@@ -2,17 +2,15 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { ArrowLeft, ArrowsOut, BookOpen, BookmarkSimple, CaretLeft, CaretRight, CircleNotch, CornersOut, Highlighter, Minus, Note, Plus, Trash } from "@phosphor-icons/react";
+import { ArrowLeft, BookOpen, BookmarkSimple, CaretLeft, CaretRight, CircleNotch, Coins, CornersOut, Highlighter, Minus, Note, Plus, Sparkle, Trash } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
-import { PageHeader } from "@/components/shared/page-header";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { formatPrice } from "@/lib/learning-client";
 import {
   libraryClient,
   type LibraryAnnotation,
@@ -72,9 +70,9 @@ function currentTimeSpentSeconds(startedAt: number): number {
 }
 
 function accessBadge(document: LibraryDocumentDetail): string {
-  if (document.access?.has_access) return "Access active";
-  if (document.recommended_pricing?.purchase_type === "free") return "Free";
-  return "Premium";
+  if (document.has_access) return "Open";
+  if (document.is_free) return "Free";
+  return "GaugeHow-Plus";
 }
 
 export default function LibraryDetailPage({ params }: Props) {
@@ -89,6 +87,7 @@ export default function LibraryDetailPage({ params }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [readerError, setReaderError] = useState<string | null>(null);
   const [grantingFreeAccess, setGrantingFreeAccess] = useState(false);
+  const [redeeming, setRedeeming] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageCount, setPageCount] = useState<number | null>(null);
   const [scale, setScale] = useState(1.15);
@@ -168,7 +167,7 @@ export default function LibraryDetailPage({ params }: Props) {
           setCurrentPage(startPage);
           setPageCount(payload.progress?.page_count ?? payload.page_count);
           setProgressPercent(payload.progress?.progress_percent ?? 0);
-          if (payload.access?.has_access && accessToken) {
+          if (payload.has_access && accessToken) {
             void startViewer(documentSlug);
           }
         }
@@ -314,20 +313,37 @@ export default function LibraryDetailPage({ params }: Props) {
     };
   }, []);
 
-  const grantFreeAccess = async () => {
+  const startReading = async () => {
     if (!slug || !accessToken) return;
     setGrantingFreeAccess(true);
     setError(null);
     try {
-      await libraryClient.grantFreeAccess(slug, accessToken);
+      await libraryClient.startReading(slug, accessToken);
       const payload = await libraryClient.getDocument(slug, { token: accessToken });
       setDocument(payload);
       setAnnotations(payload.annotations);
       await startViewer(slug);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to unlock document.");
+      setError(cause instanceof Error ? cause.message : "Unable to open document.");
     } finally {
       setGrantingFreeAccess(false);
+    }
+  };
+
+  const redeemWithPoints = async () => {
+    if (!slug || !accessToken) return;
+    setRedeeming(true);
+    setError(null);
+    try {
+      await libraryClient.redeemWithPoints(slug, accessToken);
+      const payload = await libraryClient.getDocument(slug, { token: accessToken });
+      setDocument(payload);
+      setAnnotations(payload.annotations);
+      await startViewer(slug);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to redeem this book.");
+    } finally {
+      setRedeeming(false);
     }
   };
 
@@ -384,26 +400,26 @@ export default function LibraryDetailPage({ params }: Props) {
     );
   }
 
-  const hasAccess = Boolean(document.access?.has_access || viewerSession);
-  const freeAccessAvailable = document.recommended_pricing?.purchase_type === "free";
+  const hasAccess = Boolean(document.has_access || viewerSession);
+  const freeAccessAvailable = document.is_free;
+  const redeemable = !hasAccess && document.points_price !== null;
   const pageAnnotations = annotations.filter((annotation) => annotation.page_number === currentPage);
 
   return (
     <AppShell>
       <div className="space-y-6">
-        <PageHeader
-          eyebrow="Library reader"
-          title={document.title}
-          description={document.short_description ?? "Study material from GaugeHow Library."}
-          action={
-            <Button asChild variant="secondary">
-              <Link href="/library">
-                <ArrowLeft />
-                Library
-              </Link>
-            </Button>
-          }
-        />
+        <header className="flex items-end justify-between gap-4 border-b border-[color:var(--border)] pb-5">
+          <div className="min-w-0 space-y-1">
+            <span className="rm-tag text-accent">Library</span>
+            <h1 className="type-h3 truncate text-slate-950">{document.title}</h1>
+          </div>
+          <Button asChild variant="ghost" size="sm" className="shrink-0">
+            <Link href="/library">
+              <ArrowLeft />
+              Back
+            </Link>
+          </Button>
+        </header>
 
         <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_320px]">
           <section
@@ -416,7 +432,6 @@ export default function LibraryDetailPage({ params }: Props) {
                 <Badge variant="dark">
                   {pageCount ? `${pageCount} pages` : document.page_count ? `${document.page_count} pages` : "PDF"}
                 </Badge>
-                <Badge>{formatPrice(document.recommended_pricing)}</Badge>
               </div>
               {hasAccess ? (
                 <div className="flex items-center gap-2">
@@ -468,23 +483,40 @@ export default function LibraryDetailPage({ params }: Props) {
               <div className="flex min-h-[560px] flex-col items-center justify-center gap-4 px-6 text-center text-white">
                 <BookOpen className="size-14 text-orange-300" />
                 <div>
-                  <h2 className="text-2xl font-bold">Access required</h2>
+                  <h2 className="text-2xl font-bold">
+                    {freeAccessAvailable ? "Free document" : "Part of GaugeHow-Plus"}
+                  </h2>
                   <p className="mt-2 max-w-lg text-sm text-slate-300">
                     {freeAccessAvailable
-                      ? "This document can be added to your library at no cost."
-                      : "This premium document needs an active subscription or purchase access."}
+                      ? "Open this book at no cost."
+                      : redeemable
+                        ? `Unlock this book permanently for ${document.points_price} points, or read it with GaugeHow-Plus.`
+                        : "Read this book — and every other document, course and test — with GaugeHow-Plus."}
                   </p>
                 </div>
                 {freeAccessAvailable ? (
-                  <Button onClick={grantFreeAccess} disabled={grantingFreeAccess || !accessToken}>
+                  <Button onClick={startReading} disabled={grantingFreeAccess || !accessToken}>
                     {grantingFreeAccess ? <CircleNotch className="animate-spin" /> : <BookOpen />}
                     Start reading
                   </Button>
                 ) : (
-                  <Button variant="secondary" disabled>
-                    <ArrowsOut />
-                    Subscription required
-                  </Button>
+                  <div className="flex flex-wrap items-center justify-center gap-3">
+                    <Button
+                      asChild
+                      className="bg-gradient-to-r from-amber-500 to-amber-600"
+                    >
+                      <Link href="/plus">
+                        <Sparkle weight="fill" />
+                        Get GaugeHow-Plus
+                      </Link>
+                    </Button>
+                    {redeemable ? (
+                      <Button variant="secondary" onClick={redeemWithPoints} disabled={redeeming || !accessToken}>
+                        {redeeming ? <CircleNotch className="animate-spin" /> : <Coins />}
+                        Redeem for {document.points_price} points
+                      </Button>
+                    ) : null}
+                  </div>
                 )}
               </div>
             ) : (

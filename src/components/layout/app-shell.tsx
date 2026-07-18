@@ -3,10 +3,11 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, User, X } from "@phosphor-icons/react";
+import { BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PlusAvatar, PlusBadge } from "@/components/shared/plus-avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -95,6 +96,7 @@ export function AppShell({ children }: AppShellProps) {
       .toUpperCase();
   }, [user?.display_name]);
   const selectedAvatar = getProfileAvatar(user?.profile?.avatar_key);
+  const isPlus = Boolean(user?.subscription?.is_plus);
 
   useEffect(() => {
     if (!isLoading && !user) {
@@ -266,12 +268,17 @@ export function AppShell({ children }: AppShellProps) {
                     className="hidden cursor-pointer rounded-full transition hover:opacity-90 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-[color:var(--ring-focus)] data-[state=open]:ring-4 data-[state=open]:ring-[color:var(--ring-focus)] sm:block"
                     aria-label="Open account menu"
                   >
-                    <Avatar>{avatarImage}</Avatar>
+                    <PlusAvatar isPlus={isPlus}>
+                      <Avatar>{avatarImage}</Avatar>
+                    </PlusAvatar>
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuLabel>
-                    <p className="truncate text-sm font-bold text-slate-950">{user.display_name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="truncate text-sm font-bold text-slate-950">{user.display_name}</p>
+                      {isPlus && <PlusBadge />}
+                    </div>
                     <p className="truncate text-xs font-medium text-slate-500">{user.email}</p>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -285,6 +292,12 @@ export function AppShell({ children }: AppShellProps) {
                     <Link href="/settings">
                       <Gear />
                       Settings
+                    </Link>
+                  </DropdownMenuItem>
+                  <DropdownMenuItem asChild>
+                    <Link href="/plus">
+                      <Sparkle weight={isPlus ? "fill" : "regular"} />
+                      {isPlus ? "Manage Plus" : "Get GaugeHow-Plus"}
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />

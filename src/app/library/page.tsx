@@ -1,33 +1,12 @@
 "use client";
 
-import Link from "next/link";
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { BookOpen, LockKey, MagnifyingGlass } from "@phosphor-icons/react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useState } from "react";
+import { MagnifyingGlass } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
-import { PageHeader } from "@/components/shared/page-header";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { LibraryRow, LibraryRowSkeleton } from "@/components/shared/library-row";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { formatPrice } from "@/lib/learning-client";
-import {
-  libraryClient,
-  type LibraryDocumentCatalogItem,
-} from "@/lib/library-client";
-
-function accessLabel(item: LibraryDocumentCatalogItem): string {
-  if (item.access?.has_access) return "Readable";
-  if (item.pricing?.purchase_type === "free" || item.pricing?.base_price_minor === 0) return "Free";
-  return "Premium";
-}
-
-function progressLabel(item: LibraryDocumentCatalogItem): string {
-  if (!item.progress) return "Not started";
-  if (item.progress.progress_percent >= 100) return "Completed";
-  return `Page ${item.progress.current_page}${item.progress.page_count ? ` of ${item.progress.page_count}` : ""}`;
-}
+import { libraryClient, type LibraryDocumentCatalogItem } from "@/lib/library-client";
 
 export default function LibraryPage() {
   const { accessToken, isLoading: isAuthLoading } = useAuth();
@@ -38,169 +17,113 @@ export default function LibraryPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const loadDocuments = useCallback(async () => {
+    const response = await libraryClient.listDocuments({
+      query: deferredQuery.trim() || undefined,
+      categories: activeCategory === "all" ? [] : [activeCategory],
+      token: accessToken,
+    });
+    return response.items;
+  }, [accessToken, activeCategory, deferredQuery]);
+
   useEffect(() => {
     if (isAuthLoading) return;
     let cancelled = false;
 
-    async function loadDocuments() {
+    async function run() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await libraryClient.listDocuments({
-          query: deferredQuery.trim() || undefined,
-          categories: activeCategory === "all" ? [] : [activeCategory],
-          token: accessToken,
-        });
-        if (!cancelled) {
-          setDocuments(response.items);
-        }
+        const items = await loadDocuments();
+        if (!cancelled) setDocuments(items);
       } catch (cause) {
         if (!cancelled) {
           setError(cause instanceof Error ? cause.message : "Unable to load library.");
           setDocuments([]);
         }
       } finally {
-        if (!cancelled) {
-          setIsLoading(false);
-        }
+        if (!cancelled) setIsLoading(false);
       }
     }
 
-    void loadDocuments();
+    void run();
     return () => {
       cancelled = true;
     };
-  }, [accessToken, activeCategory, deferredQuery, isAuthLoading]);
+  }, [isAuthLoading, loadDocuments]);
+
+  // A redeem changes access and balance, so pull the row's real state back.
+  const refreshAfterRedeem = useCallback(() => {
+    void loadDocuments()
+      .then(setDocuments)
+      .catch(() => undefined);
+  }, [loadDocuments]);
 
   const categoryOptions = useMemo(() => {
     const map = new Map<string, string>();
     for (const document of documents) {
-      if (document.category) {
-        map.set(document.category.slug, document.category.name);
-      }
+      if (document.category) map.set(document.category.slug, document.category.name);
     }
     return Array.from(map.entries()).map(([slug, name]) => ({ slug, name }));
   }, [documents]);
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <PageHeader
-          eyebrow="Library"
-          title="Premium study PDFs with tracked reading."
-          description="Browse categorized notes, continue where you stopped, and read in a controlled viewer with annotations."
-          action={
-            <Button asChild variant="secondary">
-              <Link href="/library">
-                <LockKey />
-                Secure reader
-              </Link>
-            </Button>
-          }
-        />
+      <div className="reveal-up mx-auto max-w-3xl">
+        <header className="space-y-2 border-b border-[color:var(--border)] pb-6">
+          <span className="rm-tag text-accent">Library</span>
+          <h1 className="type-h2 text-slate-950">Read, unlock, and pick up where you left off.</h1>
+        </header>
 
-        <div className="reveal-delay-1 reveal-up grid gap-3 rounded-2xl surface-secondary p-4 md:grid-cols-[1fr_auto]">
-          <div className="relative">
-            <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-            <Input
-              className="pl-10"
-              placeholder="Search study notes, authors, and categories"
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-            />
-          </div>
-          <div className="flex flex-wrap gap-2">
-            <Button
-              variant={activeCategory === "all" ? "default" : "secondary"}
-              onClick={() => setActiveCategory("all")}
-            >
-              All
-            </Button>
-            {categoryOptions.map((category) => (
-              <Button
-                key={category.slug}
-                variant={activeCategory === category.slug ? "default" : "secondary"}
-                onClick={() => setActiveCategory(category.slug)}
-              >
-                {category.name}
-              </Button>
-            ))}
-          </div>
+        <div className="relative pt-6">
+          <MagnifyingGlass className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+          <Input
+            className="h-11 rounded-full surface-secondary pl-11"
+            placeholder="Search books"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
         </div>
 
-        {error ? (
-          <p className="text-sm font-medium text-rose-600">{error}</p>
-        ) : isLoading ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="browse-card space-y-4 p-4">
-                <Skeleton className="h-40 rounded-xl" />
-                <Skeleton className="h-6 w-4/5 rounded-md" />
-                <Skeleton className="h-4 w-full rounded-md" />
-                <Skeleton className="h-10 rounded-lg" />
-              </div>
+        {categoryOptions.length ? (
+          <div className="flex gap-1.5 overflow-x-auto pt-4">
+            {[{ slug: "all", name: "All" }, ...categoryOptions].map((category) => (
+              <button
+                key={category.slug}
+                type="button"
+                onClick={() => setActiveCategory(category.slug)}
+                className={
+                  activeCategory === category.slug
+                    ? "shrink-0 rounded-full bg-slate-950 px-3 py-1 text-xs font-semibold text-white"
+                    : "shrink-0 rounded-full px-3 py-1 text-xs font-medium text-slate-500 transition hover:text-slate-950"
+                }
+              >
+                {category.name}
+              </button>
             ))}
           </div>
-        ) : documents.length ? (
-          <div className="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
-            {documents.map((document) => (
-              <div key={document.slug} className="browse-card p-4">
-                {document.thumbnail_url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={document.thumbnail_url}
-                    alt=""
-                    className="h-40 w-full rounded-xl object-cover"
-                    draggable={false}
-                  />
-                ) : (
-                  <div className="flex h-40 items-center justify-center rounded-xl surface-secondary text-slate-500">
-                    <BookOpen className="size-12" />
-                  </div>
-                )}
-                <div className="space-y-4 pt-4">
-                  <div className="flex flex-wrap gap-2">
-                    <Badge variant={document.access?.has_access ? "green" : "orange"}>
-                      {accessLabel(document)}
-                    </Badge>
-                    {document.category ? <Badge>{document.category.name}</Badge> : null}
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-bold text-slate-950">{document.title}</h2>
-                    <p className="mt-1 text-sm text-slate-500">
-                      {document.author_name ?? "GaugeHow Library"}
-                    </p>
-                  </div>
-                  <p className="line-clamp-3 text-sm text-slate-600">
-                    {document.short_description ?? "Structured engineering study material."}
-                  </p>
-                  <div className="space-y-2">
-                    <div className="flex items-center justify-between text-xs font-semibold text-slate-500">
-                      <span>{progressLabel(document)}</span>
-                      <span>{document.progress?.progress_percent ?? 0}%</span>
-                    </div>
-                    <Progress value={document.progress?.progress_percent ?? 0} />
-                  </div>
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="text-sm font-semibold text-slate-700">
-                      {formatPrice(document.pricing)}
-                    </span>
-                    <Button asChild>
-                      <Link href={`/library/${document.slug}`}>
-                        <BookOpen />
-                        Open
-                      </Link>
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <p className="text-sm text-slate-600">
-            No library documents match the current search or category filter.
-          </p>
-        )}
+        ) : null}
+
+        <div className="rm-divide pt-2">
+          {error ? (
+            <p className="py-8 text-sm text-rose-600">{error}</p>
+          ) : isLoading ? (
+            Array.from({ length: 5 }).map((_, index) => (
+              <LibraryRowSkeleton key={index} className="animate-pulse" />
+            ))
+          ) : documents.length ? (
+            documents.map((document) => (
+              <LibraryRow
+                key={document.slug}
+                document={document}
+                accessToken={accessToken}
+                onRedeemed={refreshAfterRedeem}
+              />
+            ))
+          ) : (
+            <p className="py-8 type-caption text-slate-500">No books match.</p>
+          )}
+        </div>
       </div>
     </AppShell>
   );

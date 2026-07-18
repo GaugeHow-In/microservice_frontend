@@ -28,7 +28,8 @@ function makeCourse(overrides: Partial<CourseCatalogItem> = {}): CourseCatalogIt
         linkedin_url: null,
       },
     ],
-    pricing: null,
+    is_free: false,
+    requires_plus: true,
     access: null,
     ...overrides,
   };
@@ -60,12 +61,12 @@ describe("CourseCard", () => {
         course: makeCourse({
           access: {
             status: "active",
-            access_type: "lifetime",
             has_access: true,
-            is_lifetime_access: true,
-            access_expires_at: null,
-            days_left: null,
+            unlocked_by: "plus",
+            is_enrolled: true,
+            free_trial_lesson_count: 2,
             progress_percent: 42,
+            current_lesson_id: null,
           } as CourseCatalogItem["access"],
         }),
       }),

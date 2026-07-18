@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { BookOpen, CaretDown, CheckCircle, ClockAfternoon, Globe, GraduationCap, Medal, Play, Star, Ticket, Translate, Users } from "@phosphor-icons/react";
+import { BookOpen, CaretDown, CheckCircle, ClockAfternoon, Globe, GraduationCap, Medal, Play, Sparkle, Star, Ticket, Translate, Users } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
@@ -14,90 +14,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
   formatMinutes,
-  formatPrice,
   learningCache,
   learningClient,
   type CourseDetail,
 } from "@/lib/learning-client";
-import { paymentClient, type PaymentCheckout } from "@/lib/payment-client";
+import { cn } from "@/lib/utils";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
-
-type RazorpayResponse = {
-  razorpay_order_id: string;
-  razorpay_payment_id: string;
-  razorpay_signature: string;
-};
-
-type RazorpayOptions = {
-  key: string;
-  amount: number;
-  currency: string;
-  name: string;
-  description: string;
-  order_id: string;
-  handler: (response: RazorpayResponse) => void;
-  prefill?: {
-    name?: string;
-    email?: string;
-  };
-  theme?: {
-    color?: string;
-  };
-};
-
-declare global {
-  interface Window {
-    Razorpay?: new (options: RazorpayOptions) => { open: () => void };
-  }
-}
-
-let razorpayScriptPromise: Promise<void> | null = null;
 
 function findLessonSlugById(course: CourseDetail, lessonId: string | null | undefined): string | null {
   if (!lessonId) return null;
   return course.modules
     .flatMap((module) => module.lessons)
     .find((item) => item.id === lessonId)?.slug ?? null;
-}
-
-function ensureRazorpayScript(): Promise<void> {
-  if (typeof window === "undefined") {
-    return Promise.resolve();
-  }
-  if (window.Razorpay) {
-    return Promise.resolve();
-  }
-  if (razorpayScriptPromise) {
-    return razorpayScriptPromise;
-  }
-
-  razorpayScriptPromise = new Promise((resolve, reject) => {
-    const existing = document.querySelector(
-      'script[data-razorpay-checkout="true"]',
-    ) as HTMLScriptElement | null;
-    if (existing) {
-      existing.addEventListener("load", () => resolve(), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Unable to load Razorpay.")), {
-        once: true,
-      });
-      return;
-    }
-
-    const script = document.createElement("script");
-    script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true;
-    script.dataset.razorpayCheckout = "true";
-    script.addEventListener("load", () => resolve(), { once: true });
-    script.addEventListener("error", () => reject(new Error("Unable to load Razorpay.")), {
-      once: true,
-    });
-    document.head.appendChild(script);
-  });
-
-  return razorpayScriptPromise;
 }
 
 function splitCourseText(value: string | null | undefined, fallback: string[]): string[] {
@@ -129,7 +60,6 @@ export default function CourseDetailPage({ params }: Props) {
   const [reviewText, setReviewText] = useState("");
   const [submittingReview, setSubmittingReview] = useState(false);
   const [enrolling, setEnrolling] = useState(false);
-  const [purchasing, setPurchasing] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -208,7 +138,9 @@ export default function CourseDetailPage({ params }: Props) {
     setEnrolling(true);
     setError(null);
     try {
-      await learningClient.enrollFree(slug, accessToken);
+      // Enrolling only starts progress tracking; a Plus user or free course is
+      // already unlocked, so we send them straight into the first lesson.
+      await learningClient.enroll(slug, accessToken);
       learningCache.invalidateCourseDetail(slug, { viewerKey: user?.id ?? null });
       const refreshed = await learningClient.getCourseDetail(slug, {
         token: accessToken,
@@ -216,89 +148,10 @@ export default function CourseDetailPage({ params }: Props) {
       learningCache.setCourseDetail(refreshed, { viewerKey: user?.id ?? null });
       setCourse(refreshed);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Enrollment failed.");
+      setError(cause instanceof Error ? cause.message : "Could not start this course.");
     } finally {
       setEnrolling(false);
     }
-  }
-
-  async function refreshCourseAfterPayment() {
-    if (!slug) return;
-    learningCache.invalidateCourseDetail(slug, { viewerKey: user?.id ?? null });
-    const refreshed = await learningClient.getCourseDetail(slug, {
-      token: accessToken,
-    });
-    learningCache.setCourseDetail(refreshed, { viewerKey: user?.id ?? null });
-    setCourse(refreshed);
-  }
-
-  async function handlePurchase() {
-    if (!accessToken || !slug || !course) return;
-    setPurchasing(true);
-    setError(null);
-    try {
-      const checkout = await paymentClient.createCourseCheckout(accessToken, {
-        courseSlug: slug,
-        successUrl: `${window.location.origin}/courses/${slug}?payment=success`,
-        cancelUrl: `${window.location.origin}/courses/${slug}?payment=cancelled`,
-      });
-      await launchCheckout(checkout);
-    } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to start payment.");
-    } finally {
-      setPurchasing(false);
-    }
-  }
-
-  async function launchCheckout(checkout: PaymentCheckout) {
-    if (!accessToken) return;
-    if (checkout.gateway === "stripe") {
-      if (!checkout.gateway_checkout_url) throw new Error("Stripe checkout URL is missing.");
-      window.location.href = checkout.gateway_checkout_url;
-      return;
-    }
-
-    if (checkout.gateway === "mock") {
-      await paymentClient.completeMock(accessToken, checkout.id);
-      await refreshCourseAfterPayment();
-      return;
-    }
-
-    if (!checkout.razorpay_key_id || !checkout.gateway_order_id) {
-      throw new Error("Razorpay checkout is not configured.");
-    }
-    await ensureRazorpayScript();
-    if (!window.Razorpay) {
-      throw new Error("Razorpay checkout is unavailable.");
-    }
-    const razorpay = new window.Razorpay({
-      key: checkout.razorpay_key_id,
-      amount: checkout.amount_minor,
-      currency: checkout.currency_code,
-      name: "GaugeHow",
-      description: checkout.course_title,
-      order_id: checkout.gateway_order_id,
-      prefill: {
-        name: user?.display_name ?? undefined,
-      },
-      theme: {
-        color: "#fcbc6c",
-      },
-      handler: (response) => {
-        void paymentClient
-          .verifyRazorpay(accessToken, {
-            paymentOrderId: checkout.id,
-            razorpayOrderId: response.razorpay_order_id,
-            razorpayPaymentId: response.razorpay_payment_id,
-            razorpaySignature: response.razorpay_signature,
-          })
-          .then(() => refreshCourseAfterPayment())
-          .catch((cause) => {
-            setError(cause instanceof Error ? cause.message : "Payment verification failed.");
-          });
-      },
-    });
-    razorpay.open();
   }
 
   async function handleReviewSubmit() {
@@ -369,7 +222,9 @@ export default function CourseDetailPage({ params }: Props) {
   const currentCourseSlug = course.slug;
   const leadInstructor = course.instructors[0] ?? null;
   const access = course.access;
-  const isFree = course.recommended_pricing?.base_price_minor === 0;
+  const isPlusMember = Boolean(user?.subscription?.is_plus);
+  const hasFullAccess = Boolean(access?.has_access) || course.is_free || isPlusMember;
+  const trialLessonCount = access?.free_trial_lesson_count ?? 2;
   const canReview = Boolean(access?.has_access);
   const categoryLine = course.categories.map((item) => item.name).join(" > ") || "Engineering";
   const primaryCategory = course.categories[0]?.name ?? "Engineering";
@@ -383,44 +238,55 @@ export default function CourseDetailPage({ params }: Props) {
   const skills = course.skills.length
     ? course.skills
     : course.categories.map((item) => item.name).filter(Boolean);
-  const accessLabel = access?.has_access
-    ? access.is_lifetime_access
-      ? "Lifetime access"
-      : access.days_left
-        ? `${access.days_left} days left`
-        : "Active access"
-    : "Enrollment required";
+  const accessLabel = course.is_free
+    ? "Free course"
+    : hasFullAccess
+      ? "Unlocked with Plus"
+      : `First ${trialLessonCount} lessons free`;
   function renderPrimaryAction(className = "w-full sm:w-auto") {
-    if (access?.has_access && continueLessonSlug) {
+    if (hasFullAccess && continueLessonSlug) {
       return (
         <Button asChild size="lg" className={className}>
           <Link href={`/courses/${currentCourseSlug}/learn?lesson=${continueLessonSlug}`}>
             <Play />
-            {access.progress_percent ? "Continue learning" : "Start learning"}
+            {access?.progress_percent ? "Continue learning" : "Start learning"}
           </Link>
         </Button>
       );
     }
 
-    if (isFree) {
+    // Free course or Plus member without an enrolment row yet: enrol to begin.
+    if (hasFullAccess) {
       return (
-        <Button size="lg" className={className} onClick={handleEnroll} disabled={enrolling}>
+        <Button size="lg" className={className} onClick={handleEnroll} disabled={enrolling || !accessToken}>
           <Ticket />
-          {enrolling ? "Enrolling..." : "Enroll for free"}
+          {enrolling ? "Starting..." : "Start course"}
         </Button>
       );
     }
 
+    // Locked course: offer the free trial plus the upgrade path.
     return (
-      <Button
-        size="lg"
-        className={className}
-        onClick={handlePurchase}
-        disabled={purchasing || !accessToken}
-      >
-        <Ticket />
-        {purchasing ? "Starting checkout..." : "Buy course"}
-      </Button>
+      <div className={cn("flex flex-col gap-3 sm:flex-row", className)}>
+        <Button asChild size="lg" variant="soft" className="w-full sm:w-auto">
+          <Link
+            href={
+              continueLessonSlug
+                ? `/courses/${currentCourseSlug}/learn?lesson=${continueLessonSlug}`
+                : `/courses/${currentCourseSlug}/learn`
+            }
+          >
+            <Play />
+            Start free trial
+          </Link>
+        </Button>
+        <Button asChild size="lg" className="w-full bg-gradient-to-r from-amber-500 to-amber-600 sm:w-auto">
+          <Link href="/plus">
+            <Sparkle weight="fill" />
+            Unlock with Plus
+          </Link>
+        </Button>
+      </div>
     );
   }
 
@@ -530,8 +396,20 @@ export default function CourseDetailPage({ params }: Props) {
                 </div>
                 <div className="space-y-5 p-5">
                   <div>
-                    <p className="text-3xl font-extrabold text-slate-950">
-                      {formatPrice(course.recommended_pricing)}
+                    <p className="flex items-center gap-2 text-2xl font-extrabold text-slate-950">
+                      {course.is_free ? (
+                        "Free"
+                      ) : hasFullAccess ? (
+                        <>
+                          <Sparkle weight="fill" className="size-6 text-amber-500" />
+                          Included in Plus
+                        </>
+                      ) : (
+                        <>
+                          <Sparkle weight="fill" className="size-6 text-amber-500" />
+                          GaugeHow-Plus
+                        </>
+                      )}
                     </p>
                     <p className="mt-1 text-sm text-slate-500">{accessLabel}</p>
                   </div>
@@ -841,32 +719,31 @@ export default function CourseDetailPage({ params }: Props) {
             </div>
 
             <div className="border-t border-[color:var(--border)] pt-5">
-              <h2 className="text-lg font-extrabold text-slate-950">Pricing and access</h2>
-              {course.recommended_pricing ? (
-                <div className="mt-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <div>
-                      <p className="font-semibold capitalize text-slate-950">
-                        {course.recommended_pricing.purchase_type.replace("_", " ")}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-500">
-                        {course.recommended_pricing.subscription_days
-                          ? `${course.recommended_pricing.subscription_days} days access`
-                          : "Lifetime access"}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-slate-950">
-                        {formatPrice(course.recommended_pricing)}
-                      </p>
-                      {course.recommended_pricing.is_display_price_estimated ? (
-                        <p className="mt-1 text-xs text-slate-500">Estimated local price</p>
-                      ) : null}
-                    </div>
-                  </div>
-                </div>
+              <h2 className="text-lg font-extrabold text-slate-950">Access</h2>
+              {course.is_free ? (
+                <p className="mt-4 text-sm text-slate-600">
+                  This is a free course — every lesson is open, no subscription needed.
+                </p>
               ) : (
-                <p className="mt-4 text-sm text-slate-500">Pricing is not available yet.</p>
+                <div className="mt-4 space-y-3 text-sm text-slate-600">
+                  <p>
+                    The first {trialLessonCount} lessons are free to preview. Unlock the full course
+                    — plus every other course, test and document — with GaugeHow-Plus.
+                  </p>
+                  {!hasFullAccess ? (
+                    <Button asChild variant="soft" className="mt-1">
+                      <Link href="/plus">
+                        <Sparkle weight="fill" />
+                        See Plus plans
+                      </Link>
+                    </Button>
+                  ) : (
+                    <p className="flex items-center gap-2 font-semibold text-amber-600">
+                      <Sparkle weight="fill" className="size-4" />
+                      You have full access with Plus.
+                    </p>
+                  )}
+                </div>
               )}
             </div>
 

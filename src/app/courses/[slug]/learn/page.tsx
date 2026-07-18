@@ -199,12 +199,11 @@ function ensureYouTubeIframeApi(): Promise<void> {
 }
 
 function buildAccessLabel(access: AccessSummary | null): string {
-  if (!access) return "Access pending";
-  if (access.is_lifetime_access) return "Lifetime access";
-  if (access.days_left !== null) {
-    return access.days_left === 1 ? "1 day left" : `${access.days_left} days left`;
-  }
-  return "Active access";
+  if (!access) return "Free trial";
+  if (access.unlocked_by === "free_course") return "Free course";
+  if (access.unlocked_by === "plus") return "GaugeHow-Plus";
+  if (access.has_access) return "Full access";
+  return "Free trial";
 }
 
 function computeCourseCompletion(modules: CourseDetail["modules"]): number {

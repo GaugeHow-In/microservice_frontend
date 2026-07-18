@@ -14,13 +14,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   assessmentClient,
   formatDuration,
-  formatTestPrice,
+  formatTestAccess,
   type TestCatalogItem,
 } from "@/lib/assessment-client";
 
 function accessBadge(test: TestCatalogItem) {
   if (test.access.has_access) return { label: "Accessible", variant: "green" as const };
-  if (test.access.access_type === "paid") return { label: "Paid", variant: "orange" as const };
+  if (test.access.requires_plus) return { label: "Plus", variant: "orange" as const };
   return { label: "Locked", variant: "dark" as const };
 }
 
@@ -168,7 +168,7 @@ export default function TestsPage() {
                   </div>
                   <div className="flex items-center justify-between gap-3">
                     <span className="text-sm font-semibold text-slate-700">
-                      {formatTestPrice(test.access)}
+                      {formatTestAccess(test.access)}
                     </span>
                     <Button asChild disabled={!test.access.has_access}>
                       <Link href={test.access.has_access ? `/tests/active?test=${test.slug}` : "/tests"}>
