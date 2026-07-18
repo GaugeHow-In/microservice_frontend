@@ -1,23 +1,26 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/utils/supabase/server";
+"use client";
 
-export const dynamic = "force-dynamic";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { SpinnerGap } from "@phosphor-icons/react";
+import { useAuth } from "@/components/providers/auth-provider";
 
-// The apex is a bouncer, not a page: middleware normally redirects "/" before this
-// renders. This is the fallback for when middleware skips the auth check (e.g. missing
-// Supabase env vars), so "/" never resolves to a dead route.
-export default async function Home() {
-  let hasSession = false;
+// The apex is a bouncer, not a page. The decision has to run on the client: the
+// session lives in cookies owned by the auth API's domain, so the server never
+// sees it — only AuthProvider's refresh call can tell us whether it is live.
+export default function Home() {
+  const router = useRouter();
+  const { user, isLoading } = useAuth();
 
-  try {
-    const supabase = await createClient();
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-    hasSession = Boolean(user);
-  } catch {
-    hasSession = false;
-  }
+  useEffect(() => {
+    if (isLoading) return;
+    router.replace(user ? "/dashboard" : "/login");
+  }, [isLoading, router, user]);
 
-  redirect(hasSession ? "/dashboard" : "/login");
+  return (
+    <main className="premium-bg flex min-h-screen items-center justify-center">
+      <SpinnerGap className="size-8 animate-spin text-orange-600" />
+      <span className="sr-only">Loading your session</span>
+    </main>
+  );
 }
