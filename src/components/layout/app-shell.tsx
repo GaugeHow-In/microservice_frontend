@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
+import { BookOpen, Briefcase, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -37,6 +37,7 @@ const platformNav = [
   { label: "Courses", href: "/courses", icon: GraduationCap },
   { label: "Tests", href: "/tests", icon: ClipboardText },
   { label: "Library", href: "/library", icon: BookOpen },
+  { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
   { label: "AI Mentor", href: "/mentor", icon: Robot },
   { label: "Profile", href: "/profile", icon: Medal },
