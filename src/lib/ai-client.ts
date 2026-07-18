@@ -121,9 +121,26 @@ export type StudentAIContext = {
   interests: string[];
   preferred_language: string | null;
   weekly_study_hours: number | null;
+  referral_source: string | null;
   onboarding_skipped: boolean;
   updated_at?: string;
 };
+
+/**
+ * The personalization survey is shown once, right after login, until the learner
+ * either fills it in or dismisses it. A context is "resolved" when they skipped it
+ * or supplied at least one meaningful signal, so returning visitors go straight
+ * through to the dashboard.
+ */
+export function needsPersonalization(context: StudentAIContext | null): boolean {
+  if (!context) return true;
+  if (context.onboarding_skipped) return false;
+  return (
+    !context.academic_level &&
+    context.interests.length === 0 &&
+    !context.referral_source
+  );
+}
 
 class AIApiError extends Error {}
 

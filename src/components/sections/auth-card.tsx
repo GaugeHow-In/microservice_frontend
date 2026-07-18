@@ -237,7 +237,9 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
     try {
       if (mode === "login") {
         await login({ email, password });
-        router.push("/dashboard");
+        // /personalize shows the one-time survey for new learners and bounces
+        // everyone else straight to the dashboard.
+        router.push("/personalize");
       }
 
       if (mode === "signup") {
@@ -252,7 +254,7 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
 
       if (mode === "verify") {
         await verifyEmail({ email, code });
-        router.push("/dashboard");
+        router.push("/personalize");
       }
 
       if (mode === "reset") {

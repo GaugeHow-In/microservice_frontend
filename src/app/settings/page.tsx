@@ -1,6 +1,7 @@
 "use client";
 
-import { Bell, Eye, Palette, Shield, Sparkle, User } from "@phosphor-icons/react";
+import { ArrowRight, Bell, Eye, Palette, Shield, Sparkle, Target, User } from "@phosphor-icons/react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -41,6 +42,28 @@ export default function SettingsPage() {
             </Button>
           }
         />
+        <Card className="panel-depth overflow-hidden">
+          <CardContent className="flex flex-col gap-4 p-6 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-start gap-4">
+              <div className="signal-line flex size-11 shrink-0 items-center justify-center rounded-lg bg-orange-50 text-orange-600 shadow-[var(--shadow-sm)]">
+                <Target className="size-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-slate-950">Personalisation</h2>
+                <p className="mt-1 text-sm leading-6 text-slate-600">
+                  Tell us your level, interests, and how to reach you so we can tailor courses,
+                  the mentor, and roadmaps to you. Skipped it earlier? Fill it in anytime.
+                </p>
+              </div>
+            </div>
+            <Button asChild className="shrink-0">
+              <Link href="/personalize?edit=1">
+                Update
+                <ArrowRight />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
         <AIContextSettings />
         <section className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
           {sections.map(({ icon: Icon, title, text }, index) => (

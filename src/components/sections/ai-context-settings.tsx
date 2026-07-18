@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { aiClient, type StudentAIContext } from "@/lib/ai-client";
 
 const emptyContext: StudentAIContext = {
-  academic_level: null, degree: null, institution: null, target_exams: [], goals: [], interests: [], preferred_language: null, weekly_study_hours: null, onboarding_skipped: false,
+  academic_level: null, degree: null, institution: null, target_exams: [], goals: [], interests: [], preferred_language: null, weekly_study_hours: null, referral_source: null, onboarding_skipped: false,
 };
 
 export function AIContextSettings() {
