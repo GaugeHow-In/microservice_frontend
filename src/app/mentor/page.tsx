@@ -1,16 +1,17 @@
 "use client";
 
-import { ChatCenteredDots, ClockCounterClockwise, PaperPlaneTilt } from "@phosphor-icons/react";
+import { ChatCenteredDots, ClockCounterClockwise } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
-import { FormEvent, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
+import { MentorComposer, type MentorContext } from "@/components/shared/mentor-composer";
 import { MentorHistoryDrawer } from "@/components/shared/mentor-history-drawer";
 import { MentorMessage } from "@/components/shared/mentor-message";
 import { MentorOrb } from "@/components/shared/mentor-orb";
 import { Button } from "@/components/ui/button";
-import { aiClient, type AIMessage, type ConversationSummary } from "@/lib/ai-client";
+import { aiClient, type AIMessage, type ChatLearningContext, type ConversationSummary } from "@/lib/ai-client";
 
 const genericPrompts = [
   "Explain a tricky engineering concept",
@@ -29,6 +30,7 @@ function MentorPageContent() {
   const [active, setActive] = useState<string | null>(null);
   const [messages, setMessages] = useState<AIMessage[]>([]);
   const [input, setInput] = useState("");
+  const [attached, setAttached] = useState<MentorContext | null>(null);
   const [busy, setBusy] = useState(false);
   const [regeneratingId, setRegeneratingId] = useState<string | null>(null);
   const [freshMessageId, setFreshMessageId] = useState<string | null>(null);
@@ -66,11 +68,13 @@ function MentorPageContent() {
   function newConversation() {
     setActive(null);
     setMessages([]);
+    setAttached(null);
     setHistoryOpen(false);
   }
 
   function selectConversation(id: string) {
     setActive(id);
+    setAttached(null);
     setHistoryOpen(false);
   }
 
@@ -99,16 +103,21 @@ function MentorPageContent() {
         created_at: new Date().toISOString(),
       };
       setMessages((items) => (options.forceNew ? [pendingMessage] : [...items, pendingMessage]));
-      const turn = await aiClient.queryChat(
-        accessToken,
-        content,
-        options.forceNew ? null : active,
-        {
-          course_id: context?.course_id ?? null,
-          lesson_id: context?.lesson_id ?? null,
-        },
-        context,
-      );
+      // A context pinned via the "/" picker wins over the context inferred from the page.
+      const filters = attached
+        ? { course_id: attached.course_id, lesson_id: attached.lesson_id ?? null }
+        : { course_id: context?.course_id ?? null, lesson_id: context?.lesson_id ?? null };
+      const learningContext: ChatLearningContext | null = attached
+        ? {
+            course_id: attached.course_id,
+            course_title: attached.course_title,
+            course_slug: attached.course_slug,
+            lesson_id: attached.lesson_id ?? null,
+            lesson_title: attached.lesson_title ?? null,
+            lesson_slug: attached.lesson_slug ?? null,
+          }
+        : context;
+      const turn = await aiClient.queryChat(accessToken, content, options.forceNew ? null : active, filters, learningContext);
       const now = new Date().toISOString();
       const userMessage: AIMessage = {
         id: `user-${turn.message_id}`,
@@ -145,7 +154,7 @@ function MentorPageContent() {
     } finally {
       setBusy(false);
     }
-  }, [accessToken, active, busy, context, loadConversations]);
+  }, [accessToken, active, attached, busy, context, loadConversations]);
 
   async function regenerate(messageId: string) {
     if (!accessToken) return;
@@ -180,12 +189,11 @@ function MentorPageContent() {
     void sendMentorMessage(dashboardPrompt, { forceNew: true });
   }, [accessToken, busy, dashboardPrompt, sendMentorMessage]);
 
-  async function submit(event: FormEvent) {
-    event.preventDefault();
+  const submit = useCallback(() => {
     const content = input.trim();
     if (!content) return;
-    await sendMentorMessage(content);
-  }
+    void sendMentorMessage(content);
+  }, [input, sendMentorMessage]);
 
   const firstName = (user?.display_name ?? "there").split(" ")[0];
 
@@ -220,24 +228,16 @@ function MentorPageContent() {
               <p className="mt-2 text-base text-slate-500">What are we figuring out today?</p>
             </div>
 
-            <form onSubmit={submit} className="w-full">
-              <div className="relative rounded-full surface-secondary p-2 shadow-[var(--shadow-sm)]">
-                <input
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="Ask about lessons, formulas, or your next study move..."
-                  className="h-14 w-full rounded-full bg-transparent pl-6 pr-20 text-base text-slate-950 outline-none placeholder:text-slate-500"
-                />
-                <button
-                  type="submit"
-                  disabled={busy || !input.trim()}
-                  className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
-                  aria-label="Send"
-                >
-                  <PaperPlaneTilt className="size-5" />
-                </button>
-              </div>
-            </form>
+            <MentorComposer
+              value={input}
+              onChange={setInput}
+              onSubmit={submit}
+              busy={busy}
+              variant="hero"
+              placeholder="Ask about lessons, formulas, or your next study move..."
+              attached={attached}
+              onAttach={setAttached}
+            />
 
             <div className="flex flex-wrap justify-center gap-2">
               {promptChips.map((prompt) => (
@@ -275,24 +275,18 @@ function MentorPageContent() {
               <div ref={transcriptEndRef} />
             </div>
 
-            <form onSubmit={submit} className="sticky bottom-4 mx-auto w-full max-w-2xl">
-              <div className="relative rounded-full surface-secondary p-2 shadow-[var(--shadow-lg)]">
-                <input
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  placeholder="Ask a follow-up..."
-                  className="h-14 w-full rounded-full bg-transparent pl-6 pr-20 text-base text-slate-950 outline-none placeholder:text-slate-500"
-                />
-                <button
-                  type="submit"
-                  disabled={busy || !input.trim()}
-                  className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-orange-400 text-slate-950 transition hover:bg-orange-300 disabled:opacity-50"
-                  aria-label="Send"
-                >
-                  <PaperPlaneTilt className="size-5" />
-                </button>
-              </div>
-            </form>
+            <div className="sticky bottom-4 mx-auto w-full max-w-2xl">
+              <MentorComposer
+                value={input}
+                onChange={setInput}
+                onSubmit={submit}
+                busy={busy}
+                variant="docked"
+                placeholder="Ask a follow-up..."
+                attached={attached}
+                onAttach={setAttached}
+              />
+            </div>
           </div>
         )}
       </div>
