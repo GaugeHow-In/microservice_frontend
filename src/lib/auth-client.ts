@@ -279,7 +279,9 @@ export const authClient = {
       body: input,
     });
   },
-  getOAuthUrl(provider: "google", redirectTo = "/dashboard") {
+  // Land OAuth sign-ins on /personalize so Google users hit the same one-time
+  // survey gate as email sign-ins; it bounces returning learners to /dashboard.
+  getOAuthUrl(provider: "google", redirectTo = "/personalize") {
     return apiRequest<{ authorization_url: string }>(
       `/auth/oauth/${provider}?redirect_to=${encodeURIComponent(redirectTo)}`,
     );
