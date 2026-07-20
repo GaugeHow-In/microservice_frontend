@@ -1,9 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { BookOpen, Check, Envelope, Eye, EyeSlash, Gauge, Notebook, ShieldCheck, Sparkle, SpinnerGap, Wrench, X } from "@phosphor-icons/react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { Button } from "@/components/ui/button";
@@ -120,6 +120,7 @@ const copy = {
 export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const data = copy[mode];
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { beginOAuth, forgotPassword, login, register, resendVerification, resetPassword, verifyEmail } =
     useAuth();
   const [displayName, setDisplayName] = useState("");
@@ -138,6 +139,18 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+
+  useEffect(() => {
+    const oauthError = searchParams.get("oauth_error");
+    if (!oauthError) return;
+    const messageByReason: Record<string, string> = {
+      cancelled: "Google sign-in was cancelled. Please try again.",
+      access_denied: "Google sign-in was cancelled. Please try again.",
+      failed: "We couldn't complete Google sign-in. Please try again.",
+    };
+    setError(messageByReason[oauthError] ?? "We couldn't complete Google sign-in. Please try again.");
+    router.replace("/login");
+  }, [searchParams, router]);
 
   const activePassword = mode === "reset" ? newPassword : password;
   const passwordChecks = getPasswordChecks(activePassword);
