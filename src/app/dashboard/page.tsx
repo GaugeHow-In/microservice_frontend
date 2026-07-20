@@ -11,6 +11,7 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { CourseCard } from "@/components/shared/course-card";
 import { TwinkleField } from "@/components/shared/twinkle-field";
 import { aiClient, type Roadmap, type RoadmapStep, type StudentAIContext } from "@/lib/ai-client";
+import { randomDashboardGreeting } from "@/lib/dashboard-greetings";
 import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
 import { gamificationClient, type GamificationSummary } from "@/lib/gamification-client";
 
@@ -100,6 +101,11 @@ export default function DashboardPage() {
     };
   }, [context, courses, roadmaps]);
 
+  // Picked once per mount so the hero copy is fresh on each visit but stable
+  // across re-renders. The hero only renders client-side (after auth resolves),
+  // so a random pick here can't cause a hydration mismatch.
+  const { greeting, subtitle } = useMemo(() => randomDashboardGreeting(), []);
+
   function openMentor(event: FormEvent) {
     event.preventDefault();
     const query = mentorQuery.trim();
@@ -126,10 +132,10 @@ export default function DashboardPage() {
           <TwinkleField count={90} />
           <div className="relative mx-auto w-full max-w-3xl">
             <h1 className="text-4xl font-extrabold text-slate-950 md:text-5xl">
-              Welcome back, {firstName}.
+              {greeting}, {firstName}.
             </h1>
             <p className="mx-auto mt-3 max-w-xl text-base text-slate-500">
-              Ready to continue your engineering journey today?
+              {subtitle}
             </p>
 
             <form onSubmit={openMentor} className="mx-auto mt-8 max-w-2xl">
