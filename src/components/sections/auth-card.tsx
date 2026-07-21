@@ -162,6 +162,8 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [termsError, setTermsError] = useState<string | null>(null);
 
   useEffect(() => {
     const oauthError = searchParams.get("oauth_error");
@@ -214,6 +216,11 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
       } else if (confirmPassword !== password) {
         nextErrors.confirmPassword = "Passwords do not match.";
       }
+      if (!acceptedTerms) {
+        setTermsError("Please accept the Terms and Privacy Policy to continue.");
+      } else {
+        setTermsError(null);
+      }
     }
 
     if (mode === "login") {
@@ -259,7 +266,8 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
     }
 
     setFieldErrors(nextErrors);
-    return Object.keys(nextErrors).length === 0;
+    const termsBlocked = mode === "signup" && !acceptedTerms;
+    return Object.keys(nextErrors).length === 0 && !termsBlocked;
   };
 
   const submit = async () => {
@@ -644,6 +652,42 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                       </Link>
                     </div>
                   )}
+                  {mode === "signup" && (
+                    <div className="space-y-2">
+                      <label className="flex cursor-pointer items-start gap-3 text-sm text-[#cbc0b3]">
+                        <input
+                          type="checkbox"
+                          checked={acceptedTerms}
+                          onChange={(event) => {
+                            setAcceptedTerms(event.target.checked);
+                            if (event.target.checked) setTermsError(null);
+                          }}
+                          aria-invalid={Boolean(termsError)}
+                          className="mt-0.5 size-4 shrink-0 cursor-pointer rounded border-white/20 bg-transparent accent-[#e8a855]"
+                        />
+                        <span>
+                          I agree to the{" "}
+                          <Link
+                            href="/terms"
+                            target="_blank"
+                            className="font-semibold text-[#fcd9a9] underline underline-offset-2 hover:text-[#fce3bb]"
+                          >
+                            Terms &amp; Conditions
+                          </Link>{" "}
+                          and{" "}
+                          <Link
+                            href="/privacy"
+                            target="_blank"
+                            className="font-semibold text-[#fcd9a9] underline underline-offset-2 hover:text-[#fce3bb]"
+                          >
+                            Privacy Policy
+                          </Link>
+                          .
+                        </span>
+                      </label>
+                      {termsError ? <p className="text-sm font-medium text-rose-400">{termsError}</p> : null}
+                    </div>
+                  )}
                   {error ? <p className="text-sm font-medium text-rose-600">{error}</p> : null}
                   {message ? <p className="text-sm font-medium text-emerald-600">{message}</p> : null}
                 </div>
@@ -685,6 +729,23 @@ export function AuthCard({ mode, initialEmail = "" }: AuthCardProps) {
                 </p>
               </CardContent>
             </Card>
+            <nav className="mt-6 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 text-xs font-medium text-[#8f8375]">
+              <Link href="/about" className="transition hover:text-[#fcd9a9]">
+                About Us
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href="/contact" className="transition hover:text-[#fcd9a9]">
+                Contact Us
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href="/terms" className="transition hover:text-[#fcd9a9]">
+                Terms
+              </Link>
+              <span aria-hidden="true">·</span>
+              <Link href="/privacy" className="transition hover:text-[#fcd9a9]">
+                Privacy
+              </Link>
+            </nav>
           </div>
         </section>
       </div>

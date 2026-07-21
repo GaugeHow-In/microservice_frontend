@@ -1,8 +1,10 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { CheckCircle, Sparkle, Lightning, Books, Certificate, Exam, Path } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
+import { PublicShell } from "@/components/layout/public-shell";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/components/providers/auth-provider";
 import { ensureRazorpayScript } from "@/lib/razorpay";
@@ -30,15 +32,39 @@ const PLUS_FEATURES = [
   { icon: Lightning, label: "AI lesson tools", detail: "Notes, flashcards and the AI mentor" }
 ];
 
+// The pricing page is public so anyone (and payment-gateway domain verification)
+// can view plans without signing in. Authenticated learners keep the full app
+// shell with sidebar; anonymous visitors get the light marketing shell.
 export default function PlusPage() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    return (
+      <div className="premium-bg flex min-h-screen items-center justify-center">
+        <div className="chrome-surface rounded-xl px-6 py-4 text-sm font-bold text-slate-600">
+          Loading plans...
+        </div>
+      </div>
+    );
+  }
+
+  if (user) {
+    return (
+      <AppShell>
+        <PlusPricing />
+      </AppShell>
+    );
+  }
+
   return (
-    <AppShell>
+    <PublicShell>
       <PlusPricing />
-    </AppShell>
+    </PublicShell>
   );
 }
 
 function PlusPricing() {
+  const router = useRouter();
   const { accessToken, user, refreshSession } = useAuth();
   const [catalog, setCatalog] = useState<PlanCatalog | null>(null);
   const [gateway, setGateway] = useState<SubscriptionGateway | null>(null);
@@ -66,7 +92,8 @@ function PlusPricing() {
 
   async function startCheckout(plan: PlanPrice) {
     if (!accessToken) {
-      setError("Please sign in to subscribe.");
+      // Anonymous visitors can browse plans, but subscribing needs an account.
+      router.push(`/login?next=${encodeURIComponent("/plus")}`);
       return;
     }
     setError(null);
