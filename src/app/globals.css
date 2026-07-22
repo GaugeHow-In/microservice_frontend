@@ -1363,9 +1363,9 @@ html.dark .bg-slate-950\/95 {
   }
 }
 
-/* GaugeHow AI mark — brand gear + dog mascot (components/shared/ai-mark.tsx).
-   The gear ring spins, the aperture blades counter-spin, and the dog stays
-   upright: bobbing, trotting while thinking, tail always wagging. */
+/* GaugeHow AI mark — exact brand logo (components/shared/ai-mark.tsx).
+   The gear (with its aperture swirls) spins while the dog stays upright:
+   bobbing, trotting while thinking, tail always wagging. */
 .ai-mark {
   display: block;
 }
@@ -1378,14 +1378,7 @@ html.dark .bg-slate-950\/95 {
   );
 }
 
-/* On orange surfaces (primary buttons) the ink-colored disc needs the dog
-   to pop in the surface's orange rather than the page background. */
-.btn-primary .ai-mark {
-  --ai-mark-dog: var(--primary);
-}
-
-.ai-mark-gear,
-.ai-mark-blades {
+.ai-mark-gear {
   transform-origin: 50px 50px;
 }
 
@@ -1395,15 +1388,11 @@ html.dark .bg-slate-950\/95 {
 
 .ai-mark-tail {
   transform-box: fill-box;
-  transform-origin: 40% 96%;
+  transform-origin: 5% 24%;
 }
 
 .ai-mark.idle .ai-mark-gear {
   animation: ai-mark-spin 26s linear infinite;
-}
-
-.ai-mark.idle .ai-mark-blades {
-  animation: ai-mark-spin-reverse 40s linear infinite;
 }
 
 .ai-mark.idle .ai-mark-dog {
@@ -1418,10 +1407,6 @@ html.dark .bg-slate-950\/95 {
   animation: ai-mark-spin 2.4s linear infinite;
 }
 
-.ai-mark.thinking .ai-mark-blades {
-  animation: ai-mark-spin-reverse 1.7s linear infinite;
-}
-
 .ai-mark.thinking .ai-mark-dog {
   animation: ai-mark-trot 0.55s ease-in-out infinite;
 }
@@ -1433,12 +1418,6 @@ html.dark .bg-slate-950\/95 {
 @keyframes ai-mark-spin {
   to {
     transform: rotate(360deg);
-  }
-}
-
-@keyframes ai-mark-spin-reverse {
-  to {
-    transform: rotate(-360deg);
   }
 }
 

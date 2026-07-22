@@ -54,9 +54,11 @@ describe("AppShell", () => {
   it("derives the active section label from nested routes", () => {
     renderShell();
 
-    // Signed in, the lockup goes to the dashboard rather than the marketing home.
-    for (const logo of screen.getAllByRole("link", { name: /gaugehowlearning os/i })) {
-      expect(logo).toHaveAttribute("href", "/dashboard");
+    // The sidebar shows the plain wordmark (light + dark variants), unlinked.
+    const wordmarks = screen.getAllByRole("img", { name: "GaugeHow" });
+    expect(wordmarks).toHaveLength(2);
+    for (const wordmark of wordmarks) {
+      expect(wordmark.closest("a")).toBeNull();
     }
     expect(screen.getAllByText("Courses").length).toBeGreaterThan(0);
     // The top-bar search pill and Courses button were removed; the sidebar nav
@@ -83,21 +85,11 @@ describe("AppShell", () => {
     expect(getSidebar()).toHaveAttribute("data-drawer-open", "false");
   });
 
-  it("collapses the sidebar and remembers the choice", async () => {
-    const user = userEvent.setup();
-
-    const { unmount } = renderShell();
-
-    expect(getSidebar()).toHaveAttribute("data-collapsed", "false");
-
-    await user.click(screen.getByRole("button", { name: "Collapse navigation" }));
-    expect(getSidebar()).toHaveAttribute("data-collapsed", "true");
-
-    unmount();
+  it("no longer offers a sidebar collapse control", () => {
     renderShell();
 
-    expect(getSidebar()).toHaveAttribute("data-collapsed", "true");
-    expect(screen.getByRole("button", { name: "Expand navigation" })).toBeInTheDocument();
+    expect(getSidebar()).not.toHaveAttribute("data-collapsed");
+    expect(screen.queryByRole("button", { name: /collapse navigation/i })).not.toBeInTheDocument();
   });
 
   it("opens the account menu from the avatar", async () => {

@@ -82,9 +82,8 @@ export default function TestsPage() {
     <AppShell>
       <div className="space-y-6">
         <PageHeader
-          eyebrow="Tests"
-          title="Timed tests for certificates and practice."
-          description="Find course final tests and standalone practice tests with real access, timing, score, and pass requirements."
+          title="Explore tests"
+          description="Course finals and timed practice tests, with scoring and pass requirements."
           action={
             <Button asChild variant="secondary">
               <Link href="/tests/previous">
@@ -95,11 +94,11 @@ export default function TestsPage() {
           }
         />
 
-        <div className="surface-elevated reveal-delay-1 reveal-up grid gap-3 rounded-2xl p-4 md:grid-cols-[1fr_auto]">
-          <div className="relative">
-            <MagnifyingGlass className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+        <div className="reveal-delay-1 reveal-up flex flex-col gap-3 md:flex-row md:items-center">
+          <div className="relative min-w-0 flex-1">
+            <MagnifyingGlass className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
             <Input
-              className="pl-10"
+              className="h-11 rounded-full surface-secondary pl-12"
               placeholder="Search certification tests, practice sets, and course finals"
               value={query}
               onChange={(event) => setQuery(event.target.value)}
@@ -107,13 +106,18 @@ export default function TestsPage() {
           </div>
           <div className="flex flex-wrap gap-2">
             {(["all", "standalone", "course"] as const).map((item) => (
-              <Button
+              <button
                 key={item}
-                variant={scope === item ? "default" : "secondary"}
+                type="button"
                 onClick={() => setScope(item)}
+                className={
+                  scope === item
+                    ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
+                    : "shrink-0 rounded-full surface-secondary px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
+                }
               >
-                {item === "all" ? "All" : item === "standalone" ? "Standalone" : "Course"}
-              </Button>
+                {item === "all" ? "All tests" : item === "standalone" ? "Standalone" : "Course finals"}
+              </button>
             ))}
           </div>
         </div>

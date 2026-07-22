@@ -51,7 +51,7 @@ describe("TestsPage", () => {
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: /machine design practice/i })).toBeInTheDocument();
     });
-    expect(screen.getByText(/timed tests for certificates and practice/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /explore tests/i })).toBeInTheDocument();
     expect(screen.getByText("12")).toBeInTheDocument();
     expect(screen.queryByText(/practice tests are not connected yet/i)).not.toBeInTheDocument();
   });

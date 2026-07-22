@@ -75,14 +75,16 @@ export default function JobsPage() {
           </Button>
         </header>
 
-        <div className="relative pt-6">
-          <MagnifyingGlass className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
-          <Input
-            className="h-11 rounded-full surface-secondary pl-11"
-            placeholder="Search jobs, tools, or skills"
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-          />
+        <div className="pt-6">
+          <div className="relative">
+            <MagnifyingGlass className="absolute left-4 top-1/2 size-4 -translate-y-1/2 text-slate-400" />
+            <Input
+              className="h-11 rounded-full surface-secondary pl-11"
+              placeholder="Search jobs, tools, or skills"
+              value={query}
+              onChange={(event) => setQuery(event.target.value)}
+            />
+          </div>
         </div>
 
         <div className="rm-divide pt-2">
