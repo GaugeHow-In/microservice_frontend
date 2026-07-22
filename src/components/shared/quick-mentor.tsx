@@ -109,7 +109,14 @@ export function QuickMentor() {
           </form>
         </div>
       )}
-      <Button size="icon" className="size-14 rounded-full shadow-[var(--shadow-lg)]" onClick={() => setOpen((value) => !value)} aria-label="Open quick mentor"><AIMark state={busy ? "thinking" : "idle"} className="size-9" /></Button>
+      <button
+        type="button"
+        className="grid place-items-center rounded-full transition-transform hover:scale-110 active:scale-95"
+        onClick={() => setOpen((value) => !value)}
+        aria-label="Open quick mentor"
+      >
+        <AIMark state={busy ? "thinking" : "idle"} className="ai-mark-free size-14 text-slate-950" />
+      </button>
     </div>
   );
 }

@@ -1363,79 +1363,6 @@ html.dark .bg-slate-950\/95 {
   }
 }
 
-.mentor-orb {
-  position: relative;
-  display: grid;
-  place-items: center;
-  border-radius: 999px;
-  background: radial-gradient(
-    circle at 35% 28%,
-    color-mix(in srgb, var(--primary) 92%, white 8%),
-    var(--primary-dark) 82%
-  );
-  color: var(--ink-on-primary);
-  transform: translate3d(0, 0, 0);
-}
-
-.mentor-orb::before {
-  content: "";
-  position: absolute;
-  inset: -22%;
-  z-index: -1;
-  border-radius: inherit;
-  background: radial-gradient(circle, var(--ambient-soft), transparent 70%);
-  filter: blur(7px);
-}
-
-.mentor-orb.idle {
-  animation: orb-breathe 4.2s ease-in-out infinite alternate;
-}
-
-.mentor-orb.thinking {
-  animation: orb-think 1.05s ease-in-out infinite;
-}
-
-.mentor-orb.thinking::after {
-  content: "";
-  position: absolute;
-  inset: -14%;
-  border-radius: inherit;
-  background: conic-gradient(
-    from 0deg,
-    transparent,
-    color-mix(in srgb, var(--primary) 75%, transparent 25%) 30%,
-    transparent 65%
-  );
-  animation: orb-spin 1.3s linear infinite;
-}
-
-@keyframes orb-breathe {
-  from {
-    transform: scale(1);
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 24%, transparent 76%);
-  }
-  to {
-    transform: scale(1.045);
-    box-shadow: 0 0 0 16px color-mix(in srgb, var(--primary) 0%, transparent 100%);
-  }
-}
-
-@keyframes orb-think {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.08);
-  }
-}
-
-@keyframes orb-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
 /* GaugeHow AI mark — brand gear + dog mascot (components/shared/ai-mark.tsx).
    The gear ring spins, the aperture blades counter-spin, and the dog stays
    upright: bobbing, trotting while thinking, tail always wagging. */
@@ -1443,9 +1370,16 @@ html.dark .bg-slate-950\/95 {
   display: block;
 }
 
-/* On orange surfaces (mentor orb, primary buttons) the ink-colored disc needs
-   the dog to pop in the surface's orange rather than the page background. */
-.mentor-orb .ai-mark,
+/* Free-floating mark (mentor hero, message avatars, quick-mentor toggle):
+   no container ball — just the mark with a soft ambient orange glow. */
+.ai-mark-free {
+  filter: drop-shadow(
+    0 6px 18px color-mix(in srgb, var(--primary) 55%, transparent 45%)
+  );
+}
+
+/* On orange surfaces (primary buttons) the ink-colored disc needs the dog
+   to pop in the surface's orange rather than the page background. */
 .btn-primary .ai-mark {
   --ai-mark-dog: var(--primary);
 }

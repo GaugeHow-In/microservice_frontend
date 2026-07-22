@@ -7,18 +7,16 @@ type MentorOrbProps = {
   className?: string;
 };
 
+/** The AI mentor's face: the free-floating GaugeHow gear + dog mark. */
 export function MentorOrb({ state = "idle", size = "lg", className }: MentorOrbProps) {
   return (
-    <div
+    <AIMark
+      state={state}
       className={cn(
-        "mentor-orb",
-        state,
-        size === "lg" ? "size-16" : "size-8",
+        "ai-mark-free text-slate-950",
+        size === "lg" ? "size-20" : "size-8",
         className,
       )}
-      aria-hidden="true"
-    >
-      <AIMark state={state} className={size === "lg" ? "size-11" : "size-6"} />
-    </div>
+    />
   );
 }
