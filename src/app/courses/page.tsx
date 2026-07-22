@@ -2,12 +2,10 @@
 
 import Link from "next/link";
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
-import { MagnifyingGlass } from "@phosphor-icons/react";
+import { ChartLineUp, MagnifyingGlass } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { CourseCard } from "@/components/shared/course-card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -93,31 +91,23 @@ export default function CoursesPage() {
   return (
     <AppShell>
       <div className="space-y-10">
-        <section className="pt-4">
-          <div className="mx-auto max-w-4xl text-center">
-            <Badge variant="orange"></Badge>
+        <section className="pt-2">
+          <div className="mx-auto max-w-3xl text-center">
             <h2 className="sr-only">Practical courses for engineering workflows.</h2>
-            <h1 className="mt-5 text-4xl font-extrabold leading-tight text-slate-950 md:text-6xl">
-              Explore courses for engineering workflows
+            <h1 className="text-3xl font-extrabold leading-tight text-slate-950 md:text-4xl">
+              Explore courses
             </h1>
-            <p className="mx-auto mt-4 max-w-2xl text-lg leading-8 text-slate-600">
-              Build practical skills in AI, CAD, mechanical design, programming, and applied
-              engineering with courses from GaugeHow instructors.
+            <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
+              Practical skills in AI, CAD, mechanical design, and engineering programming.
             </p>
-            <div className="mx-auto mt-8 flex max-w-3xl flex-col gap-3 sm:flex-row">
-              <div className="relative min-w-0 flex-1">
-                <MagnifyingGlass className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
-                <Input
-                  className="min-h-[3.5rem] rounded-full surface-secondary pl-12"
-                  placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
-                  value={query}
-                  onChange={(event) => setQuery(event.target.value)}
-                />
-              </div>
-              <Button className="min-h-[3.5rem] rounded-full px-7">
-                <MagnifyingGlass />
-                Search
-              </Button>
+            <div className="relative mx-auto mt-6 max-w-2xl">
+              <MagnifyingGlass className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
+              <Input
+                className="min-h-[3.25rem] rounded-full surface-secondary pl-12 pr-5"
+                placeholder="Search AutoCAD, MATLAB, CAD drafting, engineering programming"
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+              />
             </div>
           </div>
         </section>
@@ -156,29 +146,20 @@ export default function CoursesPage() {
           <section className="space-y-4">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-2xl font-bold text-slate-950">
-                  {isLoading ? "Loading catalog" : `${courses.length} recommended courses`}
+                <h2 className="text-xl font-bold text-slate-950 md:text-2xl">
+                  {isLoading ? "Loading catalog" : `${courses.length} courses`}
                 </h2>
-                <p className="text-sm text-slate-600">
+                <p className="mt-0.5 text-sm text-slate-600">
                   {activeCategory === "all" ? "Showing all available courses" : "Filtered by selected category"}
                 </p>
               </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/courses/progress"
-                  className="rounded-full surface-secondary px-3 py-1 text-xs font-bold text-orange-600 transition hover:text-orange-700"
-                >
-                  Progress report
-                </Link>
-                {["Beginner", "Intermediate", "Advanced"].map((level) => (
-                  <span
-                    key={level}
-                    className="rounded-full surface-elevated px-3 py-1 text-xs font-bold text-slate-600"
-                  >
-                    {level}
-                  </span>
-                ))}
-              </div>
+              <Link
+                href="/courses/progress"
+                className="inline-flex shrink-0 items-center gap-2 self-start rounded-full surface-secondary px-4 py-2.5 text-sm font-bold text-orange-600 transition hover:text-orange-700 sm:self-auto"
+              >
+                <ChartLineUp className="size-4" weight="bold" />
+                Progress report
+              </Link>
             </div>
 
             {error ? (

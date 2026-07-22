@@ -1,4 +1,4 @@
-import { Robot } from "@phosphor-icons/react/dist/ssr";
+import { AIMark } from "@/components/shared/ai-mark";
 import { cn } from "@/lib/utils";
 
 type MentorOrbProps = {
@@ -18,7 +18,7 @@ export function MentorOrb({ state = "idle", size = "lg", className }: MentorOrbP
       )}
       aria-hidden="true"
     >
-      <Robot className={size === "lg" ? "size-8" : "size-4"} />
+      <AIMark state={state} className={size === "lg" ? "size-11" : "size-6"} />
     </div>
   );
 }

@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, Briefcase, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, Robot, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
+import { BookOpen, Briefcase, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -17,6 +17,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { AIMark } from "@/components/shared/ai-mark";
 import { BrandLogo } from "@/components/shared/brand-logo";
 import { LogoutDialog } from "@/components/shared/logout-dialog";
 import { NotificationBell } from "@/components/shared/notification-bell";
@@ -39,7 +40,7 @@ const platformNav = [
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
-  { label: "AI Mentor", href: "/mentor", icon: Robot },
+  { label: "AI Mentor", href: "/mentor", icon: AIMark },
   { label: "Profile", href: "/profile", icon: Medal },
   { label: "Settings", href: "/settings", icon: Gear },
 ];

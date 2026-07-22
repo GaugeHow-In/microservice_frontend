@@ -1,11 +1,12 @@
 "use client";
 
-import { PaperPlaneTilt, Robot, SpinnerGap, X } from "@phosphor-icons/react";
+import { PaperPlaneTilt, SpinnerGap, X } from "@phosphor-icons/react";
 import { FormEvent, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { Button } from "@/components/ui/button";
 import { aiClient, type AIMessage } from "@/lib/ai-client";
+import { AIMark } from "@/components/shared/ai-mark";
 import { MentorCitations } from "@/components/shared/mentor-citations";
 import { MentorMarkdown } from "@/components/shared/mentor-markdown";
 
@@ -80,7 +81,7 @@ export function QuickMentor() {
       {open && (
         <div className="chrome-surface mb-3 flex h-[30rem] w-[min(22rem,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl shadow-[var(--shadow-lg)]">
           <div className="flex items-center justify-between border-b border-slate-200/70 p-4">
-            <div className="flex items-center gap-2 font-semibold text-slate-950"><Robot className="size-5 text-orange-600" />Quick mentor <span className="text-xs text-slate-400">Beta</span></div>
+            <div className="flex items-center gap-2 font-semibold text-slate-950"><AIMark state={busy ? "thinking" : "idle"} className="size-5 text-orange-600" />Quick mentor <span className="text-xs text-slate-400">Beta</span></div>
             <Button size="icon" variant="ghost" onClick={() => setOpen(false)} aria-label="Close mentor"><X /></Button>
           </div>
           <div className="flex-1 space-y-3 overflow-y-auto p-4 text-sm">
@@ -108,7 +109,7 @@ export function QuickMentor() {
           </form>
         </div>
       )}
-      <Button size="icon" className="size-14 rounded-full shadow-[var(--shadow-lg)]" onClick={() => setOpen((value) => !value)} aria-label="Open quick mentor"><Robot className="size-6" /></Button>
+      <Button size="icon" className="size-14 rounded-full shadow-[var(--shadow-lg)]" onClick={() => setOpen((value) => !value)} aria-label="Open quick mentor"><AIMark state={busy ? "thinking" : "idle"} className="size-9" /></Button>
     </div>
   );
 }

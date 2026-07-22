@@ -1436,6 +1436,117 @@ html.dark .bg-slate-950\/95 {
   }
 }
 
+/* GaugeHow AI mark — brand gear + dog mascot (components/shared/ai-mark.tsx).
+   The gear ring spins, the aperture blades counter-spin, and the dog stays
+   upright: bobbing, trotting while thinking, tail always wagging. */
+.ai-mark {
+  display: block;
+}
+
+/* On orange surfaces (mentor orb, primary buttons) the ink-colored disc needs
+   the dog to pop in the surface's orange rather than the page background. */
+.mentor-orb .ai-mark,
+.btn-primary .ai-mark {
+  --ai-mark-dog: var(--primary);
+}
+
+.ai-mark-gear,
+.ai-mark-blades {
+  transform-origin: 50px 50px;
+}
+
+.ai-mark-dog {
+  transform-origin: 50px 52px;
+}
+
+.ai-mark-tail {
+  transform-box: fill-box;
+  transform-origin: 40% 96%;
+}
+
+.ai-mark.idle .ai-mark-gear {
+  animation: ai-mark-spin 26s linear infinite;
+}
+
+.ai-mark.idle .ai-mark-blades {
+  animation: ai-mark-spin-reverse 40s linear infinite;
+}
+
+.ai-mark.idle .ai-mark-dog {
+  animation: ai-mark-bob 3.6s ease-in-out infinite;
+}
+
+.ai-mark.idle .ai-mark-tail {
+  animation: ai-mark-wag 1.8s ease-in-out infinite;
+}
+
+.ai-mark.thinking .ai-mark-gear {
+  animation: ai-mark-spin 2.4s linear infinite;
+}
+
+.ai-mark.thinking .ai-mark-blades {
+  animation: ai-mark-spin-reverse 1.7s linear infinite;
+}
+
+.ai-mark.thinking .ai-mark-dog {
+  animation: ai-mark-trot 0.55s ease-in-out infinite;
+}
+
+.ai-mark.thinking .ai-mark-tail {
+  animation: ai-mark-wag 0.3s ease-in-out infinite;
+}
+
+@keyframes ai-mark-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes ai-mark-spin-reverse {
+  to {
+    transform: rotate(-360deg);
+  }
+}
+
+@keyframes ai-mark-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-1.2px);
+  }
+}
+
+@keyframes ai-mark-trot {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2.4px);
+  }
+}
+
+@keyframes ai-mark-wag {
+  0%,
+  100% {
+    transform: rotate(-5deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ai-mark .ai-mark-gear,
+  .ai-mark .ai-mark-blades,
+  .ai-mark .ai-mark-dog,
+  .ai-mark .ai-mark-tail {
+    animation: none !important;
+  }
+}
+
 .twinkle-field {
   position: absolute;
   inset: 0;
