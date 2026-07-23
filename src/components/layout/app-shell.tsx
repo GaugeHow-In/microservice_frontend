@@ -42,10 +42,10 @@ const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: House },
   { label: "Courses", href: "/courses", icon: GraduationCap },
   { label: "Tests", href: "/tests", icon: ClipboardText },
+  { label: "GaugeHow AI", href: "/mentor", icon: AIMentorNavIcon },
+  { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Jobs", href: "/jobs", icon: Briefcase },
-  { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
-  { label: "AI Mentor", href: "/mentor", icon: AIMentorNavIcon },
   { label: "Profile", href: "/profile", icon: Medal },
   { label: "Settings", href: "/settings", icon: Gear },
 ];

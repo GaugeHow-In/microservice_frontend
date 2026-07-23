@@ -1,16 +1,28 @@
 "use client";
 
-import { ChatCenteredDots, ClockCounterClockwise } from "@phosphor-icons/react";
+import {
+  ArrowRight,
+  CalendarCheck,
+  CaretLeft,
+  ChatCenteredDots,
+  ChatCenteredText,
+  ClockCounterClockwise,
+  Exam,
+  Lightbulb,
+} from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { AppShell } from "@/components/layout/app-shell";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
+import { AIMark } from "@/components/shared/ai-mark";
 import { MentorComposer, type MentorContext } from "@/components/shared/mentor-composer";
-import { MentorHistoryDrawer } from "@/components/shared/mentor-history-drawer";
+import { MentorHistoryDrawer, formatRelativeTime } from "@/components/shared/mentor-history-drawer";
 import { MentorMessage } from "@/components/shared/mentor-message";
 import { MentorOrb } from "@/components/shared/mentor-orb";
+import { TwinkleField } from "@/components/shared/twinkle-field";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { aiClient, type AIMessage, type ChatLearningContext, type ConversationSummary } from "@/lib/ai-client";
 
 const genericPrompts = [
@@ -18,6 +30,29 @@ const genericPrompts = [
   "Help me plan this week's study",
   "Quiz me on what I just learned",
   "Give me a memory trick for a formula",
+];
+
+/* The hub's "brilliant uses" — each drops the student into a chat with the
+   prompt prefilled so they can tweak it before sending. */
+const featureCards = [
+  {
+    icon: Lightbulb,
+    title: "Explain anything",
+    description: "Stuck on a lesson or formula? Get a clear breakdown with sources pulled from your actual courses.",
+    prompt: "Explain this concept I'm stuck on: ",
+  },
+  {
+    icon: Exam,
+    title: "Quiz yourself",
+    description: "Turn what you just studied into practice questions and find your weak spots before the test does.",
+    prompt: "Quiz me on what I've been studying this week",
+  },
+  {
+    icon: CalendarCheck,
+    title: "Plan your week",
+    description: "Tell it your goal and hours — get a study plan that fits your courses and deadlines.",
+    prompt: "Help me plan this week's study schedule",
+  },
 ];
 
 function MentorPageContent() {
@@ -38,6 +73,9 @@ function MentorPageContent() {
   const handledPromptRef = useRef<string | null>(null);
   const transcriptEndRef = useRef<HTMLDivElement>(null);
   const dashboardPrompt = searchParams.get("prompt")?.trim() ?? "";
+  // The page opens as a hub (history + feature cards); "chat" is entered by
+  // starting/resuming a conversation. A dashboard prompt jumps straight in.
+  const [view, setView] = useState<"hub" | "chat">(dashboardPrompt ? "chat" : "hub");
 
   const loadConversations = useCallback(() => {
     if (!accessToken) return;
@@ -70,12 +108,28 @@ function MentorPageContent() {
     setMessages([]);
     setAttached(null);
     setHistoryOpen(false);
+    setView("chat");
   }
 
   function selectConversation(id: string) {
     setActive(id);
     setAttached(null);
     setHistoryOpen(false);
+    setView("chat");
+  }
+
+  /** Feature cards open a fresh chat with the prompt prefilled, not sent. */
+  function startWithPrompt(prompt: string) {
+    setActive(null);
+    setMessages([]);
+    setAttached(null);
+    setInput(prompt);
+    setView("chat");
+  }
+
+  function backToHub() {
+    setView("hub");
+    loadConversations();
   }
 
   function removeConversation(id: string) {
@@ -150,7 +204,7 @@ function MentorPageContent() {
       setActive(turn.conversation_id);
       loadConversations();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "AI Mentor is unavailable.");
+      setError(caught instanceof Error ? caught.message : "GaugeHow AI is unavailable.");
     } finally {
       setBusy(false);
     }
@@ -186,6 +240,7 @@ function MentorPageContent() {
   useEffect(() => {
     if (!accessToken || !dashboardPrompt || handledPromptRef.current === dashboardPrompt || busy) return;
     handledPromptRef.current = dashboardPrompt;
+    setView("chat");
     void sendMentorMessage(dashboardPrompt, { forceNew: true });
   }, [accessToken, busy, dashboardPrompt, sendMentorMessage]);
 
@@ -206,18 +261,135 @@ function MentorPageContent() {
 
   const lastAssistantId = [...messages].reverse().find((message) => message.role === "assistant")?.id ?? null;
 
+  if (view === "hub") {
+    const recentConversations = conversations.slice(0, 5);
+    return (
+      <AppShell>
+        <div className="mx-auto flex w-full max-w-4xl flex-col pb-12">
+          {/* Hero band */}
+          <div className="relative overflow-hidden py-10 text-center">
+            <TwinkleField count={50} />
+            <div className="relative flex flex-col items-center gap-4">
+              <AIMark className="ai-mark-free size-24 md:size-28" />
+              <div>
+                <h1 className="text-3xl font-extrabold text-slate-950 md:text-4xl">GaugeHow AI</h1>
+                <p className="mx-auto mt-2 max-w-md text-base text-slate-500">
+                  Hey {firstName} — your engineering mentor knows your courses, your progress, and what to do next.
+                </p>
+              </div>
+              <Button size="lg" className="rounded-full px-6" onClick={newConversation}>
+                <ChatCenteredDots />
+                Start a new chat
+              </Button>
+            </div>
+          </div>
+
+          {/* Brilliant uses */}
+          <div className="grid gap-4 md:grid-cols-3">
+            {featureCards.map((feature) => {
+              const Icon = feature.icon;
+              return (
+                <button
+                  key={feature.title}
+                  type="button"
+                  onClick={() => startWithPrompt(feature.prompt)}
+                  className="group flex flex-col gap-3 rounded-2xl surface-secondary p-5 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+                >
+                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent/12 text-accent">
+                    <Icon className="size-5" />
+                  </span>
+                  <div>
+                    <p className="font-extrabold text-slate-950">{feature.title}</p>
+                    <p className="mt-1 text-sm leading-5 text-slate-500">{feature.description}</p>
+                  </div>
+                  <span className="mt-auto flex items-center gap-1 text-sm font-bold text-accent">
+                    Try it
+                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Recent chats */}
+          <div className="mt-10">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-lg font-extrabold text-slate-950">Pick up where you left off</h2>
+              {conversations.length > 5 && (
+                <button
+                  type="button"
+                  onClick={() => setHistoryOpen(true)}
+                  className="text-sm font-bold text-accent hover:underline"
+                >
+                  View all
+                </button>
+              )}
+            </div>
+            {conversationsLoading ? (
+              <div className="grid gap-2">
+                {Array.from({ length: 3 }).map((_, index) => (
+                  <Skeleton key={index} className="h-12 w-full rounded-xl" />
+                ))}
+              </div>
+            ) : recentConversations.length ? (
+              <div className="grid gap-2">
+                {recentConversations.map((conversation) => (
+                  <button
+                    key={conversation.id}
+                    type="button"
+                    onClick={() => selectConversation(conversation.id)}
+                    className="flex items-center gap-3 rounded-xl surface-secondary px-4 py-3 text-left transition hover:shadow-[var(--shadow-sm)]"
+                  >
+                    <ChatCenteredText className="size-4 shrink-0 text-slate-400" />
+                    <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-950">
+                      {conversation.title}
+                    </span>
+                    <span className="shrink-0 text-xs text-slate-400">
+                      {formatRelativeTime(conversation.updated_at)}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="rounded-xl surface-secondary p-4 text-sm text-slate-500">
+                No conversations yet — start your first chat above.
+              </p>
+            )}
+            {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
+          </div>
+        </div>
+
+        <MentorHistoryDrawer
+          open={historyOpen}
+          onClose={() => setHistoryOpen(false)}
+          conversations={conversations}
+          loading={conversationsLoading}
+          activeId={active}
+          onSelect={selectConversation}
+          onDelete={removeConversation}
+        />
+      </AppShell>
+    );
+  }
+
   return (
     <AppShell>
       <div className="flex min-h-[calc(100vh-10rem)] flex-col">
-        <div className="flex items-center justify-end gap-2 pb-4">
-          <Button variant="ghost" size="sm" onClick={newConversation}>
-            <ChatCenteredDots />
-            New chat
+        <div className="flex items-center justify-between gap-2 pb-4">
+          <Button variant="ghost" size="sm" onClick={backToHub}>
+            <CaretLeft />
+            GaugeHow AI
           </Button>
-          <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)}>
-            <ClockCounterClockwise />
-            History
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" onClick={newConversation}>
+              <ChatCenteredDots />
+              New chat
+            </Button>
+            <Button variant="ghost" size="sm" onClick={() => setHistoryOpen(true)}>
+              <ClockCounterClockwise />
+              History
+            </Button>
+          </div>
         </div>
 
         {messages.length === 0 ? (

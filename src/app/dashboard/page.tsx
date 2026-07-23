@@ -140,7 +140,9 @@ export default function DashboardPage() {
               {subtitle}
             </p>
 
-            <form onSubmit={openMentor} className="mx-auto mt-8 max-w-2xl">
+            {/* While this chatbox is on screen the floating quick-mentor
+                launcher stays hidden (see QuickMentor). */}
+            <form onSubmit={openMentor} data-quick-mentor-anchor className="mx-auto mt-8 max-w-2xl">
               <div className="relative rounded-full surface-secondary p-2 shadow-[var(--shadow-sm)]">
                 <input
                   value={mentorQuery}

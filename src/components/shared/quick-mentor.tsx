@@ -1,7 +1,8 @@
 "use client";
 
 import { PaperPlaneTilt, SpinnerGap, X } from "@phosphor-icons/react";
-import { FormEvent, useState } from "react";
+import { usePathname } from "next/navigation";
+import { FormEvent, useEffect, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ import { MentorCitations } from "@/components/shared/mentor-citations";
 import { MentorMarkdown } from "@/components/shared/mentor-markdown";
 
 export function QuickMentor() {
+  const pathname = usePathname();
   const { accessToken } = useAuth();
   const { context } = useLearningContext();
   const [open, setOpen] = useState(false);
@@ -19,6 +21,31 @@ export function QuickMentor() {
   const [input, setInput] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // Pages with their own primary chat surface mark it with
+  // [data-quick-mentor-anchor] (the dashboard hero chatbox): the launcher
+  // stays hidden while that surface is on screen and appears once it
+  // scrolls away.
+  const [anchorOnScreen, setAnchorOnScreen] = useState(false);
+
+  useEffect(() => {
+    const anchor = document.querySelector("[data-quick-mentor-anchor]");
+    if (!anchor) {
+      setAnchorOnScreen(false);
+      return;
+    }
+    setAnchorOnScreen(true);
+    const observer = new IntersectionObserver(
+      ([entry]) => setAnchorOnScreen(entry.isIntersecting),
+      { threshold: 0.2 },
+    );
+    observer.observe(anchor);
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  // The GaugeHow AI page IS the chat — a quick-chat launcher there is noise.
+  if (pathname.startsWith("/mentor") || anchorOnScreen) {
+    return null;
+  }
 
   async function submit(event: FormEvent) {
     event.preventDefault();

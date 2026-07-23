@@ -15,7 +15,7 @@ type MentorHistoryDrawerProps = {
   onDelete: (id: string) => void;
 };
 
-function formatRelativeTime(iso: string): string {
+export function formatRelativeTime(iso: string): string {
   const diffMs = Date.now() - new Date(iso).getTime();
   const diffMinutes = Math.max(0, Math.round(diffMs / 60000));
   if (diffMinutes < 1) return "just now";
