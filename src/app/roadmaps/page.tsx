@@ -264,7 +264,7 @@ function PathRail({
                 {roadmap.title}
               </span>
               <span className="mt-0.5 block text-[0.7rem] font-medium text-slate-400">
-                {progress}% · v{roadmap.version} · {roadmap.status}
+                {progress}% complete
               </span>
             </button>
           );
@@ -385,7 +385,7 @@ function RoadmapEditor({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0 flex-1">
           <span className="rm-tag text-accent">
-            Editing · v{selected.version} · {selected.plan.total_weeks} weeks
+            Editing · {selected.plan.total_weeks} weeks
           </span>
           <Input
             className="mt-2 text-lg font-semibold"
@@ -554,7 +554,7 @@ function SavedRoadmapView({
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
           <span className="rm-tag text-accent">
-            {selected.status} · v{selected.version} · {selected.plan.total_weeks} weeks
+            {selected.plan.total_weeks} weeks
           </span>
           <h2 className="type-h3 mt-2 text-slate-950">{selected.title}</h2>
         </div>

@@ -42,8 +42,14 @@ export function QuickMentor() {
     return () => observer.disconnect();
   }, [pathname]);
 
-  // The GaugeHow AI page IS the chat — a quick-chat launcher there is noise.
-  if (pathname.startsWith("/mentor") || anchorOnScreen) {
+  // The GaugeHow AI page IS the chat, and Tests/Roadmaps/Profile/Settings
+  // don't need a quick-chat launcher. The launcher shows on Courses,
+  // Library, Jobs — and on the dashboard once its hero chatbox scrolls away.
+  const hiddenRoutes = ["/mentor", "/tests", "/roadmaps", "/profile", "/settings"];
+  const onHiddenRoute = hiddenRoutes.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  );
+  if (onHiddenRoute || anchorOnScreen) {
     return null;
   }
 

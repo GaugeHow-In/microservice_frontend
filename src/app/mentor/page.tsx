@@ -2,13 +2,13 @@
 
 import {
   ArrowRight,
-  CalendarCheck,
   CaretLeft,
   ChatCenteredDots,
   ChatCenteredText,
   ClockCounterClockwise,
-  Exam,
+  Compass,
   Lightbulb,
+  Paperclip,
 } from "@phosphor-icons/react";
 import { useSearchParams } from "next/navigation";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -32,26 +32,32 @@ const genericPrompts = [
   "Give me a memory trick for a formula",
 ];
 
-/* The hub's "brilliant uses" — each drops the student into a chat with the
-   prompt prefilled so they can tweak it before sending. */
-const featureCards = [
+/* The hub's capabilities strip. Quiz/planning live in the Tests and
+   Roadmaps tabs, so this only sells what the chat itself does. Prompt
+   entries prefill a new chat; "new" just opens a fresh one. */
+const capabilities: {
+  icon: typeof Lightbulb;
+  title: string;
+  description: string;
+  action: { type: "prompt"; value: string } | { type: "new" };
+}[] = [
   {
     icon: Lightbulb,
     title: "Explain anything",
     description: "Stuck on a lesson or formula? Get a clear breakdown with sources pulled from your actual courses.",
-    prompt: "Explain this concept I'm stuck on: ",
+    action: { type: "prompt", value: "Explain this concept I'm stuck on: " },
   },
   {
-    icon: Exam,
-    title: "Quiz yourself",
-    description: "Turn what you just studied into practice questions and find your weak spots before the test does.",
-    prompt: "Quiz me on what I've been studying this week",
+    icon: Paperclip,
+    title: "Add lesson context",
+    description: "Type “/” in the chat to pin a course or lesson — answers stay grounded in exactly what you’re studying.",
+    action: { type: "new" },
   },
   {
-    icon: CalendarCheck,
-    title: "Plan your week",
-    description: "Tell it your goal and hours — get a study plan that fits your courses and deadlines.",
-    prompt: "Help me plan this week's study schedule",
+    icon: Compass,
+    title: "Lesson recommendations",
+    description: "Ask about any topic and get pointed to the exact lessons to learn more about it.",
+    action: { type: "prompt", value: "Recommend lessons to learn more about: " },
   },
 ];
 
@@ -284,27 +290,33 @@ function MentorPageContent() {
             </div>
           </div>
 
-          {/* Brilliant uses */}
-          <div className="grid gap-4 md:grid-cols-3">
-            {featureCards.map((feature) => {
-              const Icon = feature.icon;
+          {/* Capabilities: one continuous panel with hairline dividers —
+              no repeated boxy cards. Each segment is clickable. */}
+          <div className="chrome-surface grid overflow-hidden rounded-2xl md:grid-cols-3">
+            {capabilities.map((capability) => {
+              const Icon = capability.icon;
               return (
                 <button
-                  key={feature.title}
+                  key={capability.title}
                   type="button"
-                  onClick={() => startWithPrompt(feature.prompt)}
-                  className="group flex flex-col gap-3 rounded-2xl surface-secondary p-5 text-left transition hover:-translate-y-0.5 hover:shadow-[var(--shadow-md)]"
+                  onClick={() =>
+                    capability.action.type === "new"
+                      ? newConversation()
+                      : startWithPrompt(capability.action.value)
+                  }
+                  className="group flex items-start gap-4 border-t border-slate-200/70 p-5 text-left transition hover:bg-[color:var(--surface-secondary)] first:border-t-0 md:border-l md:border-t-0 md:p-6 md:first:border-l-0"
                 >
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent/12 text-accent">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent/12 text-accent">
                     <Icon className="size-5" />
                   </span>
-                  <div>
-                    <p className="font-extrabold text-slate-950">{feature.title}</p>
-                    <p className="mt-1 text-sm leading-5 text-slate-500">{feature.description}</p>
-                  </div>
-                  <span className="mt-auto flex items-center gap-1 text-sm font-bold text-accent">
-                    Try it
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+                  <span className="min-w-0">
+                    <span className="flex items-center gap-1.5 font-extrabold text-slate-950">
+                      {capability.title}
+                      <ArrowRight className="size-4 shrink-0 text-accent opacity-0 transition-all group-hover:translate-x-0.5 group-hover:opacity-100" />
+                    </span>
+                    <span className="mt-1 block text-sm leading-5 text-slate-500">
+                      {capability.description}
+                    </span>
                   </span>
                 </button>
               );
@@ -326,19 +338,15 @@ function MentorPageContent() {
               )}
             </div>
             {conversationsLoading ? (
-              <div className="grid gap-2">
-                {Array.from({ length: 3 }).map((_, index) => (
-                  <Skeleton key={index} className="h-12 w-full rounded-xl" />
-                ))}
-              </div>
+              <Skeleton className="h-40 w-full rounded-2xl" />
             ) : recentConversations.length ? (
-              <div className="grid gap-2">
+              <div className="chrome-surface overflow-hidden rounded-2xl">
                 {recentConversations.map((conversation) => (
                   <button
                     key={conversation.id}
                     type="button"
                     onClick={() => selectConversation(conversation.id)}
-                    className="flex items-center gap-3 rounded-xl surface-secondary px-4 py-3 text-left transition hover:shadow-[var(--shadow-sm)]"
+                    className="flex w-full items-center gap-3 border-t border-slate-200/70 px-5 py-3.5 text-left transition first:border-t-0 hover:bg-[color:var(--surface-secondary)]"
                   >
                     <ChatCenteredText className="size-4 shrink-0 text-slate-400" />
                     <span className="min-w-0 flex-1 truncate text-sm font-bold text-slate-950">
@@ -351,7 +359,7 @@ function MentorPageContent() {
                 ))}
               </div>
             ) : (
-              <p className="rounded-xl surface-secondary p-4 text-sm text-slate-500">
+              <p className="chrome-surface rounded-2xl p-5 text-sm text-slate-500">
                 No conversations yet — start your first chat above.
               </p>
             )}
