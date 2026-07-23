@@ -3,7 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { BookOpen, Briefcase, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
+import { BookOpen, Briefcase, CaretLeft, ClipboardText, Gear, GraduationCap, House, List, MapTrifold, Medal, SignOut, Sparkle, User, X } from "@phosphor-icons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -31,6 +31,13 @@ type AppShellProps = {
   children: React.ReactNode;
 };
 
+/** Nav-sized AI mark: static logo frame — the animated GIF is wasted at 16px. */
+function AIMentorNavIcon({ className }: { className?: string }) {
+  return <AIMark animated={false} className={className} />;
+}
+
+const SIDEBAR_STORAGE_KEY = "gaugehow:sidebar-collapsed";
+
 const platformNav = [
   { label: "Dashboard", href: "/dashboard", icon: House },
   { label: "Courses", href: "/courses", icon: GraduationCap },
@@ -38,12 +45,12 @@ const platformNav = [
   { label: "Library", href: "/library", icon: BookOpen },
   { label: "Jobs", href: "/jobs", icon: Briefcase },
   { label: "Roadmaps", href: "/roadmaps", icon: MapTrifold },
-  { label: "AI Mentor", href: "/mentor", icon: AIMark },
+  { label: "AI Mentor", href: "/mentor", icon: AIMentorNavIcon },
   { label: "Profile", href: "/profile", icon: Medal },
   { label: "Settings", href: "/settings", icon: Gear },
 ];
 
-function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
+function NavLinks({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: () => void }) {
   const pathname = usePathname();
 
   return (
@@ -58,15 +65,17 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
             key={item.href}
             href={item.href}
             onClick={onNavigate}
+            title={collapsed ? item.label : undefined}
             className={cn(
               "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-bold transition",
+              collapsed && "lg:justify-center lg:px-0",
               active
                 ? "bg-[color:var(--surface-secondary)] text-slate-950"
                 : "text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950",
             )}
           >
             <Icon className="size-4 shrink-0" />
-            <span className="truncate">{item.label}</span>
+            <span className={cn("truncate", collapsed && "lg:hidden")}>{item.label}</span>
           </Link>
         );
       })}
@@ -76,6 +85,7 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
 
 export function AppShell({ children }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
   const pathname = usePathname();
   const router = useRouter();
@@ -101,12 +111,26 @@ export function AppShell({ children }: AppShellProps) {
     }
   }, [isLoading, router, user]);
 
+  // Read persisted state after mount: the server render can't know it, so
+  // reading it during render would desync hydration.
+  useEffect(() => {
+    setCollapsed(window.localStorage.getItem(SIDEBAR_STORAGE_KEY) === "true");
+  }, []);
+
   // Opening the dialog straight from the menu item leaves the closing menu and
   // the opening dialog fighting over focus and the scroll lock, which can strand
   // `pointer-events: none` on <body> and freeze the page. Letting the menu
   // finish closing first keeps the two from overlapping.
   const requestLogout = useCallback(() => {
     window.setTimeout(() => setLogoutOpen(true), 0);
+  }, []);
+
+  const toggleCollapsed = useCallback(() => {
+    setCollapsed((previous) => {
+      const next = !previous;
+      window.localStorage.setItem(SIDEBAR_STORAGE_KEY, String(next));
+      return next;
+    });
   }, []);
 
   if (isLoading || !user) {
@@ -133,7 +157,7 @@ export function AppShell({ children }: AppShellProps) {
   );
 
   const account = (
-    <div className="surface-secondary rounded-xl p-4">
+    <div className={cn("surface-secondary rounded-xl p-4", collapsed && "lg:hidden")}>
       <div className="flex items-center gap-3">
         <Avatar>{avatarImage}</Avatar>
         <div className="min-w-0">
@@ -167,20 +191,23 @@ export function AppShell({ children }: AppShellProps) {
 
       <aside
         data-drawer-open={drawerOpen}
+        data-collapsed={collapsed}
         className={cn(
           "chrome-surface fixed left-0 top-0 z-50 flex h-screen w-72 max-w-[86vw] shrink-0 flex-col rounded-none border-y-0 border-l-0 p-5 shadow-2xl",
           // `visibility` rides along in the transition so the drawer stays
           // visible while sliding out, then drops out of the tab order.
-          "transition-[transform,visibility] duration-300 ease-out",
-          "lg:sticky lg:z-30 lg:w-72 lg:max-w-none lg:translate-x-0 lg:visible lg:shadow-none",
+          "transition-[transform,width,padding,visibility] duration-300 ease-out",
+          "lg:sticky lg:z-30 lg:max-w-none lg:translate-x-0 lg:visible lg:shadow-none",
           drawerOpen ? "translate-x-0" : "invisible -translate-x-full",
+          // The rail is only as wide as a 42px icon button plus breathing room.
+          collapsed ? "lg:w-16 lg:px-2" : "lg:w-72",
         )}
       >
-        <div className="flex items-center justify-between gap-2 px-2 py-3">
+        <div className={cn("flex items-center justify-between gap-2 px-2 py-3", collapsed && "lg:px-0")}>
           {/* Theme-aware wordmark: the source PNGs carry generous transparent
               padding, so negative margins pull the visible mark back to a
               compact header height. */}
-          <span className="relative block">
+          <span className={cn("relative block", collapsed && "lg:hidden")}>
             <Image
               src="/GaugeHow logo transperent black.png"
               alt="GaugeHow"
@@ -211,9 +238,23 @@ export function AppShell({ children }: AppShellProps) {
               <X />
             </Button>
           </span>
+          <span className={cn("hidden lg:block", collapsed && "lg:mx-auto")}>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleCollapsed}
+              aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
+              title={collapsed ? "Expand navigation" : "Collapse navigation"}
+              aria-expanded={!collapsed}
+            >
+              <CaretLeft
+                className={cn("transition-transform duration-300", collapsed && "rotate-180")}
+              />
+            </Button>
+          </span>
         </div>
         <div className="mt-8">
-          <NavLinks onNavigate={() => setDrawerOpen(false)} />
+          <NavLinks collapsed={collapsed} onNavigate={() => setDrawerOpen(false)} />
         </div>
         <div className="mt-auto">{account}</div>
       </aside>

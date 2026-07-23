@@ -1363,99 +1363,49 @@ html.dark .bg-slate-950\/95 {
   }
 }
 
-/* GaugeHow AI mark — exact brand logo (components/shared/ai-mark.tsx).
-   The gear (with its aperture swirls) spins while the dog stays upright:
-   bobbing, trotting while thinking, tail always wagging. */
+/* GaugeHow AI mark — the actual brand logo assets, rendered by
+   components/shared/ai-mark.tsx (official animated GIF / its first frame).
+   The source art is the black mark on transparency, so dark mode inverts
+   it to white to fit the theme. */
 .ai-mark {
   display: block;
 }
 
+.dark .ai-mark {
+  filter: invert(1);
+}
+
 /* Free-floating mark (mentor hero, message avatars, quick-mentor toggle):
-   no container ball — just the mark with a soft ambient orange glow. */
+   no container ball — just the logo with a soft ambient orange glow.
+   The glow is applied after invert so it keeps its true color. */
 .ai-mark-free {
   filter: drop-shadow(
     0 6px 18px color-mix(in srgb, var(--primary) 55%, transparent 45%)
   );
 }
 
-.ai-mark-gear {
-  transform-origin: 50px 50px;
+.dark .ai-mark-free {
+  filter: invert(1)
+    drop-shadow(0 6px 18px color-mix(in srgb, var(--primary) 55%, transparent 45%));
 }
 
-.ai-mark-dog {
-  transform-origin: 50px 52px;
+/* The GIF already animates; thinking layers a gentle pulse on top. */
+.ai-mark.thinking {
+  animation: ai-mark-pulse 0.9s ease-in-out infinite;
 }
 
-.ai-mark-tail {
-  transform-box: fill-box;
-  transform-origin: 5% 24%;
-}
-
-.ai-mark.idle .ai-mark-gear {
-  animation: ai-mark-spin 26s linear infinite;
-}
-
-.ai-mark.idle .ai-mark-dog {
-  animation: ai-mark-bob 3.6s ease-in-out infinite;
-}
-
-.ai-mark.idle .ai-mark-tail {
-  animation: ai-mark-wag 1.8s ease-in-out infinite;
-}
-
-.ai-mark.thinking .ai-mark-gear {
-  animation: ai-mark-spin 2.4s linear infinite;
-}
-
-.ai-mark.thinking .ai-mark-dog {
-  animation: ai-mark-trot 0.55s ease-in-out infinite;
-}
-
-.ai-mark.thinking .ai-mark-tail {
-  animation: ai-mark-wag 0.3s ease-in-out infinite;
-}
-
-@keyframes ai-mark-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes ai-mark-bob {
+@keyframes ai-mark-pulse {
   0%,
   100% {
-    transform: translateY(0);
+    transform: scale(1);
   }
   50% {
-    transform: translateY(-1.2px);
-  }
-}
-
-@keyframes ai-mark-trot {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-2.4px);
-  }
-}
-
-@keyframes ai-mark-wag {
-  0%,
-  100% {
-    transform: rotate(-5deg);
-  }
-  50% {
-    transform: rotate(7deg);
+    transform: scale(1.06);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ai-mark .ai-mark-gear,
-  .ai-mark .ai-mark-blades,
-  .ai-mark .ai-mark-dog,
-  .ai-mark .ai-mark-tail {
+  .ai-mark {
     animation: none !important;
   }
 }

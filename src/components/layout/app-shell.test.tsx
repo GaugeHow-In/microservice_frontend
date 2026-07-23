@@ -85,11 +85,21 @@ describe("AppShell", () => {
     expect(getSidebar()).toHaveAttribute("data-drawer-open", "false");
   });
 
-  it("no longer offers a sidebar collapse control", () => {
+  it("collapses the sidebar and remembers the choice", async () => {
+    const user = userEvent.setup();
+
+    const { unmount } = renderShell();
+
+    expect(getSidebar()).toHaveAttribute("data-collapsed", "false");
+
+    await user.click(screen.getByRole("button", { name: "Collapse navigation" }));
+    expect(getSidebar()).toHaveAttribute("data-collapsed", "true");
+
+    unmount();
     renderShell();
 
-    expect(getSidebar()).not.toHaveAttribute("data-collapsed");
-    expect(screen.queryByRole("button", { name: /collapse navigation/i })).not.toBeInTheDocument();
+    expect(getSidebar()).toHaveAttribute("data-collapsed", "true");
+    expect(screen.getByRole("button", { name: "Expand navigation" })).toBeInTheDocument();
   });
 
   it("opens the account menu from the avatar", async () => {

@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { ArrowSquareOut, BookOpen, CalendarDots, FloppyDisk, GraduationCap, MapPin, Medal, MedalMilitary, Pencil, SealCheck, ShareNetwork, Shield, Sparkle, Trophy } from "@phosphor-icons/react";
+import { ArrowSquareOut, BookOpen, CalendarDots, ChartLineUp, ClockCounterClockwise, FloppyDisk, GraduationCap, MapPin, Medal, MedalMilitary, Pencil, SealCheck, ShareNetwork, Shield, Sparkle, Trophy } from "@phosphor-icons/react";
 import type { Icon } from "@phosphor-icons/react";
 
 import { AppShell } from "@/components/layout/app-shell";
@@ -11,7 +11,6 @@ import { useAuth } from "@/components/providers/auth-provider";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -270,10 +269,14 @@ export default function ProfilePage() {
   return (
     <AppShell>
       <div className="space-y-6">
-        <section className="rounded-2xl surface-secondary p-5 md:p-6">
+        <section className="rounded-3xl surface-secondary p-6 md:p-8">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
             <div className="flex flex-col gap-5 md:flex-row md:items-center">
-              <ProfileAvatar avatarKey={avatarKey} displayName={displayName} className="size-24" />
+              <ProfileAvatar
+                avatarKey={avatarKey}
+                displayName={displayName}
+                className="size-24 ring-4 ring-[color:var(--surface-primary)]"
+              />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
                   <h1 className="type-h2 text-slate-950">{displayName}</h1>
@@ -315,31 +318,61 @@ export default function ProfilePage() {
             </div>
             <div className="flex flex-wrap gap-2">
               {profileUrl && (
-                <Button type="button" variant="secondary" onClick={handleShare}>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="rounded-full"
+                  onClick={handleShare}
+                >
                   <ShareNetwork />
                   Share
                 </Button>
               )}
-              <Button type="button" onClick={() => setIsEditing((current) => !current)}>
+              <Button
+                type="button"
+                className="rounded-full"
+                onClick={() => setIsEditing((current) => !current)}
+              >
                 <Pencil />
                 Edit
               </Button>
             </div>
           </div>
+
+          {/* Personal shortcuts: this page is only ever the signed-in owner's
+              view — the shared /p/<handle> route renders profiles/[handle],
+              which never shows these. */}
+          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-[color:var(--border)] pt-5">
+            <span className="mr-2 type-caption font-bold uppercase text-slate-500">
+              Only visible to you
+            </span>
+            <Link
+              href="/courses/progress"
+              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-4 py-2 text-sm font-bold text-orange-600 shadow-[var(--shadow-sm)] transition hover:text-orange-700"
+            >
+              <ChartLineUp className="size-4" weight="bold" />
+              Progress report
+            </Link>
+            <Link
+              href="/tests/previous"
+              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-4 py-2 text-sm font-bold text-orange-600 shadow-[var(--shadow-sm)] transition hover:text-orange-700"
+            >
+              <ClockCounterClockwise className="size-4" weight="bold" />
+              Test history
+            </Link>
+          </div>
         </section>
 
         {message && (
-          <div className="rounded-lg bg-orange-50 px-4 py-3 type-small font-semibold text-orange-700">
+          <div className="rounded-full bg-orange-500/10 px-5 py-3 type-small font-semibold text-orange-700">
             {message}
           </div>
         )}
 
         {isEditing && (
-          <Card className="panel-depth">
-            <CardHeader>
-              <CardTitle>Edit profile</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-5">
+          <section className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)] md:p-8">
+            <h2 className="type-h4 text-slate-950">Edit profile</h2>
+            <div className="mt-5 space-y-5">
               <div>
                 <p className="type-small font-semibold text-slate-950">Avatar</p>
                 <div className="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-6">
@@ -506,30 +539,30 @@ export default function ProfilePage() {
                   {isSaving ? "Saving" : "Save profile"}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+            </div>
+          </section>
         )}
 
-        <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        <section className="grid grid-cols-2 gap-x-4 gap-y-6 rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)] md:p-7 lg:grid-cols-4">
           {statCards.map(({ label, value, icon: Icon }) => (
-            <Card key={label} className="panel-depth">
-              <CardContent className="p-4">
-                <Icon className="size-5 text-orange-500" />
-                <p className="mt-3 type-h3 text-slate-950">{formatNumber(value)}</p>
-                <p className="type-caption font-semibold uppercase text-slate-500">
+            <div key={label} className="flex items-center gap-3">
+              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
+                <Icon className="size-5" />
+              </span>
+              <div className="min-w-0">
+                <p className="type-h3 leading-none text-slate-950">{formatNumber(value)}</p>
+                <p className="mt-1 truncate type-caption font-semibold uppercase text-slate-500">
                   {label}
                 </p>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           ))}
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[0.9fr_1.1fr]">
-          <Card className="panel-depth">
-            <CardHeader>
-              <CardTitle>Level progress</CardTitle>
-            </CardHeader>
-            <CardContent>
+        <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+            <h2 className="type-h4 text-slate-950">Level progress</h2>
+            <div className="mt-5">
               {isPublicLoading ? (
                 <div className="space-y-3">
                   <Skeleton className="h-6 w-32 rounded-md" />
@@ -558,24 +591,22 @@ export default function ProfilePage() {
                   Make the profile public to show level progress here.
                 </p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="panel-depth">
-            <CardHeader>
-              <CardTitle>Badges</CardTitle>
-            </CardHeader>
-            <CardContent>
+          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+            <h2 className="type-h4 text-slate-950">Badges</h2>
+            <div className="mt-5">
               {badges.length ? (
                 <div className="grid gap-3 sm:grid-cols-2">
                   {badges.map((badge) => (
-                    <div key={badge.code} className="rounded-lg surface-primary p-4">
-                      <div className="flex items-start gap-3">
-                        <Medal className="size-5 shrink-0 text-orange-500" />
-                        <div>
-                          <p className="font-semibold text-slate-950">{badge.name}</p>
-                          <p className="mt-1 text-sm text-slate-500">{badge.description}</p>
-                        </div>
+                    <div key={badge.code} className="flex items-start gap-3 rounded-2xl surface-secondary p-4">
+                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
+                        <Medal className="size-4" />
+                      </span>
+                      <div>
+                        <p className="font-semibold text-slate-950">{badge.name}</p>
+                        <p className="mt-1 text-sm text-slate-500">{badge.description}</p>
                       </div>
                     </div>
                   ))}
@@ -583,16 +614,14 @@ export default function ProfilePage() {
               ) : (
                 <p className="type-small text-slate-500">No badges earned yet.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
 
-        <section className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]">
-          <Card className="panel-depth">
-            <CardHeader>
-              <CardTitle>Courses</CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y divide-[color:var(--border)]">
+        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
+          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+            <h2 className="type-h4 text-slate-950">Courses</h2>
+            <div className="mt-4 divide-y divide-[color:var(--border)]">
               {courses.length ? (
                 courses.map((course) => (
                   <div key={course.id} className="py-4 first:pt-0">
@@ -620,14 +649,12 @@ export default function ProfilePage() {
               ) : (
                 <p className="type-small text-slate-500">No public course activity yet.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
 
-          <Card className="panel-depth">
-            <CardHeader>
-              <CardTitle>Certificates</CardTitle>
-            </CardHeader>
-            <CardContent className="divide-y divide-[color:var(--border)]">
+          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+            <h2 className="type-h4 text-slate-950">Certificates</h2>
+            <div className="mt-4 divide-y divide-[color:var(--border)]">
               {certificates.length ? (
                 certificates.map((certificate) => (
                   <div key={certificate.certificate_number} className="py-4 first:pt-0">
@@ -636,7 +663,7 @@ export default function ProfilePage() {
                       {certificate.certificate_number} issued{" "}
                       {formatMonthYear(certificate.issued_at)}
                     </p>
-                    <Button asChild variant="secondary" size="sm" className="mt-3">
+                    <Button asChild variant="secondary" size="sm" className="mt-3 rounded-full">
                       <Link href={`/verify-certificate/${certificate.certificate_number}`}>
                         <ArrowSquareOut />
                         Verify
@@ -647,8 +674,8 @@ export default function ProfilePage() {
               ) : (
                 <p className="type-small text-slate-500">No certificates issued yet.</p>
               )}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         </section>
       </div>
     </AppShell>

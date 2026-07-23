@@ -12,6 +12,7 @@ import { CourseCard } from "@/components/shared/course-card";
 import { TwinkleField } from "@/components/shared/twinkle-field";
 import { aiClient, type Roadmap, type RoadmapStep, type StudentAIContext } from "@/lib/ai-client";
 import { randomDashboardGreeting } from "@/lib/dashboard-greetings";
+import { sampleQuickPrompts } from "@/lib/quick-prompts";
 import { learningClient, type CourseCatalogItem } from "@/lib/learning-client";
 import { gamificationClient, type GamificationSummary } from "@/lib/gamification-client";
 
@@ -105,6 +106,8 @@ export default function DashboardPage() {
   // across re-renders. The hero only renders client-side (after auth resolves),
   // so a random pick here can't cause a hydration mismatch.
   const { greeting, subtitle } = useMemo(() => randomDashboardGreeting(), []);
+  // Same deal: 4 course-grounded mentor prompts, reshuffled every visit.
+  const promptChips = useMemo(() => sampleQuickPrompts(4), []);
 
   function openMentor(event: FormEvent) {
     event.preventDefault();
@@ -121,7 +124,6 @@ export default function DashboardPage() {
   const progress = Math.round(dashboard.averageProgress);
   const yourCourses = (dashboard.activeCourses.length ? dashboard.activeCourses : courses).slice(0, 2);
   const earnedBadges = gamification?.badges.filter((badge) => badge.earned).slice(0, 4) ?? [];
-  const promptChips = ["Calculate gear ratio", "Explain stress-strain curve", "Verify FEA mesh", "GD&T basics"];
 
   return (
     <AppShell>
