@@ -9,6 +9,7 @@ import { useLearningContext } from "@/components/providers/learning-context-prov
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -18,7 +19,6 @@ import {
   type CourseDetail,
   type DiscussionComment,
   type DiscussionThread,
-  type LessonAIArtifact,
   type LessonDetail,
   type LessonProgress,
   type LessonResource,
@@ -637,88 +637,205 @@ function MarkdownNoteEditor({
   );
 }
 
-// ── Flashcard Q/A parser ─────────────────────────────────────────────────────
+// ── Flashcard (lecture summary card) ─────────────────────────────────────────
 
-type FlashcardPair = { question: string; answer: string };
+const FLASHCARD_WORDMARK = "/GaugeHow logo transperent white.png";
+const FLASHCARD_MARK = "/64 logo.png";
 
-function parseFlashcards(markdown: string): FlashcardPair[] {
-  const pairs: FlashcardPair[] = [];
-  const lines = markdown.split("\n");
-  let currentQ = "";
-  let currentA = "";
-
-  for (const line of lines) {
-    const trimmed = line.trim();
-    if (trimmed.startsWith("Q:")) {
-      if (currentQ && currentA) pairs.push({ question: currentQ, answer: currentA });
-      currentQ = trimmed.slice(2).trim();
-      currentA = "";
-    } else if (trimmed.startsWith("A:")) {
-      currentA = trimmed.slice(2).trim();
-    } else if (trimmed && currentA) {
-      currentA += " " + trimmed;
-    }
-  }
-  if (currentQ && currentA) pairs.push({ question: currentQ, answer: currentA });
-  return pairs;
+function parseFlashcardBullets(markdown: string): string[] {
+  const bullets = markdown
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line.startsWith("- ") || line.startsWith("• "))
+    .map((line) => line.slice(2).trim());
+  if (bullets.length) return bullets;
+  return markdown.split("\n").map((line) => line.trim()).filter(Boolean);
 }
 
-function FlashcardDisplay({
-  markdown,
+function FlashcardCard({
+  bullets,
   lessonTitle,
+  courseTitle,
   onDownload,
+  downloading,
 }: {
-  markdown: string;
+  bullets: string[];
   lessonTitle: string;
+  courseTitle: string;
   onDownload: () => void;
+  downloading: boolean;
 }) {
-  const pairs = useMemo(() => parseFlashcards(markdown), [markdown]);
-  const [flipped, setFlipped] = useState<Record<number, boolean>>({});
-
-  if (!pairs.length) {
-    return (
-      <div className="rounded-2xl bg-slate-950 p-5 text-white">
-        <p className="text-xs font-semibold uppercase text-orange-300">GaugeHow flashcard</p>
-        <h3 className="mt-3 text-xl font-semibold">{lessonTitle}</h3>
-        <p className="mt-4 whitespace-pre-wrap text-sm leading-7 text-slate-200">{markdown}</p>
-      </div>
-    );
-  }
-
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-sm text-slate-500">{pairs.length} cards — click to reveal answer</p>
-        <Button variant="secondary" size="sm" onClick={onDownload}>
-          <DownloadSimple className="size-3.5" /> PNG
-        </Button>
-      </div>
-      <div className="grid gap-3 sm:grid-cols-2">
-        {pairs.map((pair, i) => (
-          <button
-            key={i}
-            type="button"
-            onClick={() => setFlipped((s) => ({ ...s, [i]: !s[i] }))}
-            className="group relative min-h-36 overflow-hidden rounded-2xl surface-secondary text-left transition-colors hover:bg-orange-100"
-          >
-            {flipped[i] ? (
-              <div className="flex h-full min-h-36 flex-col justify-between bg-slate-950 p-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-orange-300">Answer</span>
-                <p className="mt-2 text-sm leading-6 text-slate-100">{pair.answer}</p>
-                <span className="mt-3 text-[10px] text-slate-500">Tap to see question</span>
-              </div>
-            ) : (
-              <div className="flex h-full min-h-36 flex-col justify-between p-4">
-                <span className="text-[10px] font-bold uppercase tracking-widest text-orange-500">Question</span>
-                <p className="mt-2 text-sm font-medium leading-6 text-slate-900">{pair.question}</p>
-                <span className="mt-3 text-[10px] text-slate-400">Tap to reveal answer</span>
-              </div>
-            )}
-          </button>
-        ))}
+    <div className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-2xl">
+      <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500" />
+      <div className="max-h-[80vh] overflow-y-auto p-6 sm:p-8">
+        <div className="flex items-center justify-between gap-4">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={FLASHCARD_WORDMARK} alt="GaugeHow" className="h-6 w-auto sm:h-7" />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={FLASHCARD_MARK} alt="" className="size-9 rounded-xl sm:size-10" />
+        </div>
+        <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.22em] text-orange-400">
+          Lesson flashcard
+        </p>
+        <h3
+          className="mt-1.5 text-xl font-extrabold leading-tight sm:text-2xl"
+          style={{ color: "#f8fafc" }}
+        >
+          {lessonTitle}
+        </h3>
+        <p className="mt-1 text-sm text-slate-400">{courseTitle}</p>
+        <ul className="mt-6 space-y-3">
+          {bullets.map((bullet, index) => (
+            <li key={index} className="flex gap-3">
+              <span className="mt-[0.55rem] size-1.5 shrink-0 rounded-full bg-orange-400" />
+              <span className="text-sm leading-6 text-slate-200">{bullet}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-7 flex items-center justify-between gap-3 border-t border-white/10 pt-5">
+          <span className="text-xs font-medium tracking-wide text-slate-500">gaugehow.ai</span>
+          <Button size="sm" onClick={onDownload} disabled={downloading}>
+            <DownloadSimple className="size-4" />
+            {downloading ? "Preparing..." : "Download PNG"}
+          </Button>
+        </div>
       </div>
     </div>
   );
+}
+
+function loadFlashcardImage(src: string): Promise<HTMLImageElement> {
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => resolve(image);
+    image.onerror = reject;
+    image.src = src;
+  });
+}
+
+function wrapCanvasText(ctx: CanvasRenderingContext2D, text: string, maxWidth: number): string[] {
+  const words = text.split(/\s+/);
+  const lines: string[] = [];
+  let line = "";
+  for (const word of words) {
+    const next = line ? `${line} ${word}` : word;
+    if (ctx.measureText(next).width > maxWidth && line) {
+      lines.push(line);
+      line = word;
+    } else {
+      line = next;
+    }
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+async function renderFlashcardPng(input: {
+  lessonTitle: string;
+  courseTitle: string;
+  bullets: string[];
+  fileName: string;
+}): Promise<void> {
+  const width = 1200;
+  const margin = 72;
+  const contentWidth = width - margin * 2 - 40;
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return;
+
+  // measure first
+  ctx.font = "700 44px system-ui, sans-serif";
+  const titleLines = wrapCanvasText(ctx, input.lessonTitle, width - margin * 2);
+  ctx.font = "400 27px system-ui, sans-serif";
+  const bulletLines = input.bullets.map((bullet) => wrapCanvasText(ctx, bullet, contentWidth));
+  const bulletsHeight = bulletLines.reduce((sum, lines) => sum + lines.length * 38 + 18, 0);
+  const headerHeight = 200 + titleLines.length * 52;
+  const height = Math.max(675, headerHeight + bulletsHeight + 150);
+
+  canvas.width = width;
+  canvas.height = height;
+
+  // ground
+  const bg = ctx.createLinearGradient(0, 0, 0, height);
+  bg.addColorStop(0, "#0b1120");
+  bg.addColorStop(1, "#111a2e");
+  ctx.fillStyle = bg;
+  ctx.fillRect(0, 0, width, height);
+  const bar = ctx.createLinearGradient(0, 0, width, 0);
+  bar.addColorStop(0, "#f97316");
+  bar.addColorStop(0.5, "#fbbf24");
+  bar.addColorStop(1, "#f97316");
+  ctx.fillStyle = bar;
+  ctx.fillRect(0, 0, width, 10);
+
+  // brand row
+  try {
+    const [wordmark, mark] = await Promise.all([
+      loadFlashcardImage(FLASHCARD_WORDMARK),
+      loadFlashcardImage(FLASHCARD_MARK),
+    ]);
+    const wordmarkHeight = 42;
+    const wordmarkWidth = (wordmark.width / wordmark.height) * wordmarkHeight;
+    ctx.drawImage(wordmark, margin, 52, wordmarkWidth, wordmarkHeight);
+    const markSize = 64;
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(width - margin - markSize, 42, markSize, markSize, 14);
+    ctx.clip();
+    ctx.drawImage(mark, width - margin - markSize, 42, markSize, markSize);
+    ctx.restore();
+  } catch {
+    ctx.fillStyle = "#f8fafc";
+    ctx.font = "800 40px system-ui, sans-serif";
+    ctx.fillText("GAUGEHOW", margin, 88);
+  }
+
+  // eyebrow + title + course
+  ctx.fillStyle = "#fb923c";
+  ctx.font = "700 20px system-ui, sans-serif";
+  ctx.fillText("L E S S O N   F L A S H C A R D", margin, 160);
+  ctx.fillStyle = "#f8fafc";
+  ctx.font = "700 44px system-ui, sans-serif";
+  titleLines.forEach((line, index) => ctx.fillText(line, margin, 214 + index * 52));
+  ctx.fillStyle = "#94a3b8";
+  ctx.font = "400 26px system-ui, sans-serif";
+  ctx.fillText(input.courseTitle, margin, 214 + titleLines.length * 52 + 4);
+
+  // bullets
+  let y = headerHeight + 60;
+  for (const lines of bulletLines) {
+    ctx.fillStyle = "#fb923c";
+    ctx.beginPath();
+    ctx.arc(margin + 8, y - 9, 6, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#e2e8f0";
+    ctx.font = "400 27px system-ui, sans-serif";
+    for (const line of lines) {
+      ctx.fillText(line, margin + 40, y);
+      y += 38;
+    }
+    y += 18;
+  }
+
+  // footer
+  ctx.strokeStyle = "rgba(255,255,255,0.12)";
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(margin, height - 74);
+  ctx.lineTo(width - margin, height - 74);
+  ctx.stroke();
+  ctx.fillStyle = "#64748b";
+  ctx.font = "500 22px system-ui, sans-serif";
+  ctx.fillText("gaugehow.ai", margin, height - 34);
+  ctx.textAlign = "right";
+  ctx.fillText("Master the mechanics of tomorrow", width - margin, height - 34);
+  ctx.textAlign = "left";
+
+  const link = document.createElement("a");
+  link.download = input.fileName;
+  link.href = canvas.toDataURL("image/png");
+  link.click();
 }
 
 // ── Resources list ───────────────────────────────────────────────────────────
@@ -986,7 +1103,8 @@ function VideoLearningPageContent({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [questionStates, setQuestionStates] = useState<Record<string, QuestionAttemptState>>({});
-  const [artifacts, setArtifacts] = useState<Partial<Record<"flashcards", LessonAIArtifact>>>({});
+  const [flashcardOpen, setFlashcardOpen] = useState(false);
+  const [flashcardDownloading, setFlashcardDownloading] = useState(false);
   const [discussionBody, setDiscussionBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
   const [answerDrafts, setAnswerDrafts] = useState<Record<string, string>>({});
@@ -1259,7 +1377,7 @@ function VideoLearningPageContent({ params }: Props) {
           setIsDiscussionLoading(true);
           setQuestionStates({});
           questionLockRef.current = {};
-          setArtifacts({});
+          setFlashcardOpen(false);
           setReplyDrafts({});
           setDiscussionBody("");
           setActiveCheckpointId(null);
@@ -1488,46 +1606,20 @@ function VideoLearningPageContent({ params }: Props) {
     }
   }
 
-  function downloadFlashcardPng() {
-    if (!lesson?.flashcard_markdown) return;
-    const canvas = document.createElement("canvas");
-    canvas.width = 1200;
-    canvas.height = 675;
-    const ctx = canvas.getContext("2d");
-    if (!ctx) return;
-    ctx.fillStyle = "#241a10";
-    ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = "#fcbc6c";
-    ctx.fillRect(0, 0, canvas.width, 12);
-    ctx.fillStyle = "#f7f3ee";
-    ctx.font = "700 44px sans-serif";
-    ctx.fillText(lesson.title, 64, 92);
-    ctx.font = "400 30px sans-serif";
-    const words = lesson.flashcard_markdown.replace(/[#*_`>-]/g, "").split(/\s+/);
-    const lines: string[] = [];
-    let line = "";
-    for (const word of words) {
-      const next = `${line} ${word}`.trim();
-      if (ctx.measureText(next).width > 1060) { lines.push(line); line = word; } else { line = next; }
-    }
-    if (line) lines.push(line);
-    lines.slice(0, 12).forEach((item, i) => ctx.fillText(item, 64, 160 + i * 42));
-    const link = document.createElement("a");
-    link.download = `${lesson.slug}-flashcard.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-  }
-
-  async function handleArtifact(type: "flashcards") {
-    if (!courseSlug || !lesson || !accessToken) return;
-    setSubmitting(type);
+  async function handleFlashcardDownload() {
+    if (!lesson?.flashcard_markdown || flashcardDownloading) return;
+    setFlashcardDownloading(true);
     try {
-      const artifact = await learningClient.generateArtifact(courseSlug, lesson.slug, accessToken, type);
-      setArtifacts((current) => ({ ...current, [type]: artifact }));
+      await renderFlashcardPng({
+        lessonTitle: lesson.title,
+        courseTitle: course?.title ?? "GaugeHow course",
+        bullets: parseFlashcardBullets(lesson.flashcard_markdown),
+        fileName: `${lesson.slug}-flashcard.png`,
+      });
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Unable to generate artifact.");
+      setError(cause instanceof Error ? cause.message : "Unable to download flashcard.");
     } finally {
-      setSubmitting(null);
+      setFlashcardDownloading(false);
     }
   }
 
@@ -1808,32 +1900,31 @@ function VideoLearningPageContent({ params }: Props) {
               <ThumbsUp className="size-3.5" />
               <span>{lesson.like_count > 0 ? lesson.like_count : "Like"}</span>
             </button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => void handleArtifact("flashcards")}
-              disabled={submitting === "flashcards"}
-            >
-              <Sparkle className="size-4" />
-              {submitting === "flashcards" ? "Generating..." : "AI flashcards"}
-            </Button>
+            {lesson.flashcard_markdown ? (
+              <Button variant="secondary" size="sm" onClick={() => setFlashcardOpen(true)}>
+                <Sparkle className="size-4" />
+                Flashcard
+              </Button>
+            ) : null}
           </div>
 
-          {/* ── Flashcard section ─── */}
+          {/* ── Flashcard modal ─── */}
           {lesson.flashcard_markdown ? (
-            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <div className="flex items-center gap-2">
-                <Sparkle className="size-5 text-orange-500" />
-                <h2 className="text-2xl font-extrabold text-slate-950">Flashcards</h2>
-              </div>
-              <div className="mt-5">
-                <FlashcardDisplay
-                  markdown={lesson.flashcard_markdown}
+            <Dialog open={flashcardOpen} onOpenChange={setFlashcardOpen}>
+              <DialogContent
+                className="w-[calc(100vw-2rem)] max-w-2xl border-none bg-transparent p-0 shadow-none"
+                aria-describedby={undefined}
+              >
+                <DialogTitle className="sr-only">Lesson flashcard</DialogTitle>
+                <FlashcardCard
+                  bullets={parseFlashcardBullets(lesson.flashcard_markdown)}
                   lessonTitle={lesson.title}
-                  onDownload={downloadFlashcardPng}
+                  courseTitle={course?.title ?? "GaugeHow course"}
+                  onDownload={() => void handleFlashcardDownload()}
+                  downloading={flashcardDownloading}
                 />
-              </div>
-            </section>
+              </DialogContent>
+            </Dialog>
           ) : null}
 
           {/* ── Resources ─── */}
@@ -1872,21 +1963,6 @@ function VideoLearningPageContent({ params }: Props) {
                 ) : (
                   <p className="text-sm text-slate-500">Notebook embed is not configured yet.</p>
                 )}
-              </div>
-            </section>
-          ) : null}
-
-          {/* ── AI-generated flashcards ─── */}
-          {artifacts.flashcards ? (
-            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <div className="flex items-center gap-2">
-                <Sparkle className="size-5 text-orange-500" />
-                <h2 className="text-2xl font-extrabold text-slate-950">AI flashcards</h2>
-              </div>
-              <div className="mt-5 rounded-lg surface-secondary p-4">
-                <pre className="whitespace-pre-wrap text-sm leading-6 text-slate-600">
-                  {artifacts.flashcards.content_markdown}
-                </pre>
               </div>
             </section>
           ) : null}
