@@ -345,11 +345,9 @@ export default function ProfilePage() {
               view — the shared /p/<handle> route renders profiles/[handle],
               which never shows these. */}
           <div className="mt-8 flex flex-wrap items-center gap-2">
-            <span className="mr-2 type-caption font-bold uppercase text-slate-500">
-              Only visible to you
-            </span>
             <Link
               href="/courses/progress"
+              title="Only visible to you"
               className="inline-flex items-center gap-2 rounded-full surface-secondary px-4 py-2 text-sm font-bold text-orange-600 transition hover:text-orange-700"
             >
               <ChartLineUp className="size-4" weight="bold" />
@@ -357,6 +355,7 @@ export default function ProfilePage() {
             </Link>
             <Link
               href="/tests/previous"
+              title="Only visible to you"
               className="inline-flex items-center gap-2 rounded-full surface-secondary px-4 py-2 text-sm font-bold text-orange-600 transition hover:text-orange-700"
             >
               <ClockCounterClockwise className="size-4" weight="bold" />
