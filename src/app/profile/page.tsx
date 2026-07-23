@@ -268,14 +268,16 @@ export default function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="space-y-6">
-        <section className="rounded-3xl surface-secondary p-6 md:p-8">
+      <div className="space-y-8">
+        {/* Frameless hero: identity sits directly on the page canvas — no
+            containing panel anywhere on this route. */}
+        <section className="pt-2">
           <div className="grid gap-6 lg:grid-cols-[1fr_auto] lg:items-start">
-            <div className="flex flex-col gap-5 md:flex-row md:items-center">
+            <div className="flex flex-col gap-6 md:flex-row md:items-center">
               <ProfileAvatar
                 avatarKey={avatarKey}
                 displayName={displayName}
-                className="size-24 ring-4 ring-[color:var(--surface-primary)]"
+                className="size-28 shadow-[var(--shadow-md)]"
               />
               <div className="min-w-0">
                 <div className="flex flex-wrap items-center gap-2">
@@ -342,20 +344,20 @@ export default function ProfilePage() {
           {/* Personal shortcuts: this page is only ever the signed-in owner's
               view — the shared /p/<handle> route renders profiles/[handle],
               which never shows these. */}
-          <div className="mt-6 flex flex-wrap items-center gap-2 border-t border-[color:var(--border)] pt-5">
+          <div className="mt-8 flex flex-wrap items-center gap-2">
             <span className="mr-2 type-caption font-bold uppercase text-slate-500">
               Only visible to you
             </span>
             <Link
               href="/courses/progress"
-              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-4 py-2 text-sm font-bold text-orange-600 shadow-[var(--shadow-sm)] transition hover:text-orange-700"
+              className="inline-flex items-center gap-2 rounded-full surface-secondary px-4 py-2 text-sm font-bold text-orange-600 transition hover:text-orange-700"
             >
               <ChartLineUp className="size-4" weight="bold" />
               Progress report
             </Link>
             <Link
               href="/tests/previous"
-              className="inline-flex items-center gap-2 rounded-full bg-[color:var(--surface-primary)] px-4 py-2 text-sm font-bold text-orange-600 shadow-[var(--shadow-sm)] transition hover:text-orange-700"
+              className="inline-flex items-center gap-2 rounded-full surface-secondary px-4 py-2 text-sm font-bold text-orange-600 transition hover:text-orange-700"
             >
               <ClockCounterClockwise className="size-4" weight="bold" />
               Test history
@@ -370,7 +372,7 @@ export default function ProfilePage() {
         )}
 
         {isEditing && (
-          <section className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)] md:p-8">
+          <section className="border-y border-[color:var(--border)] py-8">
             <h2 className="type-h4 text-slate-950">Edit profile</h2>
             <div className="mt-5 space-y-5">
               <div>
@@ -543,24 +545,23 @@ export default function ProfilePage() {
           </section>
         )}
 
-        <section className="grid grid-cols-2 gap-x-4 gap-y-6 rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)] md:p-7 lg:grid-cols-4">
+        {/* Frameless stat band: bare numbers between two hairlines. */}
+        <section className="grid grid-cols-2 gap-x-6 gap-y-8 border-y border-[color:var(--border)] py-8 lg:grid-cols-4">
           {statCards.map(({ label, value, icon: Icon }) => (
-            <div key={label} className="flex items-center gap-3">
-              <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
-                <Icon className="size-5" />
-              </span>
-              <div className="min-w-0">
-                <p className="type-h3 leading-none text-slate-950">{formatNumber(value)}</p>
-                <p className="mt-1 truncate type-caption font-semibold uppercase text-slate-500">
-                  {label}
-                </p>
+            <div key={label}>
+              <div className="flex items-center gap-1.5 text-slate-500">
+                <Icon className="size-4 text-orange-500" />
+                <span className="truncate type-caption font-semibold uppercase">{label}</span>
               </div>
+              <p className="mt-2 text-3xl font-extrabold leading-none text-slate-950 md:text-4xl">
+                {formatNumber(value)}
+              </p>
             </div>
           ))}
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[0.9fr_1.1fr]">
-          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+        <section className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr] lg:gap-14">
+          <div>
             <h2 className="type-h4 text-slate-950">Level progress</h2>
             <div className="mt-5">
               {isPublicLoading ? (
@@ -594,19 +595,19 @@ export default function ProfilePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+          <div>
             <h2 className="type-h4 text-slate-950">Badges</h2>
             <div className="mt-5">
               {badges.length ? (
-                <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid gap-x-6 gap-y-5 sm:grid-cols-2">
                   {badges.map((badge) => (
-                    <div key={badge.code} className="flex items-start gap-3 rounded-2xl surface-secondary p-4">
-                      <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
-                        <Medal className="size-4" />
+                    <div key={badge.code} className="flex items-start gap-3">
+                      <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-orange-500/10 text-orange-600">
+                        <Medal className="size-5" />
                       </span>
                       <div>
                         <p className="font-semibold text-slate-950">{badge.name}</p>
-                        <p className="mt-1 text-sm text-slate-500">{badge.description}</p>
+                        <p className="mt-0.5 text-sm text-slate-500">{badge.description}</p>
                       </div>
                     </div>
                   ))}
@@ -618,10 +619,10 @@ export default function ProfilePage() {
           </div>
         </section>
 
-        <section className="grid gap-4 lg:grid-cols-[1.2fr_0.8fr]">
-          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+        <section className="grid gap-10 border-t border-[color:var(--border)] pt-8 lg:grid-cols-[1.2fr_0.8fr] lg:gap-14">
+          <div>
             <h2 className="type-h4 text-slate-950">Courses</h2>
-            <div className="mt-4 divide-y divide-[color:var(--border)]">
+            <div className="mt-2 divide-y divide-[color:var(--border)]">
               {courses.length ? (
                 courses.map((course) => (
                   <div key={course.id} className="py-4 first:pt-0">
@@ -647,14 +648,14 @@ export default function ProfilePage() {
                   </div>
                 ))
               ) : (
-                <p className="type-small text-slate-500">No public course activity yet.</p>
+                <p className="mt-2 type-small text-slate-500">No public course activity yet.</p>
               )}
             </div>
           </div>
 
-          <div className="rounded-3xl surface-elevated p-6 shadow-[var(--shadow-sm)]">
+          <div>
             <h2 className="type-h4 text-slate-950">Certificates</h2>
-            <div className="mt-4 divide-y divide-[color:var(--border)]">
+            <div className="mt-2 divide-y divide-[color:var(--border)]">
               {certificates.length ? (
                 certificates.map((certificate) => (
                   <div key={certificate.certificate_number} className="py-4 first:pt-0">
@@ -672,7 +673,7 @@ export default function ProfilePage() {
                   </div>
                 ))
               ) : (
-                <p className="type-small text-slate-500">No certificates issued yet.</p>
+                <p className="mt-2 type-small text-slate-500">No certificates issued yet.</p>
               )}
             </div>
           </div>
