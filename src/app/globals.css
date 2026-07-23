@@ -1203,6 +1203,15 @@ p {
   animation: dialog-out var(--motion-duration-sm) var(--motion-ease-exit);
 }
 
+/* Flashcard modal: wide, chromeless frame — the branded card supplies its own surface. */
+.ui-dialog-content.flashcard-dialog {
+  max-width: min(44rem, calc(100vw - 2rem));
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  padding: 0;
+}
+
 @keyframes dialog-in {
   from {
     opacity: 0;

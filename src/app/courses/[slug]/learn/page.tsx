@@ -3,13 +3,19 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp, X } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -89,6 +95,7 @@ type PlayerJsPlayer = {
   getVolume?: (callback: (value: number) => void) => void;
   mute?: () => void;
   setCurrentTime?: (value: number) => void;
+  setPlaybackRate?: (value: number) => void;
   setVolume?: (value: number) => void;
   supports?: (kind: "method" | "event", methodOrEventName: string) => boolean;
   unmute?: () => void;
@@ -108,6 +115,7 @@ type YouTubePlayer = {
   getVolume: () => number;
   isMuted: () => boolean;
   mute: () => void;
+  setPlaybackRate: (rate: number) => void;
   setVolume: (volume: number) => void;
   destroy: () => void;
   unMute: () => void;
@@ -267,7 +275,7 @@ function buildYouTubeEmbedUrl(assetIdOrUrl: string, lessonId: string): string {
 }
 
 function getQuestionOptionClass(questionState: QuestionAttemptState | undefined, optionId: string): string {
-  const base = "h-auto min-h-11 justify-start whitespace-normal px-4 py-3 text-left";
+  const base = "h-auto min-h-11 justify-start whitespace-normal break-words px-4 py-3 text-left";
   if (questionState?.selectedOptionId !== optionId) return base;
   if (questionState.isSubmitting) return `${base} !bg-orange-50 !text-orange-700 !ring-orange-200`;
   if (questionState.result?.correct) return `${base} !bg-emerald-50 !text-emerald-700 !ring-emerald-200`;
@@ -668,24 +676,35 @@ function FlashcardCard({
   return (
     <div className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-2xl">
       <div className="h-1.5 bg-gradient-to-r from-orange-500 via-amber-400 to-orange-500" />
-      <div className="max-h-[80vh] overflow-y-auto p-6 sm:p-8">
+      <div className="max-h-[85vh] overflow-y-auto p-5 sm:p-8">
         <div className="flex items-center justify-between gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={FLASHCARD_WORDMARK} alt="GaugeHow" className="h-6 w-auto sm:h-7" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={FLASHCARD_MARK} alt="" className="size-9 rounded-xl sm:size-10" />
+          <img src={FLASHCARD_WORDMARK} alt="GaugeHow" className="h-5 w-auto sm:h-7" />
+          <div className="flex items-center gap-3">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={FLASHCARD_MARK} alt="" className="size-8 rounded-lg sm:size-10 sm:rounded-xl" />
+            <DialogClose asChild>
+              <button
+                type="button"
+                aria-label="Close flashcard"
+                className="flex size-8 items-center justify-center rounded-full bg-white/10 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+              >
+                <X className="size-4" weight="bold" />
+              </button>
+            </DialogClose>
+          </div>
         </div>
-        <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.22em] text-orange-400">
+        <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.22em] text-orange-400 sm:mt-7">
           Lesson flashcard
         </p>
         <h3
-          className="mt-1.5 text-xl font-extrabold leading-tight sm:text-2xl"
-          style={{ color: "#f8fafc" }}
+          className="mt-1.5 text-lg font-extrabold leading-snug sm:text-2xl"
+          style={{ color: "#f8fafc", textWrap: "balance" }}
         >
           {lessonTitle}
         </h3>
         <p className="mt-1 text-sm text-slate-400">{courseTitle}</p>
-        <ul className="mt-6 space-y-3">
+        <ul className="mt-5 space-y-3 sm:mt-6">
           {bullets.map((bullet, index) => (
             <li key={index} className="flex gap-3">
               <span className="mt-[0.55rem] size-1.5 shrink-0 rounded-full bg-orange-400" />
@@ -693,7 +712,7 @@ function FlashcardCard({
             </li>
           ))}
         </ul>
-        <div className="mt-7 flex items-center justify-between gap-3 border-t border-white/10 pt-5">
+        <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4 sm:mt-7 sm:pt-5">
           <span className="text-xs font-medium tracking-wide text-slate-500">gaugehow.ai</span>
           <Button size="sm" onClick={onDownload} disabled={downloading}>
             <DownloadSimple className="size-4" />
@@ -925,6 +944,8 @@ function SimulationPanel({ config }: { config: { title?: string; xLabel?: string
 
 // ── Player controls ───────────────────────────────────────────────────────────
 
+const PLAYBACK_RATES = [0.75, 1, 1.25, 1.5, 1.75, 2];
+
 function LessonPlayerControls({
   available,
   ready,
@@ -933,11 +954,13 @@ function LessonPlayerControls({
   durationSeconds,
   volume,
   muted,
+  playbackRate,
   checkpoints,
   onTogglePlayback,
   onSeek,
   onVolumeChange,
   onToggleMute,
+  onPlaybackRateChange,
   onFullscreen,
 }: {
   available: boolean;
@@ -947,11 +970,13 @@ function LessonPlayerControls({
   durationSeconds: number;
   volume: number;
   muted: boolean;
+  playbackRate: number;
   checkpoints: { id: string; timestamp_seconds: number }[];
   onTogglePlayback: () => void;
   onSeek: (seconds: number) => void;
   onVolumeChange: (volume: number) => void;
   onToggleMute: () => void;
+  onPlaybackRateChange: (rate: number) => void;
   onFullscreen: () => void;
 }) {
   const canControl = available && ready;
@@ -960,10 +985,10 @@ function LessonPlayerControls({
   const progressPercent = timelineMax > 0 ? (timelineValue / timelineMax) * 100 : 0;
 
   return (
-    <div className="border-t border-white/10 bg-slate-900 px-4 py-3 text-white sm:px-5">
-      <div className="flex flex-col gap-3">
-        <div className="relative flex h-3.5 items-center">
-          <div className="pointer-events-none absolute inset-x-0 h-1.5 overflow-hidden rounded-full bg-white/15">
+    <div className="bg-slate-950 px-3 pb-2.5 pt-1 text-white sm:px-4">
+      <div className="flex flex-col gap-1.5">
+        <div className="group/timeline relative flex h-3 items-center">
+          <div className="pointer-events-none absolute inset-x-0 h-[3px] overflow-hidden rounded-full bg-white/15 transition-[height] duration-150 group-hover/timeline:h-1.5">
             <div
               className="h-full rounded-full bg-orange-500 transition-[width] duration-150"
               style={{ width: `${progressPercent}%` }}
@@ -973,14 +998,14 @@ function LessonPlayerControls({
             ? checkpoints.map((checkpoint) => (
                 <span
                   key={checkpoint.id}
-                  className="pointer-events-none absolute top-1/2 size-1.5 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 ring-1 ring-slate-900"
+                  className="pointer-events-none absolute top-1/2 size-1 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70"
                   style={{ left: `${clampPlaybackValue((checkpoint.timestamp_seconds / timelineMax) * 100, 0, 100)}%` }}
                 />
               ))
             : null}
           <input
             aria-label="Seek lesson video"
-            className="gh-player-range relative h-3.5 w-full disabled:cursor-not-allowed disabled:opacity-50"
+            className="gh-player-range relative h-3 w-full disabled:cursor-not-allowed disabled:opacity-50"
             disabled={!canControl || timelineMax <= 0}
             max={timelineMax}
             min={0}
@@ -990,21 +1015,21 @@ function LessonPlayerControls({
             value={timelineValue}
           />
         </div>
-        <div className="flex flex-wrap items-center gap-1.5">
+        <div className="flex flex-wrap items-center gap-0.5">
           <Button
             aria-label={playing ? "Pause" : "Play"}
-            className="h-10 w-10 rounded-full bg-white text-slate-950 hover:bg-orange-100"
+            className="h-9 w-9 text-white hover:bg-white/10"
             disabled={!canControl}
             onClick={onTogglePlayback}
             size="icon"
             type="button"
             variant="ghost"
           >
-            {playing ? <Pause className="fill-current" /> : <Play className="fill-current" />}
+            {playing ? <Pause className="size-5 fill-current" /> : <Play className="size-5 fill-current" />}
           </Button>
           <Button
             aria-label="Rewind 10 seconds"
-            className="h-9 w-9 text-slate-100 hover:bg-white/10"
+            className="h-9 w-9 text-slate-300 hover:bg-white/10 hover:text-white"
             disabled={!canControl}
             onClick={() => onSeek(clampPlaybackValue(currentSeconds - 10, 0, timelineMax))}
             size="icon"
@@ -1015,7 +1040,7 @@ function LessonPlayerControls({
           </Button>
           <Button
             aria-label="Forward 10 seconds"
-            className="h-9 w-9 text-slate-100 hover:bg-white/10"
+            className="h-9 w-9 text-slate-300 hover:bg-white/10 hover:text-white"
             disabled={!canControl}
             onClick={() => onSeek(clampPlaybackValue(currentSeconds + 10, 0, timelineMax))}
             size="icon"
@@ -1024,13 +1049,47 @@ function LessonPlayerControls({
           >
             <ArrowClockwise className="size-4" />
           </Button>
-          <span className="min-w-28 text-sm font-medium tabular-nums text-slate-200">
-            {formatSeconds(timelineValue)} / {formatSeconds(timelineMax)}
+          <span className="ml-1.5 text-xs font-medium tabular-nums text-slate-400">
+            {formatSeconds(timelineValue)}
+            <span className="mx-1 text-slate-600">/</span>
+            {formatSeconds(timelineMax)}
           </span>
-          <div className="ml-auto flex items-center gap-2">
+          <div className="ml-auto flex items-center gap-0.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  aria-label="Playback speed"
+                  className="h-9 min-w-11 px-2 text-xs font-semibold tabular-nums text-slate-300 hover:bg-white/10 hover:text-white"
+                  disabled={!canControl}
+                  type="button"
+                  variant="ghost"
+                >
+                  {playbackRate === 1 ? "1×" : `${playbackRate}×`}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                align="end"
+                className="min-w-24 border-white/10 bg-slate-900 text-white"
+              >
+                {PLAYBACK_RATES.map((rate) => (
+                  <DropdownMenuItem
+                    key={rate}
+                    className={
+                      rate === playbackRate
+                        ? "justify-between font-semibold text-orange-400 focus:bg-white/10 focus:text-orange-400"
+                        : "justify-between text-slate-200 focus:bg-white/10 focus:text-white"
+                    }
+                    onSelect={() => onPlaybackRateChange(rate)}
+                  >
+                    {rate === 1 ? "Normal" : `${rate}×`}
+                    {rate === playbackRate ? <CheckCircle className="size-3.5" /> : null}
+                  </DropdownMenuItem>
+                ))}
+              </DropdownMenuContent>
+            </DropdownMenu>
             <Button
               aria-label={muted ? "Unmute" : "Mute"}
-              className="h-9 w-9 text-slate-100 hover:bg-white/10"
+              className="h-9 w-9 text-slate-300 hover:bg-white/10 hover:text-white"
               disabled={!canControl}
               onClick={onToggleMute}
               size="icon"
@@ -1039,16 +1098,16 @@ function LessonPlayerControls({
             >
               {muted || volume === 0 ? <SpeakerSlash /> : <SpeakerHigh />}
             </Button>
-            <div className="relative flex h-3.5 w-20 items-center sm:w-28">
-              <div className="pointer-events-none absolute inset-x-0 h-1 overflow-hidden rounded-full bg-white/15">
+            <div className="relative hidden h-3 w-20 items-center sm:flex">
+              <div className="pointer-events-none absolute inset-x-0 h-[3px] overflow-hidden rounded-full bg-white/15">
                 <div
-                  className="h-full rounded-full bg-orange-500"
+                  className="h-full rounded-full bg-white/80"
                   style={{ width: `${muted ? 0 : volume}%` }}
                 />
               </div>
               <input
                 aria-label="Volume"
-                className="gh-player-range relative h-3.5 w-full disabled:cursor-not-allowed disabled:opacity-50"
+                className="gh-player-range relative h-3 w-full disabled:cursor-not-allowed disabled:opacity-50"
                 disabled={!canControl}
                 max={100}
                 min={0}
@@ -1060,7 +1119,7 @@ function LessonPlayerControls({
             </div>
             <Button
               aria-label="Fullscreen"
-              className="h-9 w-9 text-slate-100 hover:bg-white/10"
+              className="h-9 w-9 text-slate-300 hover:bg-white/10 hover:text-white"
               disabled={!available}
               onClick={onFullscreen}
               size="icon"
@@ -1118,6 +1177,8 @@ function VideoLearningPageContent({ params }: Props) {
   const [playbackDurationSeconds, setPlaybackDurationSeconds] = useState(0);
   const [playerVolume, setPlayerVolume] = useState(80);
   const [playerMuted, setPlayerMuted] = useState(false);
+  const [playbackRate, setPlaybackRate] = useState(1);
+  const playbackRateRef = useRef(1);
 
   useEffect(() => {
     let cancelled = false;
@@ -1157,6 +1218,14 @@ function VideoLearningPageContent({ params }: Props) {
     [activeCheckpointId, lesson?.questions],
   );
   const activeCheckpointState = activeCheckpoint ? questionStates[activeCheckpoint.id] : undefined;
+
+  const isEnrolled = course?.access?.is_enrolled ?? false;
+  const isLessonCompleted =
+    lesson?.progress?.status === "completed" || (lesson?.progress?.progress_percent ?? 0) >= 100;
+  const answeredQuestionsCount = useMemo(
+    () => (lesson?.questions ?? []).filter((q) => questionStates[q.id]?.result).length,
+    [lesson?.questions, questionStates],
+  );
 
   useEffect(() => {
     const startingPosition = lesson?.progress?.last_position_seconds ?? lesson?.progress?.watched_seconds ?? 0;
@@ -1216,6 +1285,8 @@ function VideoLearningPageContent({ params }: Props) {
   const flushProgress = useStableEvent(
     async ({ forceComplete = false, keepalive = false }: { forceComplete?: boolean; keepalive?: boolean } = {}) => {
       if (!courseSlug || !lesson || !accessToken || syncInFlightRef.current) return;
+      // Progress is tracked per enrollment; access-only viewers watch untracked.
+      if (!course?.access?.is_enrolled) return;
       const durationSeconds = lesson.duration_seconds ?? 0;
       if (durationSeconds <= 0) return;
       const watchedSeconds = Math.min(progressDraftRef.current.watchedSeconds, durationSeconds);
@@ -1324,6 +1395,18 @@ function VideoLearningPageContent({ params }: Props) {
       runPlayerCommand(() => nextMuted ? youtubePlayerRef.current?.player.mute() : youtubePlayerRef.current?.player.unMute());
     }
     if (videoRef.current) videoRef.current.muted = nextMuted;
+  });
+
+  const changePlaybackRate = useStableEvent((rate: number) => {
+    setPlaybackRate(rate);
+    playbackRateRef.current = rate;
+    if (bunnyPlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => bunnyPlayerRef.current?.player.setPlaybackRate?.(rate));
+    }
+    if (youtubePlayerRef.current?.iframe.isConnected) {
+      runPlayerCommand(() => youtubePlayerRef.current?.player.setPlaybackRate(rate));
+    }
+    if (videoRef.current) videoRef.current.playbackRate = rate;
   });
 
   const requestPlayerFullscreen = useStableEvent(() => {
@@ -1472,6 +1555,9 @@ function VideoLearningPageContent({ params }: Props) {
       runPlayerCommand(() => player?.getVolume?.((v) => setPlayerVolume(v)));
       runPlayerCommand(() => player?.getMuted?.((v) => setPlayerMuted(v)));
       runPlayerCommand(() => player?.getPaused?.((v) => setPlayerPlaying(!v)));
+      if (playbackRateRef.current !== 1) {
+        runPlayerCommand(() => player?.setPlaybackRate?.(playbackRateRef.current));
+      }
     };
     const onTimeUpdate = (data?: PlayerJsEventData) => {
       if (cancelled || !iframeElement.isConnected) return;
@@ -1530,6 +1616,7 @@ function VideoLearningPageContent({ params }: Props) {
             setPlayerMuted(event.target.isMuted());
             const startAt = lesson.progress?.last_position_seconds ?? lesson.progress?.watched_seconds ?? 0;
             if (startAt > 0) { event.target.seekTo(startAt, true); setPlaybackPositionSeconds(startAt); }
+            if (playbackRateRef.current !== 1) event.target.setPlaybackRate(playbackRateRef.current);
           },
           onStateChange: (event) => {
             if (cancelled || !iframeElement.isConnected) return;
@@ -1575,6 +1662,19 @@ function VideoLearningPageContent({ params }: Props) {
         ...current,
         [questionId]: { selectedOptionId: optionId ?? null, isLocked: false, isSubmitting: false, result: null, error: cause instanceof Error ? cause.message : "Unable to submit answer." },
       }));
+    }
+  }
+
+  async function handleEnroll() {
+    if (!courseSlug || !accessToken || submitting === "enroll") return;
+    setSubmitting("enroll");
+    try {
+      const response = await learningClient.enroll(courseSlug, accessToken);
+      setCourse((current) => (current ? { ...current, access: response.access } : current));
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to enroll in this course.");
+    } finally {
+      setSubmitting(null);
     }
   }
 
@@ -1725,23 +1825,23 @@ function VideoLearningPageContent({ params }: Props) {
           {/* Video player */}
           <div
             ref={playerShellRef}
-            className="relative overflow-hidden rounded-3xl bg-slate-950"
+            className="relative overflow-hidden rounded-2xl bg-slate-950"
           >
-            <div className="relative aspect-video p-4 text-white sm:p-5">
+            <div className="relative aspect-video text-white">
               {iframeEmbedUrl ? (
                 <iframe
                   key={iframeEmbedUrl}
                   ref={iframeRef}
                   src={iframeEmbedUrl}
                   title={lesson.title}
-                  className="h-full w-full rounded-lg border-0 bg-black"
+                  className="h-full w-full border-0 bg-black"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                   allowFullScreen
                 />
               ) : lesson.video_url && lesson.video_provider !== "youtube" ? (
                 <video
                   ref={videoRef}
-                  className="h-full w-full rounded-lg object-cover"
+                  className="h-full w-full object-cover"
                   controls
                   disablePictureInPicture
                   preload="metadata"
@@ -1757,7 +1857,7 @@ function VideoLearningPageContent({ params }: Props) {
                   <source src={lesson.video_url} />
                 </video>
               ) : (
-                <div className="flex h-full flex-col justify-between rounded-lg border border-white/10 bg-gradient-to-br from-white/[0.06] to-transparent p-5">
+                <div className="flex h-full flex-col justify-between bg-gradient-to-br from-white/[0.06] to-transparent p-6">
                   <div className="flex items-center justify-between">
                     <Badge variant="dark">Lesson player</Badge>
                     <Badge variant="orange">{lesson.video_provider ?? "Video pending"}</Badge>
@@ -1781,7 +1881,7 @@ function VideoLearningPageContent({ params }: Props) {
               )}
 
               {hasCustomPlayerControls && !playerReady ? (
-                <div className="absolute inset-4 flex items-center justify-center rounded-lg bg-slate-950/50 sm:inset-5">
+                <div className="absolute inset-0 flex items-center justify-center bg-slate-950/50">
                   <CircleNotch className="size-8 animate-spin text-white/80" />
                 </div>
               ) : null}
@@ -1791,7 +1891,7 @@ function VideoLearningPageContent({ params }: Props) {
                   type="button"
                   aria-label="Play lesson video"
                   onClick={togglePlayback}
-                  className="group absolute inset-4 flex items-center justify-center rounded-lg bg-slate-950/20 transition-colors hover:bg-slate-950/35 sm:inset-5"
+                  className="group absolute inset-0 flex items-center justify-center bg-slate-950/20 transition-colors hover:bg-slate-950/35"
                 >
                   <span className="flex size-16 items-center justify-center rounded-full bg-white/95 text-slate-950 shadow-xl transition-transform group-hover:scale-110">
                     <Play className="ml-1 size-7 fill-current" />
@@ -1811,10 +1911,12 @@ function VideoLearningPageContent({ params }: Props) {
                 durationSeconds={playbackDurationSeconds}
                 muted={playerMuted}
                 onFullscreen={requestPlayerFullscreen}
+                onPlaybackRateChange={changePlaybackRate}
                 onSeek={seekPlayback}
                 onToggleMute={togglePlayerMute}
                 onTogglePlayback={togglePlayback}
                 onVolumeChange={changePlayerVolume}
+                playbackRate={playbackRate}
                 playing={playerPlaying}
                 ready={playerReady}
                 volume={playerVolume}
@@ -1824,14 +1926,14 @@ function VideoLearningPageContent({ params }: Props) {
             {/* Checkpoint overlay */}
             {activeCheckpoint && (
               <div className="absolute inset-0 flex items-center justify-center bg-slate-950/78 p-4">
-                <div className="w-full max-w-xl rounded-2xl bg-slate-950/95 p-5 shadow-2xl">
-                  <div className="flex items-center justify-between gap-3">
+                <div className="max-h-full w-full max-w-xl overflow-y-auto rounded-2xl bg-slate-950/95 p-5 shadow-2xl">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
                     <Badge variant="orange">Checkpoint at {formatSeconds(activeCheckpoint.timestamp_seconds)}</Badge>
                     <Badge variant="dark">
                       {activeCheckpointState?.isSubmitting ? "Checking…" : activeCheckpointState?.result ? "Answered" : "Answer to continue"}
                     </Badge>
                   </div>
-                  <p className="mt-4 text-lg font-semibold text-white">{activeCheckpoint.prompt}</p>
+                  <p className="mt-4 break-words text-lg font-semibold leading-snug text-white">{activeCheckpoint.prompt}</p>
                   {activeCheckpoint.question_type === "fill_blank" ? (
                     <div className="mt-4 flex gap-2">
                       <Input
@@ -1857,9 +1959,9 @@ function VideoLearningPageContent({ params }: Props) {
                           onClick={() => void handleQuestionAttempt(activeCheckpoint.id, option.id)}
                           disabled={activeCheckpointState?.isLocked || activeCheckpointState?.isSubmitting || Boolean(activeCheckpointState?.result)}
                         >
-                          <span className="flex-1">{option.option_text}</span>
+                          <span className="min-w-0 flex-1 break-words">{option.option_text}</span>
                           {activeCheckpointState?.selectedOptionId === option.id ? (
-                            <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                            <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em]">
                               {activeCheckpointState.isSubmitting ? "Locked" : activeCheckpointState.result?.correct ? "Correct" : "Chosen"}
                             </span>
                           ) : null}
@@ -1911,10 +2013,7 @@ function VideoLearningPageContent({ params }: Props) {
           {/* ── Flashcard modal ─── */}
           {lesson.flashcard_markdown ? (
             <Dialog open={flashcardOpen} onOpenChange={setFlashcardOpen}>
-              <DialogContent
-                className="w-[calc(100vw-2rem)] max-w-2xl border-none bg-transparent p-0 shadow-none"
-                aria-describedby={undefined}
-              >
+              <DialogContent className="flashcard-dialog" aria-describedby={undefined}>
                 <DialogTitle className="sr-only">Lesson flashcard</DialogTitle>
                 <FlashcardCard
                   bullets={parseFlashcardBullets(lesson.flashcard_markdown)}
@@ -1967,17 +2066,30 @@ function VideoLearningPageContent({ params }: Props) {
             </section>
           ) : null}
 
-          {/* ── Lesson checks (quiz questions) ─── */}
-          {lesson.questions.length > 0 ? (
+          {/* ── Lesson checks (in-video quiz review, shown after completion) ─── */}
+          {lesson.questions.length > 0 && isLessonCompleted ? (
             <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <h2 className="text-2xl font-extrabold text-slate-950">Lesson checks</h2>
-              <p className="mt-2 text-sm text-slate-500">{lesson.questions.length} question{lesson.questions.length !== 1 ? "s" : ""}</p>
-              <div className="mt-5 space-y-4">
+              <details className="group rounded-2xl surface-secondary">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4">
+                  <div className="flex items-center gap-3">
+                    <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-emerald-100 text-emerald-700">
+                      <CheckCircle className="size-5" />
+                    </span>
+                    <div>
+                      <h2 className="text-lg font-extrabold text-slate-950">Lesson checks</h2>
+                      <p className="mt-0.5 text-sm text-slate-500">
+                        {answeredQuestionsCount} / {lesson.questions.length} answered during the video — expand to review or retry
+                      </p>
+                    </div>
+                  </div>
+                  <CaretRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                </summary>
+                <div className="space-y-4 px-5 pb-5">
                 {lesson.questions.map((question) => {
                   const questionState = questionStates[question.id];
                   const result = questionState?.result;
                   return (
-                    <div key={question.id} className="rounded-2xl surface-secondary p-5">
+                    <div key={question.id} className="rounded-2xl surface-primary p-5">
                       <div className="flex items-start justify-between gap-3">
                         <p className="font-semibold text-slate-950">{question.prompt}</p>
                         <Badge variant="blue" className="shrink-0">{formatSeconds(question.timestamp_seconds)}</Badge>
@@ -2008,9 +2120,9 @@ function VideoLearningPageContent({ params }: Props) {
                               onClick={() => void handleQuestionAttempt(question.id, option.id)}
                               disabled={questionState?.isLocked || questionState?.isSubmitting || Boolean(questionState?.result)}
                             >
-                              <span className="flex-1">{option.option_text}</span>
+                              <span className="min-w-0 flex-1 break-words">{option.option_text}</span>
                               {questionState?.selectedOptionId === option.id ? (
-                                <span className="text-[10px] font-bold uppercase tracking-[0.2em]">
+                                <span className="shrink-0 text-[10px] font-bold uppercase tracking-[0.2em]">
                                   {questionState.isSubmitting ? "Locked" : questionState.result?.correct ? "Correct" : "Chosen"}
                                 </span>
                               ) : null}
@@ -2033,7 +2145,8 @@ function VideoLearningPageContent({ params }: Props) {
                     </div>
                   );
                 })}
-              </div>
+                </div>
+              </details>
             </section>
           ) : null}
 
@@ -2233,16 +2346,34 @@ function VideoLearningPageContent({ params }: Props) {
           <div className="border-t border-[color:var(--border)] pt-5">
             <h2 className="text-lg font-extrabold text-slate-950">Your progress</h2>
             <div className="mt-4 space-y-4">
-              <div>
-                <p className="text-sm font-medium text-slate-500">Course completion</p>
-                <p className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950">
-                  {Math.round(course.access?.progress_percent ?? 0)}%
-                </p>
-                <p className="mt-1 text-sm text-slate-600">
-                  {completedLessonsCount} of {allLessons.length} lessons completed
-                </p>
-              </div>
-              <Progress value={course.access?.progress_percent ?? 0} />
+              {isEnrolled ? (
+                <>
+                  <div>
+                    <p className="text-sm font-medium text-slate-500">Course completion</p>
+                    <p className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950">
+                      {Math.round(course.access?.progress_percent ?? 0)}%
+                    </p>
+                    <p className="mt-1 text-sm text-slate-600">
+                      {completedLessonsCount} of {allLessons.length} lessons completed
+                    </p>
+                  </div>
+                  <Progress value={course.access?.progress_percent ?? 0} />
+                </>
+              ) : (
+                <div className="rounded-xl bg-orange-50 p-4">
+                  <p className="text-sm font-semibold text-slate-950">You&apos;re not enrolled yet</p>
+                  <p className="mt-1 text-sm leading-6 text-slate-600">
+                    You have full access to every lesson. Enroll to track your progress and earn a certificate.
+                  </p>
+                  <Button
+                    className="mt-3 w-full"
+                    onClick={() => void handleEnroll()}
+                    disabled={submitting === "enroll"}
+                  >
+                    {submitting === "enroll" ? "Enrolling…" : "Enroll in this course"}
+                  </Button>
+                </div>
+              )}
               <div className="flex items-center justify-between rounded-xl surface-secondary px-4 py-3">
                 <p className="text-xs font-semibold uppercase text-slate-500">Access</p>
                 <p className="text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
