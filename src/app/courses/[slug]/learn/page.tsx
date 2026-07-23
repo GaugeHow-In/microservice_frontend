@@ -3,13 +3,12 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretLeft, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp, X } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretDown, CaretLeft, CaretRight, ChatCircleText, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, NotePencil, Pause, Play, Question, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp, X } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogClose, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -41,6 +40,8 @@ type PlayerJsEventData = {
   seconds?: number;
   duration?: number;
 };
+
+type LessonPanel = "flashcard" | "notes" | "discussion" | "faqs" | "resources";
 
 type QuestionResultState = {
   correct: boolean;
@@ -666,12 +667,14 @@ function FlashcardCard({
   courseTitle,
   onDownload,
   downloading,
+  onClose,
 }: {
   bullets: string[];
   lessonTitle: string;
   courseTitle: string;
   onDownload: () => void;
   downloading: boolean;
+  onClose: () => void;
 }) {
   return (
     <div className="overflow-hidden rounded-3xl bg-slate-950 text-white shadow-2xl">
@@ -683,15 +686,14 @@ function FlashcardCard({
           <div className="flex items-center gap-3">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={FLASHCARD_MARK} alt="" className="size-8 rounded-lg sm:size-10 sm:rounded-xl" />
-            <DialogClose asChild>
-              <button
-                type="button"
-                aria-label="Close flashcard"
-                className="flex size-8 items-center justify-center rounded-full bg-white/10 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
-              >
-                <X className="size-4" weight="bold" />
-              </button>
-            </DialogClose>
+            <button
+              type="button"
+              aria-label="Close flashcard"
+              onClick={onClose}
+              className="flex size-8 items-center justify-center rounded-full bg-white/10 text-slate-300 transition-colors hover:bg-white/20 hover:text-white"
+            >
+              <X className="size-4" weight="bold" />
+            </button>
           </div>
         </div>
         <p className="mt-5 text-[11px] font-bold uppercase tracking-[0.22em] text-orange-400 sm:mt-7">
@@ -1162,7 +1164,7 @@ function VideoLearningPageContent({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [questionStates, setQuestionStates] = useState<Record<string, QuestionAttemptState>>({});
-  const [flashcardOpen, setFlashcardOpen] = useState(false);
+  const [activePanel, setActivePanel] = useState<LessonPanel | null>(null);
   const [flashcardDownloading, setFlashcardDownloading] = useState(false);
   const [discussionBody, setDiscussionBody] = useState("");
   const [replyDrafts, setReplyDrafts] = useState<Record<string, string>>({});
@@ -1228,6 +1230,8 @@ function VideoLearningPageContent({ params }: Props) {
     () => (lesson?.questions ?? []).filter((q) => questionStates[q.id]?.result).length,
     [lesson?.questions, questionStates],
   );
+  const togglePanel = (panel: LessonPanel) =>
+    setActivePanel((current) => (current === panel ? null : panel));
 
   useEffect(() => {
     const startingPosition = lesson?.progress?.last_position_seconds ?? lesson?.progress?.watched_seconds ?? 0;
@@ -1462,7 +1466,7 @@ function VideoLearningPageContent({ params }: Props) {
           setIsDiscussionLoading(true);
           setQuestionStates({});
           questionLockRef.current = {};
-          setFlashcardOpen(false);
+          setActivePanel(null);
           setReplyDrafts({});
           setDiscussionBody("");
           setActiveCheckpointId(null);
@@ -1990,7 +1994,8 @@ function VideoLearningPageContent({ params }: Props) {
             )}
           </div>
 
-          <div className="mt-4 flex items-center justify-between gap-3">
+          {/* ── Action row: like + on-demand panels ─── */}
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => void handleLessonLike()}
@@ -2004,43 +2009,167 @@ function VideoLearningPageContent({ params }: Props) {
               <ThumbsUp className="size-3.5" />
               <span>{lesson.like_count > 0 ? lesson.like_count : "Like"}</span>
             </button>
-            {lesson.flashcard_markdown ? (
-              <Button variant="secondary" size="sm" onClick={() => setFlashcardOpen(true)}>
-                <Sparkle className="size-4" />
-                Flashcard
-              </Button>
-            ) : null}
+            <div className="flex flex-wrap items-center gap-2">
+              {(
+                [
+                  ...(lesson.flashcard_markdown ? [{ panel: "flashcard" as const, label: "Flashcard", Icon: Sparkle }] : []),
+                  { panel: "notes" as const, label: "Notes", Icon: NotePencil },
+                  { panel: "discussion" as const, label: "Discussion", Icon: ChatCircleText },
+                  ...(course.faqs.length > 0 ? [{ panel: "faqs" as const, label: "FAQs", Icon: Question }] : []),
+                  ...(lesson.resources.length > 0 ? [{ panel: "resources" as const, label: "Resources", Icon: DownloadSimple }] : []),
+                ]
+              ).map(({ panel, label, Icon }) => (
+                <Button
+                  key={panel}
+                  variant="secondary"
+                  size="sm"
+                  aria-expanded={activePanel === panel}
+                  onClick={() => togglePanel(panel)}
+                  className={activePanel === panel ? "!bg-orange-50 !text-orange-700" : ""}
+                >
+                  <Icon className="size-4" />
+                  {label}
+                  <CaretDown className={`size-3 transition-transform ${activePanel === panel ? "rotate-180" : ""}`} />
+                </Button>
+              ))}
+            </div>
           </div>
 
-          {/* ── Flashcard modal ─── */}
-          {lesson.flashcard_markdown ? (
-            <Dialog open={flashcardOpen} onOpenChange={setFlashcardOpen}>
-              <DialogContent className="flashcard-dialog" aria-describedby={undefined}>
-                <DialogTitle className="sr-only">Lesson flashcard</DialogTitle>
-                <FlashcardCard
-                  bullets={parseFlashcardBullets(lesson.flashcard_markdown)}
-                  lessonTitle={lesson.title}
-                  courseTitle={course?.title ?? "GaugeHow course"}
-                  onDownload={() => void handleFlashcardDownload()}
-                  downloading={flashcardDownloading}
-                />
-              </DialogContent>
-            </Dialog>
+          {/* ── On-demand panel (opens below the action row) ─── */}
+          {activePanel === "flashcard" && lesson.flashcard_markdown ? (
+            <div className="mt-3">
+              <FlashcardCard
+                bullets={parseFlashcardBullets(lesson.flashcard_markdown)}
+                lessonTitle={lesson.title}
+                courseTitle={course?.title ?? "GaugeHow course"}
+                onDownload={() => void handleFlashcardDownload()}
+                downloading={flashcardDownloading}
+                onClose={() => setActivePanel(null)}
+              />
+            </div>
           ) : null}
 
-          {/* ── Resources ─── */}
-          {lesson.resources.length > 0 ? (
-            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <div className="flex items-center gap-2">
-                <DownloadSimple className="size-5 text-orange-500" />
-                <h2 className="text-2xl font-extrabold text-slate-950">Resources</h2>
+          {activePanel === "notes" ? (
+            <div className="mt-3 space-y-3 rounded-2xl border border-[color:var(--border)] p-4">
+              <MarkdownNoteEditor
+                value={noteBody}
+                onChange={setNoteBody}
+                onSave={() => void handleCreateNote()}
+                isSaving={submitting === "note"}
+              />
+              {lesson.notes.length > 0 ? (
+                <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
+                  {lesson.notes.map((note) => (
+                    <div key={note.id} className="rounded-lg surface-secondary p-3">
+                      <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
+                      <div className="mt-2">
+                        <SimpleMarkdown content={note.body} compact />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-500">No notes yet - add one while watching.</p>
+              )}
+            </div>
+          ) : null}
+
+          {activePanel === "discussion" ? (
+            <div className="mt-3 space-y-3 rounded-2xl border border-[color:var(--border)] p-4">
+              <div className="space-y-2 rounded-lg surface-secondary p-3">
+                <Textarea
+                  placeholder="Ask a question or share a thought…"
+                  value={discussionBody}
+                  onChange={(e) => setDiscussionBody(e.target.value)}
+                  className="min-h-20 border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
+                />
+                <div className="flex justify-end">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => void handleCreateDiscussion()}
+                    disabled={submitting === "discussion" || !discussionBody.trim()}
+                  >
+                    {submitting === "discussion" ? "Posting…" : "Comment"}
+                  </Button>
+                </div>
               </div>
-              <div className="mt-5 grid gap-3 sm:grid-cols-2">
-                {lesson.resources.map((resource) => (
-                  <ResourceItem key={resource.id} resource={resource} />
-                ))}
-              </div>
-            </section>
+
+              {isDiscussionLoading ? (
+                <div className="space-y-3">
+                  <Skeleton className="h-16 rounded-lg" />
+                  <Skeleton className="h-14 rounded-lg" />
+                </div>
+              ) : lesson.discussions.length > 0 ? (
+                lesson.discussions.map((thread) => (
+                  <div key={thread.id} className="rounded-lg surface-secondary px-3 py-3">
+                    {thread.title ? (
+                      <p className="mb-1 text-[11px] font-semibold uppercase text-orange-500">{thread.title}</p>
+                    ) : null}
+                    <p className="text-xs font-semibold text-slate-950">{thread.user_display_name}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-700">{thread.body}</p>
+                    {thread.comments.length > 0 ? (
+                      <div className="mt-3 space-y-2 border-l border-[color:var(--border)] pl-3">
+                        {thread.comments.map((comment) => (
+                          <div key={comment.id} className="rounded-md surface-primary px-3 py-2">
+                            <p className="text-xs font-medium text-slate-950">
+                              {comment.user_display_name}
+                              {comment.is_instructor_response ? (
+                                <span className="ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700">Instructor</span>
+                              ) : null}
+                              {comment.is_solution ? (
+                                <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Solution</span>
+                              ) : null}
+                            </p>
+                            <p className="mt-1 text-sm leading-5 text-slate-600">{comment.body}</p>
+                          </div>
+                        ))}
+                      </div>
+                    ) : null}
+                    <div className="mt-3 flex gap-2">
+                      <Input
+                        placeholder="Reply…"
+                        value={replyDrafts[thread.id] ?? ""}
+                        onChange={(e) => setReplyDrafts((s) => ({ ...s, [thread.id]: e.target.value }))}
+                        className="h-9"
+                      />
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        onClick={() => void handleReply(thread)}
+                        disabled={submitting === `reply:${thread.id}`}
+                      >
+                        Reply
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-sm text-slate-500">No comments yet. Start the discussion!</p>
+              )}
+            </div>
+          ) : null}
+
+          {activePanel === "faqs" && course.faqs.length > 0 ? (
+            <div className="mt-3 divide-y divide-[color:var(--border)] rounded-2xl border border-[color:var(--border)]">
+              {course.faqs.map((faq, i) => (
+                <details key={`${faq.question}-${i}`} className="group px-4 py-3">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
+                    <span>{faq.question}</span>
+                    <CaretRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                  </summary>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
+                </details>
+              ))}
+            </div>
+          ) : null}
+
+          {activePanel === "resources" && lesson.resources.length > 0 ? (
+            <div className="mt-3 grid gap-3 rounded-2xl border border-[color:var(--border)] p-4 sm:grid-cols-2">
+              {lesson.resources.map((resource) => (
+                <ResourceItem key={resource.id} resource={resource} />
+              ))}
+            </div>
           ) : null}
 
           {/* Simulation panel */}
@@ -2152,132 +2281,10 @@ function VideoLearningPageContent({ params }: Props) {
             </section>
           ) : null}
 
-          {/* FAQs */}
-          {course.faqs.length > 0 ? (
-            <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-              <h2 className="text-2xl font-extrabold text-slate-950">FAQs</h2>
-              <div className="mt-5 divide-y divide-[color:var(--border)] rounded-lg surface-secondary">
-                {course.faqs.map((faq, i) => (
-                  <details key={`${faq.question}-${i}`} className="group px-4 py-3">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-950">
-                      <span>{faq.question}</span>
-                      <CaretRight className="size-4 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
-                    </summary>
-                    <p className="mt-2 text-sm leading-6 text-slate-600">{faq.answer}</p>
-                  </details>
-                ))}
-              </div>
-            </section>
-          ) : null}
-
-          {/* Discussion */}
-          <section className="mt-10 border-t border-[color:var(--border)] pt-10">
-            <h2 className="text-2xl font-extrabold text-slate-950">Discussion</h2>
-            <div className="mt-5 space-y-3">
-              <div className="space-y-2 rounded-lg surface-secondary p-3">
-                <Textarea
-                  placeholder="Ask a question or share a thought…"
-                  value={discussionBody}
-                  onChange={(e) => setDiscussionBody(e.target.value)}
-                  className="min-h-20 border-0 bg-transparent px-2 py-2 text-sm shadow-none focus-visible:ring-0"
-                />
-                <div className="flex justify-end">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => void handleCreateDiscussion()}
-                    disabled={submitting === "discussion" || !discussionBody.trim()}
-                  >
-                    {submitting === "discussion" ? "Posting…" : "Comment"}
-                  </Button>
-                </div>
-              </div>
-
-              {isDiscussionLoading ? (
-                <div className="space-y-3">
-                  <Skeleton className="h-16 rounded-lg" />
-                  <Skeleton className="h-14 rounded-lg" />
-                </div>
-              ) : lesson.discussions.length > 0 ? (
-                lesson.discussions.map((thread) => (
-                  <div key={thread.id} className="rounded-lg surface-secondary px-3 py-3">
-                    {thread.title ? (
-                      <p className="mb-1 text-[11px] font-semibold uppercase text-orange-500">{thread.title}</p>
-                    ) : null}
-                    <p className="text-xs font-semibold text-slate-950">{thread.user_display_name}</p>
-                    <p className="mt-1 text-sm leading-6 text-slate-700">{thread.body}</p>
-                    {thread.comments.length > 0 ? (
-                      <div className="mt-3 space-y-2 border-l border-[color:var(--border)] pl-3">
-                        {thread.comments.map((comment) => (
-                          <div key={comment.id} className="rounded-md surface-primary px-3 py-2">
-                            <p className="text-xs font-medium text-slate-950">
-                              {comment.user_display_name}
-                              {comment.is_instructor_response ? (
-                                <span className="ml-1.5 rounded-full bg-orange-100 px-1.5 py-0.5 text-[10px] font-semibold text-orange-700">Instructor</span>
-                              ) : null}
-                              {comment.is_solution ? (
-                                <span className="ml-1.5 rounded-full bg-emerald-100 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700">Solution</span>
-                              ) : null}
-                            </p>
-                            <p className="mt-1 text-sm leading-5 text-slate-600">{comment.body}</p>
-                          </div>
-                        ))}
-                      </div>
-                    ) : null}
-                    <div className="mt-3 flex gap-2">
-                      <Input
-                        placeholder="Reply…"
-                        value={replyDrafts[thread.id] ?? ""}
-                        onChange={(e) => setReplyDrafts((s) => ({ ...s, [thread.id]: e.target.value }))}
-                        className="h-9"
-                      />
-                      <Button
-                        variant="secondary"
-                        size="sm"
-                        onClick={() => void handleReply(thread)}
-                        disabled={submitting === `reply:${thread.id}`}
-                      >
-                        Reply
-                      </Button>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className="text-sm text-slate-500">No comments yet. Start the discussion!</p>
-              )}
-            </div>
-          </section>
         </section>
 
         {/* ── Sidebar ── */}
         <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
-          {/* Your notes */}
-          <div className="border-t border-[color:var(--border)] pt-5">
-            <h2 className="text-lg font-extrabold text-slate-950">Your notes</h2>
-            <div className="mt-4 space-y-3">
-              <MarkdownNoteEditor
-                value={noteBody}
-                onChange={setNoteBody}
-                onSave={() => void handleCreateNote()}
-                isSaving={submitting === "note"}
-              />
-              {lesson.notes.length > 0 ? (
-                <div className="max-h-80 space-y-2 overflow-y-auto pr-1">
-                  {lesson.notes.map((note) => (
-                    <div key={note.id} className="rounded-lg surface-secondary p-3">
-                      <Badge variant="blue">{formatSeconds(note.timestamp_seconds)}</Badge>
-                      <div className="mt-2">
-                        <SimpleMarkdown content={note.body} compact />
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-500">No notes yet - add one while watching.</p>
-              )}
-            </div>
-          </div>
-
           {/* Module-grouped lesson list */}
           <div className="border-t border-[color:var(--border)] pt-5">
             <div className="flex items-baseline justify-between gap-3">
