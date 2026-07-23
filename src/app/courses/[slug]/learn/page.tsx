@@ -948,6 +948,7 @@ function LessonPlayerControls({
   volume,
   muted,
   playbackRate,
+  visible,
   checkpoints,
   onTogglePlayback,
   onSeek,
@@ -964,6 +965,7 @@ function LessonPlayerControls({
   volume: number;
   muted: boolean;
   playbackRate: number;
+  visible: boolean;
   checkpoints: { id: string; timestamp_seconds: number }[];
   onTogglePlayback: () => void;
   onSeek: (seconds: number) => void;
@@ -978,7 +980,11 @@ function LessonPlayerControls({
   const progressPercent = timelineMax > 0 ? (timelineValue / timelineMax) * 100 : 0;
 
   return (
-    <div className="bg-slate-950 px-3 pb-2.5 pt-1 text-white sm:px-4">
+    <div
+      className={`absolute inset-x-0 bottom-0 z-10 bg-gradient-to-t from-slate-950/95 via-slate-950/55 to-transparent px-3 pb-2 pt-10 text-white transition-opacity duration-300 sm:px-4 ${
+        visible ? "opacity-100" : "pointer-events-none opacity-0"
+      }`}
+    >
       <div className="flex flex-col gap-1.5">
         <div className="group/timeline relative flex h-3 items-center">
           <div className="pointer-events-none absolute inset-x-0 h-[3px] overflow-hidden rounded-full bg-white/15 transition-[height] duration-150 group-hover/timeline:h-1.5">
@@ -1172,6 +1178,8 @@ function VideoLearningPageContent({ params }: Props) {
   const [playerMuted, setPlayerMuted] = useState(false);
   const [playbackRate, setPlaybackRate] = useState(1);
   const playbackRateRef = useRef(1);
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const controlsHideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -1393,6 +1401,18 @@ function VideoLearningPageContent({ params }: Props) {
     }
     if (videoRef.current) videoRef.current.muted = nextMuted;
   });
+
+  const revealPlayerControls = useStableEvent(() => {
+    setControlsVisible(true);
+    if (controlsHideTimerRef.current) clearTimeout(controlsHideTimerRef.current);
+    controlsHideTimerRef.current = setTimeout(() => setControlsVisible(false), 3000);
+  });
+
+  useEffect(() => {
+    return () => {
+      if (controlsHideTimerRef.current) clearTimeout(controlsHideTimerRef.current);
+    };
+  }, []);
 
   const changePlaybackRate = useStableEvent((rate: number) => {
     setPlaybackRate(rate);
@@ -1824,9 +1844,13 @@ function VideoLearningPageContent({ params }: Props) {
           {/* Video player */}
           <div
             ref={playerShellRef}
-            className="relative overflow-hidden bg-slate-950"
+            className="group relative overflow-hidden bg-slate-950"
+            onPointerMove={revealPlayerControls}
+            onPointerLeave={() => {
+              if (playerPlaying) setControlsVisible(false);
+            }}
           >
-            <div className="relative aspect-video text-white">
+            <div className="relative aspect-video text-white group-[:fullscreen]:aspect-auto group-[:fullscreen]:h-full">
               {iframeEmbedUrl ? (
                 <iframe
                   key={iframeEmbedUrl}
@@ -1885,42 +1909,51 @@ function VideoLearningPageContent({ params }: Props) {
                 </div>
               ) : null}
 
+              {hasCustomPlayerControls && playerReady && playerPlaying ? (
+                <div
+                  aria-hidden="true"
+                  onClick={togglePlayback}
+                  className="absolute inset-0 z-[5] cursor-pointer"
+                />
+              ) : null}
+
               {hasCustomPlayerControls && playerReady && !playerPlaying ? (
                 <button
                   type="button"
                   aria-label="Play lesson video"
                   onClick={togglePlayback}
-                  className="group absolute inset-0 flex items-center justify-center bg-slate-950/20 transition-colors hover:bg-slate-950/35"
+                  className="group/play absolute inset-0 z-[5] flex items-center justify-center bg-slate-950/20 transition-colors hover:bg-slate-950/35"
                 >
-                  <span className="flex size-16 items-center justify-center rounded-full bg-white/95 text-slate-950 shadow-xl transition-transform group-hover:scale-110">
+                  <span className="flex size-16 items-center justify-center rounded-full bg-white/95 text-slate-950 shadow-xl transition-transform group-hover/play:scale-110">
                     <Play className="ml-1 size-7 fill-current" />
                   </span>
                 </button>
               ) : null}
-            </div>
 
-            {iframeEmbedUrl ? (
-              <LessonPlayerControls
-                available={hasCustomPlayerControls}
-                checkpoints={lesson.questions.map((question) => ({
-                  id: question.id,
-                  timestamp_seconds: question.timestamp_seconds,
-                }))}
-                currentSeconds={playbackPositionSeconds}
-                durationSeconds={playbackDurationSeconds}
-                muted={playerMuted}
-                onFullscreen={requestPlayerFullscreen}
-                onPlaybackRateChange={changePlaybackRate}
-                onSeek={seekPlayback}
-                onToggleMute={togglePlayerMute}
-                onTogglePlayback={togglePlayback}
-                onVolumeChange={changePlayerVolume}
-                playbackRate={playbackRate}
-                playing={playerPlaying}
-                ready={playerReady}
-                volume={playerVolume}
-              />
-            ) : null}
+              {iframeEmbedUrl ? (
+                <LessonPlayerControls
+                  available={hasCustomPlayerControls}
+                  checkpoints={lesson.questions.map((question) => ({
+                    id: question.id,
+                    timestamp_seconds: question.timestamp_seconds,
+                  }))}
+                  currentSeconds={playbackPositionSeconds}
+                  durationSeconds={playbackDurationSeconds}
+                  muted={playerMuted}
+                  onFullscreen={requestPlayerFullscreen}
+                  onPlaybackRateChange={changePlaybackRate}
+                  onSeek={seekPlayback}
+                  onToggleMute={togglePlayerMute}
+                  onTogglePlayback={togglePlayback}
+                  onVolumeChange={changePlayerVolume}
+                  playbackRate={playbackRate}
+                  playing={playerPlaying}
+                  ready={playerReady}
+                  visible={controlsVisible || !playerPlaying}
+                  volume={playerVolume}
+                />
+              ) : null}
+            </div>
 
             {/* Checkpoint overlay */}
             {activeCheckpoint && (

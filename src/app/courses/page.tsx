@@ -114,10 +114,10 @@ export default function CoursesPage() {
           <div className="mx-auto max-w-3xl text-center">
             <h2 className="sr-only">Practical courses for engineering workflows.</h2>
             <h1 className="text-3xl font-extrabold leading-tight text-slate-950 md:text-4xl">
-              Explore courses
+              Master the mechanics of tomorrow
             </h1>
             <p className="mx-auto mt-2 max-w-xl text-sm leading-6 text-slate-600 md:text-base">
-              Practical skills in AI, CAD, mechanical design, and engineering programming.
+              Hands-on courses in CAD, simulation, programming, and Industry 4.0 — skills engineers actually use.
             </p>
             <div className="relative mx-auto mt-6 max-w-2xl">
               <MagnifyingGlass className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-slate-500" />
@@ -132,33 +132,32 @@ export default function CoursesPage() {
         </section>
 
         <section className="space-y-8">
-          <div className="sticky top-16 z-20 -mx-4 bg-[color:var(--surface-chrome)] px-4 py-3 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
-            <div className="mx-auto flex max-w-7xl gap-2 overflow-x-auto">
-              <button
-                type="button"
-                onClick={() => setActiveCategory("all")}
-                className={
-                  activeCategory === "all"
-                    ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                    : "shrink-0 rounded-full surface-secondary px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
-                }
-              >
-                All courses
-              </button>
-              {categoryOptions.map((category) => (
-                <button
-                  key={category.slug}
-                  type="button"
-                  onClick={() => setActiveCategory(category.slug)}
-                  className={
-                    activeCategory === category.slug
-                      ? "shrink-0 rounded-full bg-orange-500 px-4 py-2 text-sm font-bold text-white"
-                      : "shrink-0 rounded-full surface-secondary px-4 py-2 text-sm font-semibold text-slate-600 transition hover:text-slate-950"
-                  }
-                >
-                  {category.name}
-                </button>
-              ))}
+          <div className="sticky top-16 z-20 -mx-4 bg-[color:var(--surface-chrome)] px-4 py-2.5 backdrop-blur-xl sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8">
+            <div className="relative mx-auto max-w-7xl">
+              <div className="scrollbar-none flex snap-x items-center gap-1.5 overflow-x-auto py-0.5 pr-8">
+                {[{ slug: "all", name: "All" }, ...categoryOptions].map((category) => {
+                  const isActive = activeCategory === category.slug;
+                  return (
+                    <button
+                      key={category.slug}
+                      type="button"
+                      aria-pressed={isActive}
+                      onClick={() => setActiveCategory(category.slug)}
+                      className={`snap-start shrink-0 whitespace-nowrap rounded-full px-4 py-2 text-sm transition-all ${
+                        isActive
+                          ? "bg-orange-500 font-bold text-white shadow-md shadow-orange-500/25"
+                          : "font-medium text-slate-600 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950"
+                      }`}
+                    >
+                      {category.name}
+                    </button>
+                  );
+                })}
+              </div>
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute inset-y-0 right-0 w-12 bg-gradient-to-l from-[color:var(--surface-chrome)] to-transparent"
+              />
             </div>
           </div>
 
@@ -166,10 +165,12 @@ export default function CoursesPage() {
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h2 className="text-xl font-bold text-slate-950 md:text-2xl">
-                  {isLoading ? "Loading catalog" : `${total} courses`}
+                  {isLoading ? "Loading catalog" : `${total} course${total === 1 ? "" : "s"} to build with`}
                 </h2>
                 <p className="mt-0.5 text-sm text-slate-600">
-                  {activeCategory === "all" ? "Showing all available courses" : "Filtered by selected category"}
+                  {activeCategory === "all"
+                    ? "The full catalog — pick a track and start building"
+                    : categoryOptions.find((category) => category.slug === activeCategory)?.name ?? "Filtered by category"}
                 </p>
               </div>
               <Link
