@@ -20,7 +20,6 @@ import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  type AccessSummary,
   type CourseDetail,
   type DiscussionComment,
   type DiscussionThread,
@@ -205,14 +204,6 @@ function ensureYouTubeIframeApi(): Promise<void> {
     document.head.appendChild(script);
   });
   return youtubeIframeApiPromise;
-}
-
-function buildAccessLabel(access: AccessSummary | null): string {
-  if (!access) return "Free trial";
-  if (access.unlocked_by === "free_course") return "Free course";
-  if (access.unlocked_by === "plus") return "GaugeHow-Plus";
-  if (access.has_access) return "Full access";
-  return "Free trial";
 }
 
 function computeCourseCompletion(modules: CourseDetail["modules"]): number {
@@ -1769,25 +1760,19 @@ function VideoLearningPageContent({ params }: Props) {
 
   if (loading || !course || !lesson) {
     return (
-      <AppShell>
-        <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start">
-          <section className="space-y-6">
-            <div className="space-y-3">
-              <Skeleton className="h-4 w-2/5 rounded-md" />
-              <Skeleton className="h-10 w-3/4 rounded-lg" />
+      <AppShell fullWidth>
+        <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
+          <section className="space-y-4">
+            <Skeleton className="h-4 w-2/5 rounded-md" />
+            <Skeleton className="aspect-video rounded-3xl" />
+            <div className="space-y-3 pt-2">
+              <Skeleton className="h-7 w-3/5 rounded-lg" />
               <Skeleton className="h-4 w-full rounded-md" />
               <Skeleton className="h-4 w-2/3 rounded-md" />
             </div>
-            <Skeleton className="aspect-video rounded-3xl" />
-            <div className="space-y-4 pt-4">
-              <Skeleton className="h-6 w-40 rounded-md" />
-              <Skeleton className="h-4 w-full rounded-md" />
-              <Skeleton className="h-4 w-5/6 rounded-md" />
-              <Skeleton className="h-4 w-4/6 rounded-md" />
-            </div>
           </section>
           <aside className="space-y-3">
-            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-20 rounded-xl" />)}
+            {Array.from({ length: 5 }).map((_, i) => <Skeleton key={i} className="h-14 rounded-xl" />)}
           </aside>
         </div>
       </AppShell>
@@ -1797,8 +1782,8 @@ function VideoLearningPageContent({ params }: Props) {
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
-    <AppShell>
-      <div className="grid gap-10 xl:grid-cols-[minmax(0,1fr)_23rem] xl:items-start">
+    <AppShell fullWidth>
+      <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_21rem] xl:items-start">
         {/* ── Main content column ── */}
         <section className="space-y-0">
           {error && (
@@ -1807,9 +1792,9 @@ function VideoLearningPageContent({ params }: Props) {
             </div>
           )}
 
-          {/* Header */}
-          <div className="pb-6">
-            <div className="flex flex-wrap items-center gap-2 text-sm font-semibold text-orange-600">
+          {/* Top strip: breadcrumb + course progress (Coursera-style) */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-4">
+            <div className="flex min-w-0 flex-wrap items-center gap-2 text-sm font-semibold text-orange-600">
               <Link href={`/courses/${course.slug}`} className="hover:text-orange-700">
                 {course.title}
               </Link>
@@ -1820,12 +1805,20 @@ function VideoLearningPageContent({ params }: Props) {
                 </>
               ) : null}
             </div>
-            <h1 className="mt-4 text-3xl font-extrabold text-slate-950 sm:text-4xl">{lesson.title}</h1>
-            {(lesson.summary ?? course.short_description) ? (
-              <p className="mt-3 max-w-3xl text-base leading-7 text-slate-600">
-                {lesson.summary ?? course.short_description}
-              </p>
-            ) : null}
+            {isEnrolled ? (
+              <div className="flex items-center gap-2">
+                <div className="w-32 sm:w-44">
+                  <Progress value={course.access?.progress_percent ?? 0} />
+                </div>
+                <span className="text-xs font-semibold tabular-nums text-slate-600">
+                  {completedLessonsCount}/{allLessons.length}
+                </span>
+              </div>
+            ) : (
+              <Button size="sm" onClick={() => void handleEnroll()} disabled={submitting === "enroll"}>
+                {submitting === "enroll" ? "Enrolling…" : "Enroll to track progress"}
+              </Button>
+            )}
           </div>
 
           {/* Video player */}
@@ -1994,8 +1987,18 @@ function VideoLearningPageContent({ params }: Props) {
             )}
           </div>
 
+          {/* Title below the video, Coursera-style */}
+          <div className="mt-4">
+            <h1 className="text-xl font-extrabold text-slate-950 sm:text-2xl">{lesson.title}</h1>
+            {(lesson.summary ?? course.short_description) ? (
+              <p className="mt-1 line-clamp-2 max-w-3xl text-sm leading-6 text-slate-600">
+                {lesson.summary ?? course.short_description}
+              </p>
+            ) : null}
+          </div>
+
           {/* ── Action row: like + on-demand panels ─── */}
-          <div className="mt-4 flex flex-wrap items-center justify-between gap-3">
+          <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
             <button
               type="button"
               onClick={() => void handleLessonLike()}
@@ -2283,10 +2286,10 @@ function VideoLearningPageContent({ params }: Props) {
 
         </section>
 
-        {/* ── Sidebar ── */}
-        <aside className="space-y-8 lg:sticky lg:top-24 lg:self-start">
+        {/* ── Sidebar: fixed course content panel (Coursera-style) ── */}
+        <aside className="lg:sticky lg:top-20 lg:max-h-[calc(100vh-6rem)] lg:self-start lg:overflow-y-auto lg:pr-1">
           {/* Module-grouped lesson list */}
-          <div className="border-t border-[color:var(--border)] pt-5">
+          <div>
             <div className="flex items-baseline justify-between gap-3">
               <h2 className="text-lg font-extrabold text-slate-950">Course content</h2>
               <span className="text-xs font-medium tabular-nums text-slate-500">
@@ -2380,48 +2383,6 @@ function VideoLearningPageContent({ params }: Props) {
                   </details>
                 );
               })}
-            </div>
-          </div>
-
-          {/* Progress card */}
-          <div className="border-t border-[color:var(--border)] pt-5">
-            <h2 className="text-lg font-extrabold text-slate-950">Your progress</h2>
-            <div className="mt-4 space-y-4">
-              {isEnrolled ? (
-                <>
-                  <div>
-                    <p className="text-sm font-medium text-slate-500">Course completion</p>
-                    <p className="mt-1 text-3xl font-extrabold tracking-tight text-slate-950">
-                      {Math.round(course.access?.progress_percent ?? 0)}%
-                    </p>
-                    <p className="mt-1 text-sm text-slate-600">
-                      {completedLessonsCount} of {allLessons.length} lessons completed
-                    </p>
-                  </div>
-                  <Progress value={course.access?.progress_percent ?? 0} />
-                </>
-              ) : (
-                <div className="rounded-xl bg-orange-50 p-4">
-                  <p className="text-sm font-semibold text-slate-950">You&apos;re not enrolled yet</p>
-                  <p className="mt-1 text-sm leading-6 text-slate-600">
-                    You have full access to every lesson. Enroll to track your progress and earn a certificate.
-                  </p>
-                  <Button
-                    className="mt-3 w-full"
-                    onClick={() => void handleEnroll()}
-                    disabled={submitting === "enroll"}
-                  >
-                    {submitting === "enroll" ? "Enrolling…" : "Enroll in this course"}
-                  </Button>
-                </div>
-              )}
-              <div className="flex items-center justify-between rounded-xl surface-secondary px-4 py-3">
-                <p className="text-xs font-semibold uppercase text-slate-500">Access</p>
-                <p className="text-sm font-semibold text-slate-950">{buildAccessLabel(course.access)}</p>
-              </div>
-              <Button asChild className="w-full" variant="secondary">
-                <Link href={`/courses/${course.slug}`}>Course overview</Link>
-              </Button>
             </div>
           </div>
 

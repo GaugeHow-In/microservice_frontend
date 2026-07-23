@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 
 type AppShellProps = {
   children: React.ReactNode;
+  /** Let the page span the full viewport width (e.g. video lesson pages). */
+  fullWidth?: boolean;
 };
 
 /** Nav-sized AI mark: static logo frame — the animated GIF is wasted at 16px. */
@@ -83,7 +85,7 @@ function NavLinks({ collapsed, onNavigate }: { collapsed: boolean; onNavigate?: 
   );
 }
 
-export function AppShell({ children }: AppShellProps) {
+export function AppShell({ children, fullWidth = false }: AppShellProps) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [logoutOpen, setLogoutOpen] = useState(false);
@@ -337,7 +339,7 @@ export function AppShell({ children }: AppShellProps) {
         </header>
 
         <main className="px-4 py-6 pb-24 sm:px-6 lg:px-8 lg:pb-10">
-          <div className="mx-auto max-w-7xl">{children}</div>
+          <div className={cn("mx-auto", fullWidth ? "max-w-[1600px]" : "max-w-7xl")}>{children}</div>
         </main>
       </div>
 
