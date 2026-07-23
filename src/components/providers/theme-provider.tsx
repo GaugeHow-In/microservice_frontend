@@ -30,14 +30,10 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   const [resolvedTheme, setResolvedTheme] = useState<Theme>("light");
 
   useEffect(() => {
+    // Light is the product default everywhere; dark is strictly opt-in via
+    // the toggle (never inherited from the OS preference).
     const storedTheme = window.localStorage.getItem(STORAGE_KEY);
-    const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-    const initialTheme =
-      storedTheme === "dark" || storedTheme === "light"
-        ? storedTheme
-        : systemTheme;
+    const initialTheme = storedTheme === "dark" ? "dark" : "light";
 
     setResolvedTheme(initialTheme);
     applyTheme(initialTheme);
