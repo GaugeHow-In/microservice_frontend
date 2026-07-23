@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp, X } from "@phosphor-icons/react";
+import { ArrowClockwise, ArrowCounterClockwise, ArrowSquareOut, CaretLeft, CaretRight, CheckCircle, CircleNotch, Code, CornersOut, DownloadSimple, Eye, LinkSimple, ListBullets, ListNumbers, Lock, Pause, Play, Quotes, Sparkle, SpeakerHigh, SpeakerSlash, TextB, TextH, TextItalic, ThumbsUp, X } from "@phosphor-icons/react";
 import { useAuth } from "@/components/providers/auth-provider";
 import { useLearningContext } from "@/components/providers/learning-context-provider";
 import { AppShell } from "@/components/layout/app-shell";
@@ -1212,6 +1212,8 @@ function VideoLearningPageContent({ params }: Props) {
     () => allLessons.filter((item) => (item.progress_percent ?? 0) >= 100).length,
     [allLessons],
   );
+  const previousLesson = currentLessonIndex > 1 ? allLessons[currentLessonIndex - 2] ?? null : null;
+  const nextLesson = currentLessonIndex >= 1 ? allLessons[currentLessonIndex] ?? null : null;
 
   const activeCheckpoint = useMemo(
     () => lesson?.questions.find((q) => q.id === activeCheckpointId) ?? null,
@@ -2278,67 +2280,99 @@ function VideoLearningPageContent({ params }: Props) {
 
           {/* Module-grouped lesson list */}
           <div className="border-t border-[color:var(--border)] pt-5">
-            <h2 className="text-lg font-extrabold text-slate-950">Course content</h2>
-            <p className="mt-1 text-sm text-slate-500">{completedLessonsCount} / {allLessons.length} lessons done</p>
-            <div className="mt-5 space-y-5">
-              {course.modules.map((module) => (
-                <div key={module.id}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <CaretRight className="size-3.5 shrink-0 text-orange-500" />
-                    <p className="text-xs font-bold uppercase tracking-wide text-slate-500">{module.title}</p>
-                  </div>
-                  <div className="space-y-1.5">
-                    {module.lessons.map((item) => {
-                      const isActive = item.id === lesson.id;
-                      const isDone = (item.progress_percent ?? 0) >= 100;
-                      return (
-                        <div
-                          key={item.id}
-                          className={`rounded-xl p-3 transition-colors ${
-                            isActive
-                              ? "bg-orange-50"
-                              : "surface-secondary"
-                          }`}
-                        >
-                          <div className="flex items-center gap-3">
-                            {item.accessible ? (
-                              <Link
-                                href={`/courses/${course.slug}/learn?lesson=${item.slug}`}
-                                className={`flex size-8 shrink-0 items-center justify-center rounded-full transition-colors ${
-                                  isActive
-                                    ? "bg-orange-500 text-white"
-                                    : isDone
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-slate-100 text-slate-500 hover:bg-orange-100 hover:text-orange-600"
-                                }`}
-                              >
-                                {isDone ? <CheckCircle className="size-4" /> : <Play className="size-3.5" />}
-                              </Link>
-                            ) : (
-                              <div className="flex size-8 shrink-0 items-center justify-center rounded-full bg-slate-100 text-slate-400">
-                                <Lock className="size-3.5" />
-                              </div>
-                            )}
-                            <div className="min-w-0">
-                              <p className={`truncate text-sm font-semibold ${isActive ? "text-orange-700" : "text-slate-950"}`}>
-                                {item.title}
-                              </p>
-                              <p className="mt-0.5 text-xs text-slate-500">
-                                {item.duration_seconds ? formatSeconds(item.duration_seconds) : "TBD"}
-                              </p>
+            <div className="flex items-baseline justify-between gap-3">
+              <h2 className="text-lg font-extrabold text-slate-950">Course content</h2>
+              <span className="text-xs font-medium tabular-nums text-slate-500">
+                {completedLessonsCount}/{allLessons.length} done
+              </span>
+            </div>
+
+            {/* Prev / next lesson */}
+            <div className="mt-3 grid grid-cols-2 gap-2">
+              {previousLesson?.accessible ? (
+                <Button asChild variant="secondary" size="sm" className="justify-start">
+                  <Link href={`/courses/${course.slug}/learn?lesson=${previousLesson.slug}`} title={previousLesson.title}>
+                    <CaretLeft className="size-3.5" />
+                    Previous
+                  </Link>
+                </Button>
+              ) : (
+                <Button variant="secondary" size="sm" className="justify-start" disabled>
+                  <CaretLeft className="size-3.5" />
+                  Previous
+                </Button>
+              )}
+              {nextLesson?.accessible ? (
+                <Button asChild size="sm" className="justify-end">
+                  <Link href={`/courses/${course.slug}/learn?lesson=${nextLesson.slug}`} title={nextLesson.title}>
+                    Next
+                    <CaretRight className="size-3.5" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button size="sm" className="justify-end" disabled>
+                  Next
+                  <CaretRight className="size-3.5" />
+                </Button>
+              )}
+            </div>
+
+            <div className="mt-4 space-y-1">
+              {course.modules.map((module) => {
+                const containsActiveLesson = module.lessons.some((item) => item.id === lesson.id);
+                const moduleDoneCount = module.lessons.filter((item) => (item.progress_percent ?? 0) >= 100).length;
+                return (
+                  <details key={module.id} open={containsActiveLesson} className="group">
+                    <summary className="flex cursor-pointer list-none items-center gap-2 rounded-lg px-2 py-2 transition-colors hover:bg-[color:var(--surface-secondary)]">
+                      <CaretRight className="size-3 shrink-0 text-slate-400 transition-transform group-open:rotate-90" />
+                      <span className="min-w-0 flex-1 truncate text-xs font-bold uppercase tracking-wide text-slate-600">
+                        {module.title}
+                      </span>
+                      <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
+                        {moduleDoneCount}/{module.lessons.length}
+                      </span>
+                    </summary>
+                    <div className="mb-1 ml-3 space-y-0.5 border-l border-[color:var(--border)] pl-2">
+                      {module.lessons.map((item) => {
+                        const isActive = item.id === lesson.id;
+                        const isDone = (item.progress_percent ?? 0) >= 100;
+                        const statusIcon = isDone ? (
+                          <CheckCircle className="size-3.5 shrink-0 text-emerald-600" />
+                        ) : (
+                          <Play className={`size-3 shrink-0 ${isActive ? "text-orange-500" : "text-slate-400"}`} />
+                        );
+                        if (!item.accessible) {
+                          return (
+                            <div key={item.id} className="flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm text-slate-400">
+                              <Lock className="size-3 shrink-0" />
+                              <span className="min-w-0 flex-1 truncate">{item.title}</span>
                             </div>
-                          </div>
-                          {(item.progress_percent ?? 0) > 0 ? (
-                            <div className="mt-2">
-                              <Progress value={item.progress_percent ?? 0} />
-                            </div>
-                          ) : null}
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
+                          );
+                        }
+                        return (
+                          <Link
+                            key={item.id}
+                            href={`/courses/${course.slug}/learn?lesson=${item.slug}`}
+                            className={`flex items-center gap-2 rounded-lg px-2 py-1.5 text-sm transition-colors ${
+                              isActive
+                                ? "bg-orange-50 font-semibold text-orange-700"
+                                : "text-slate-700 hover:bg-[color:var(--surface-secondary)] hover:text-slate-950"
+                            }`}
+                          >
+                            {statusIcon}
+                            <span className="min-w-0 flex-1 truncate">{item.title}</span>
+                            {item.duration_seconds ? (
+                              <span className="shrink-0 text-[11px] tabular-nums text-slate-400">
+                                {formatSeconds(item.duration_seconds)}
+                              </span>
+                            ) : null}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </details>
+                );
+              })}
             </div>
           </div>
 
