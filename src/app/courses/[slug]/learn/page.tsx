@@ -1825,7 +1825,7 @@ function VideoLearningPageContent({ params }: Props) {
           {/* Video player */}
           <div
             ref={playerShellRef}
-            className="relative overflow-hidden rounded-2xl bg-slate-950"
+            className="relative overflow-hidden bg-slate-950"
           >
             <div className="relative aspect-video text-white">
               {iframeEmbedUrl ? (
